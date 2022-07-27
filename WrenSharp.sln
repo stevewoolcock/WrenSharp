@@ -1,0 +1,75 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32616.157
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WrenSharp.Scratchpad", "WrenSharp.Scratchpad\WrenSharp.Scratchpad.csproj", "{90A46B55-83B3-43B2-827F-B7642311D4B8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WrenSharp.Lib.NetStandard", "WrenSharp.Lib.NetStandard\WrenSharp.Lib.NetStandard.csproj", "{D1D44D8D-E74A-483B-AF58-99D33099EF43}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WrenSharp.Tests", "WrenSharp.Tests\WrenSharp.Tests.csproj", "{C1505494-161B-4C88-9B8A-B51FD2893613}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WrenSharp.Unity", "WrenSharp.Unity\WrenSharp.Unity.csproj", "{CDF4ACEF-53F6-4AA8-A56C-77D81B3D0467}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WrenSharp", "WrenSharp\WrenSharp.csproj", "{C9C05B81-02C7-4CA1-921A-E1AD96AA8C74}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "WrenSharp.Lib.Shared", "WrenSharp.Lib.Shared\WrenSharp.Lib.Shared.shproj", "{18977ABA-F8C7-4A53-A95B-9C181286F462}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WrenSharp.Lib.Unity", "WrenSharp.Lib.Unity\WrenSharp.Lib.Unity.csproj", "{231904AC-B496-4E0E-89B3-5DDC47F9DF20}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "WrenSharp.Core.Shared", "WrenSharp.Core.Shared\WrenSharp.Core.Shared.shproj", "{5A618BD1-02DF-4A0B-9076-6FB43A7BCD26}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		Unity_Internal|Any CPU = Unity_Internal|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{90A46B55-83B3-43B2-827F-B7642311D4B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90A46B55-83B3-43B2-827F-B7642311D4B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90A46B55-83B3-43B2-827F-B7642311D4B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90A46B55-83B3-43B2-827F-B7642311D4B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90A46B55-83B3-43B2-827F-B7642311D4B8}.Unity_Internal|Any CPU.ActiveCfg = Release|Any CPU
+		{D1D44D8D-E74A-483B-AF58-99D33099EF43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1D44D8D-E74A-483B-AF58-99D33099EF43}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1D44D8D-E74A-483B-AF58-99D33099EF43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1D44D8D-E74A-483B-AF58-99D33099EF43}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1D44D8D-E74A-483B-AF58-99D33099EF43}.Unity_Internal|Any CPU.ActiveCfg = Release|Any CPU
+		{C1505494-161B-4C88-9B8A-B51FD2893613}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1505494-161B-4C88-9B8A-B51FD2893613}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1505494-161B-4C88-9B8A-B51FD2893613}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1505494-161B-4C88-9B8A-B51FD2893613}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1505494-161B-4C88-9B8A-B51FD2893613}.Unity_Internal|Any CPU.ActiveCfg = Release|Any CPU
+		{CDF4ACEF-53F6-4AA8-A56C-77D81B3D0467}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDF4ACEF-53F6-4AA8-A56C-77D81B3D0467}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDF4ACEF-53F6-4AA8-A56C-77D81B3D0467}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDF4ACEF-53F6-4AA8-A56C-77D81B3D0467}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDF4ACEF-53F6-4AA8-A56C-77D81B3D0467}.Unity_Internal|Any CPU.ActiveCfg = Release|Any CPU
+		{C9C05B81-02C7-4CA1-921A-E1AD96AA8C74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9C05B81-02C7-4CA1-921A-E1AD96AA8C74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9C05B81-02C7-4CA1-921A-E1AD96AA8C74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9C05B81-02C7-4CA1-921A-E1AD96AA8C74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9C05B81-02C7-4CA1-921A-E1AD96AA8C74}.Unity_Internal|Any CPU.ActiveCfg = Release|Any CPU
+		{231904AC-B496-4E0E-89B3-5DDC47F9DF20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{231904AC-B496-4E0E-89B3-5DDC47F9DF20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{231904AC-B496-4E0E-89B3-5DDC47F9DF20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{231904AC-B496-4E0E-89B3-5DDC47F9DF20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{231904AC-B496-4E0E-89B3-5DDC47F9DF20}.Unity_Internal|Any CPU.ActiveCfg = Unity_Internal|Any CPU
+		{231904AC-B496-4E0E-89B3-5DDC47F9DF20}.Unity_Internal|Any CPU.Build.0 = Unity_Internal|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {24146212-AB35-4AC6-9E48-5C0A38D809A3}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		WrenSharp.Lib.Shared\WrenSharp.Lib.Shared.projitems*{18977aba-f8c7-4a53-a95b-9c181286f462}*SharedItemsImports = 13
+		WrenSharp.Lib.Shared\WrenSharp.Lib.Shared.projitems*{231904ac-b496-4e0e-89b3-5ddc47f9df20}*SharedItemsImports = 5
+		WrenSharp.Core.Shared\WrenSharp.Core.Shared.projitems*{5a618bd1-02df-4a0b-9076-6fb43a7bcd26}*SharedItemsImports = 13
+		WrenSharp.Core.Shared\WrenSharp.Core.Shared.projitems*{c9c05b81-02c7-4ca1-921a-e1ad96aa8c74}*SharedItemsImports = 5
+		WrenSharp.Core.Shared\WrenSharp.Core.Shared.projitems*{cdf4acef-53f6-4aa8-a56c-77d81b3d0467}*SharedItemsImports = 5
+		WrenSharp.Lib.Shared\WrenSharp.Lib.Shared.projitems*{d1d44d8d-e74a-483b-af58-99d33099ef43}*SharedItemsImports = 5
+	EndGlobalSection
+EndGlobal

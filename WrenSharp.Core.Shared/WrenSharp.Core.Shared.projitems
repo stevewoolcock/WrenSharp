@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>5a618bd1-02df-4a0b-9076-6fb43a7bcd26</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>WrenSharpCoreShared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Internal\ForeignLookup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Internal\InternalWrenHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Internal\WrenInternal.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IWrenErrorOutput.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IWrenModuleProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IWrenModuleResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IWrenSource.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IWrenWriteOutput.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Memory\HGlobalAllocator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Memory\IAllocator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\WrenAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\WrenCallHandleAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\WrenEnumAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\WrenIgnoreAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\WrenInitializeAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\WrenOrderedAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\WrenPropertyAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\WrenReflection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\WrenVariableHandleAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenCall.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenCallHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Sources\WrenFileSource.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenVMConfiguration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenError.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenExceptions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenCallContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenSharedData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenSharedDataHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Sources\WrenStringBuilderSource.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Sources\WrenStringSource.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenVM.ApiSlots.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenVM.ApiUserData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenVM.ApiVariables.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenVM.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Sources\" />
+  </ItemGroup>
+</Project>
