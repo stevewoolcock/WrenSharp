@@ -60,10 +60,10 @@ vm.Interpret(
 
 // Output: "Hello WrenSharp!"
 
-// WrenVM implements IDisposable, so it can also be used within a using statement
-// to automate dispose. However, in most uses cases the VM lives longer than using
-// statement would, so a manual call to Dispose() is required to shut it down and free
-// all unmanaged resources.
+// WrenVM implements IDisposable, and can  be used within a using() statement
+// to automate disposal. However, in most cases the VM lives longer than a using()
+// statement would, so a manual call to Dispose() is required to shut it down and
+// free the resources it acquired.
 vm.Dispose();
 ```
 
@@ -78,7 +78,7 @@ vm.Dispose();
 
 <!-- omit in toc -->
 ### Slots
-WrenSharp provides full access to Wren's API stack, with all the same methods the native exposes, wrapped by a `WrenVM` instance.
+WrenSharp provides full access to Wren's API stack, with all the same methods the native exposes, wrapped by a `WrenVM` instance. Here's a small sample of the methods available.
 
 ```cs
 // Use EnsureSlotCount() to ensure enough slots are available to perform your instruction
@@ -155,11 +155,12 @@ Calling a Wren method from your C# code is simple. In this example, a static met
 // Define a class in Wren that we can call into
 vm.Interpret(
     module: "main",
-    source: @"
-class Greeter {
-    static greet(message) { System.print(message) }
-}
-");
+    source:
+    @"
+    class Greeter {
+        static greet(message) { System.print(message) }
+    }
+    ");
 
 // - Create a handle to the "Greeter" class
 // - Create a call handle for the "greet(_)" method
@@ -190,14 +191,15 @@ OK, so what about calling methods on an _instance_? They're almost exactly the s
 // - Create an instance of Greeter and store it in a module level variable
 vm.Interpret(
     module: "main",
-    source: @"
-class Greeter {
-    construct new() {}
-    greet(msg, name) { System.print(""%(msg), %(name)!"") }
-}
+    source:
+    @"
+    class Greeter {
+        construct new() {}
+        greet(msg, name) { System.print(""%(msg), %(name)!"") }
+    }
 
-var theGreeter = Greeter.new()
-");
+    var theGreeter = Greeter.new()
+    ");
 
 // - Create a handle to the "Greeter" instance stored in "theGreeter"
 // - Create a call handle for the "greet(_,_)" method
@@ -225,9 +227,7 @@ using (WrenCallHandle greetCall = vm.CreateCallHandle("greet(_,_)"))
 - [Calling C from Wren](https://wren.io/embedding/calling-c-from-wren.html)
 - [Storing C Data](https://wren.io/embedding/storing-c-data.html)
 
-Here's were things get interesting. You're most likely going to want to implement some functionality in C# that Wren scripts should be able to call into. Wren's "foreign method" concept is fully supported by WrenSharp and is backed by an intuitive builder API that makes creating foreign bindings a breeze.
-
-For more information on Wren foreign methods and classes, see the Wren documentation on emedding:
+Here's where things get interesting. You're most likely going to want to implement some functionality in C# that Wren scripts should be able to call into. Wren's "foreign method" concept is fully supported by WrenSharp and is backed by an intuitive builder API that makes creating foreign bindings a breeze.
 
 ```cs
 // Define a foreign class that we will provide bindings for
@@ -317,13 +317,14 @@ vm
 .Foreign("main", "IntList")
 .Allocate((WrenVM vm, ref WrenSharedDataHandle data) =>
 {
-    // Create a llist and add it to the VM's SharedData table
-    // The return handle is attached to the foreign instance
+    // Create a list and add it to the VM's SharedData table
+    // The returned handle is attached to the foreign instance
     var list = new List<int>() { 1, 2, 3, 4, 5 };
     data = vm.SharedData.Add(list);
 })
 .Instance("count", ctx => 
 {
+    // The C# object can be retrieved from the receiver
     var list = ctx.GetReceiverSharedData<List<int>>();
     ctx.Return(list.Count);
 })
@@ -356,9 +357,9 @@ vm.Interpret(
 // Output: 2
 ```
 
-This example could easily be extended with methods to manipulate the list. Try adding foreign method bindings for `add` and `remove`.
+This example could easily be extended with methods to manipulate the list. Try adding foreign method bindings for `add(item)` and `remove(item)`.
 
-When you no longer need to share a managed object with Wren, it needs to be removed from the VM's shared data table to ensure it is eligable for garbage collection.
+When you no longer need to share a managed object with Wren, it needs to be removed from the VM's shared data table to ensure it becomes eligable for garbage collection.
 
 ```cs
 WrenSharedDataHandle handle;
@@ -391,11 +392,10 @@ WrenHandle dynamicFn = vm.CreateFunction(
 // CreateFunction() can also be instructed to throw a WrenInterpretException in this case.
 if (dynamicFn.IsValid)
 {
-    // Make a call to the function via CreateFunctionCall()
-    // The CreateFunctionCall() method makes this simple
+    // Call the function via CreateFunctionCall()
     WrenCall call = vm.CreateFunctionCall(
         functionHandle: dynamicFn,  // The function we created above
-        argCount: 2                 // It requires two arguments
+        argCount: 2                 // It requires 2 arguments
     );
     call.SetArg(0, true); // arg 0 (active)
     call.SetArg(1, 1234); // arg 1 (num)
@@ -472,7 +472,7 @@ vm.Interpret(
     
     var coffee = Coffee.new()
     System.print(coffee)
-");
+    ");
 
 // Output: "instance of Coffee"
 ```
@@ -480,7 +480,7 @@ vm.Interpret(
 
 <!-- omit in toc -->
 ### Resolving Modules
-Another useful Wren feature supported by WrenSharp is module name resolution. The `IWrenModuleResolver` provides a method for resolving a module name provided by an `import` statement. The resolver is passed the name of the module requesting the import (`importer`) and the module it wants to import (`name`). Together, these can be used to return a new string that uniquely identifies the module.
+Another useful Wren feature supported by WrenSharp is module name resolution. The `IWrenModuleResolver` interface provides a method for resolving a module name provided by an `import` statement. The resolver is passed the name of the module requesting the import (`importer`) and the module it wants to import (`name`). Together, these can be used to return a new string that uniquely identifies the module.
 
 The resolved module name becomes its identifier going forward. It is passed to the `IWrenModuleProvider`, is reported in stack traces, etc. This is a powerful feature that allows the host to supply, for example, relative imports: different implementations of a module depending on the importing module.
 
@@ -525,7 +525,7 @@ vm.Interpret(
     
     var coffee = Coffee.new()
     System.print(coffee)
-");
+    ");
 
 ```
 
@@ -611,7 +611,7 @@ Simple. This creates a Wren VM with all the default settings for working within 
 
 <!-- omit in toc -->
 #### **The Problem**
-A limitation of IL2CPP is that it can only marshal native function pointers through static methods. In practice, this means that every foreign method binding is required to be a static C# method, known at compile time. This can be worked around for the more general  function bindings Wren requires, but foreign methods are a bit more tricky.
+A limitation of IL2CPP is that it can only marshal native function pointers through static methods. In practice, this means that every host function Wren calls is required to be a static C# method, known at compile time. This can be worked around for the more general  function bindings Wren requires, but foreign methods are a bit more tricky.
 
 Wren's foreign methods are nice and simple (just like Wren itself): a C function pointer. The only argument provided to a foreign method call is a pointer to the native WrenVM instance, which gives no contextual information about the call itself.
 
@@ -619,7 +619,7 @@ Using static methods for bindings in this way doesn't _feel_ like C#. The `WrenF
 
 <!-- omit in toc -->
 #### **The Solution**
-To support the `WrenForeign` API with IL2CPP, a small modification has been made to the Wren library included with the WrenSharp.Unity. This modification wraps the `WrenForeignFn` function pointer assigned to foreign methods in a new struct: `WrenForeignMethodData`, in which an additional `uint16_t` field lives alongside the function pointer. These 16 bits are known as a "symbol".
+To support the `WrenForeign` API with IL2CPP, a small modification has been made to the Wren library included with WrenSharp.Unity. This modification wraps the `WrenForeignFn` function pointer assigned to foreign methods in a new struct: `WrenForeignMethodData`, in which an additional `uint16_t` field lives alongside the function pointer. These 16 bits are known as a "symbol".
 
 The symbol is generated by the WrenSharp.Unity `WrenForeign` implementation and is passed to Wren when it binds foreign methods to classes, along with a function pointer to a single, pre-allocated static C# delegate. Whenever Wren calls that foreign method, it invokes the static C# method and passes along an extra argument: the symbol it was supplied with when binding.
 
