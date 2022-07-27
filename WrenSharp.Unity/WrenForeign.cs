@@ -38,6 +38,9 @@ namespace WrenSharp.Unity
 
         #region Static
 
+        private static WrenNativeFn.ForeignMethod _wrenForeignMethodFn = WrenForeignMethodFn;
+        private static WrenNativeFn.Finalizer _wrenFinalizerMethodFn = WrenFinalizerMethodFn;
+
         private static readonly object _delegateArrayLocker = new object();
 
         private static ushort _methodSymbolNext = 1;
@@ -69,7 +72,7 @@ namespace WrenSharp.Unity
         }
 
         [AOT.MonoPInvokeCallback(typeof(WrenNativeFn.ForeignMethod))]
-        private static void _WrenForeignMethodFn(IntPtr vm, ushort symbol)
+        private static void WrenForeignMethodFn(IntPtr vm, ushort symbol)
         {
             if (symbol > 0)
             {
@@ -77,8 +80,8 @@ namespace WrenSharp.Unity
             }
         }
 
-        [AOT.MonoPInvokeCallback(typeof(WrenNativeFn.ForeignMethod))]
-        private static void _WrenFinalizerMethodFn(IntPtr data, ushort symbol)
+        [AOT.MonoPInvokeCallback(typeof(WrenNativeFn.Finalizer))]
+        private static void WrenFinalizerMethodFn(IntPtr data, ushort symbol)
         {
             if (symbol > 0)
             {
@@ -274,16 +277,16 @@ namespace WrenSharp.Unity
             return new WrenForeignMethodData()
             {
                 symbol = symbol,
-                fn = _WrenForeignMethodFn,
+                fn = _wrenForeignMethodFn,
             };
         }
 
         internal WrenForeignClassMethods GetClassMethods() => new WrenForeignClassMethods()
         {
-            Allocate = _WrenForeignMethodFn,
+            Allocate = _wrenForeignMethodFn,
             AllocateSymbol = m_Allocator,
 
-            Finalize = _WrenFinalizerMethodFn,
+            Finalize = _wrenFinalizerMethodFn,
             FinalizeSymbol = m_Finalizer,
         };
     }
