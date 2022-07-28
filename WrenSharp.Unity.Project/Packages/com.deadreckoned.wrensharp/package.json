@@ -1,0 +1,18 @@
+{
+  "name": "com.deadreckoned.wrensharp",
+  "version": "0.1.0",
+  "displayName": "WrenSharp",
+  "description": "A Unity wrapper for the Wren scripting language, compatible with both Mono and IL2CPP.",
+  "unity": "2019.1",
+  "documentationUrl": "https://github.com/stevewoolcock/WrenSharp/blob/main/README.md",
+  "keywords": [
+    "scripting",
+    "utility",
+    "wren"
+  ],
+  "author": {
+    "name": "Dead Reckoned",
+    "email": "info@deadreckoned.com",
+    "url": "https://www.deadreckoned.com"
+  }
+}
