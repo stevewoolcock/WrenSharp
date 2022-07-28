@@ -26,9 +26,7 @@ namespace WrenSharp.Unity
         private readonly IWrenErrorOutput m_ErrorOutput;
         private readonly IWrenModuleProvider m_ModuleProvider;
         private readonly IWrenModuleResolver m_ModuleResolver;
-        private readonly WrenNativeFn.Reallocate m_Reallocator;
-
-        private UnityWrenDebugOutput m_UnityDebugWriter;
+        private readonly UnityWrenDebugOutput m_UnityDebugOutput;
 
         // Module load state
         private WrenNativeFn.LoadModuleComplete m_LoadModuleCallback;
@@ -37,10 +35,7 @@ namespace WrenSharp.Unity
         /// <summary>
         /// Creates a new Wren VM to run Wren scripts using the default configuration.
         /// </summary>
-        public UnityWrenVM()
-        {
-
-        }
+        public UnityWrenVM() : this(config: null) { }
 
         /// <summary>
         /// Creates a new Wren VM to run Wren scripts using the supplied configuration.
@@ -50,6 +45,7 @@ namespace WrenSharp.Unity
         {
             if (config == null)
             {
+                LogErrors = true;
                 m_WriteOutput = _defaultUnityOutput;
                 m_ErrorOutput = _defaultUnityOutput;
             }
@@ -60,11 +56,10 @@ namespace WrenSharp.Unity
                 m_ErrorOutput = config.ErrorOutput != null ? config.ErrorOutput : _defaultUnityOutput;
                 m_ModuleProvider = config.ModuleProvider;
                 m_ModuleResolver = config.ModuleResolver;
-                m_Reallocator = config.Reallocate;
             }
 
-            // This is just used to avoid casting when it is needed
-            m_UnityDebugWriter = m_WriteOutput as UnityWrenDebugOutput;
+            // This is used to avoid casting when it is needed
+            m_UnityDebugOutput = m_WriteOutput as UnityWrenDebugOutput;
 
             var nativeConfig = WrenConfiguration.InitializeNew();
             CopyManagedConfigToNativeConfig(config, ref nativeConfig);
@@ -79,9 +74,9 @@ namespace WrenSharp.Unity
             nativeConfig.MinHeapSize = config.MinHeapSize.GetValueOrDefault(nativeConfig.MinHeapSize);
             nativeConfig.HeapGrowthPercent = config.HeapGrowthPercent.HasValue ? (int)(config.HeapGrowthPercent * 100) : nativeConfig.HeapGrowthPercent;
 
-            if (m_Reallocator != null)
+            if (config.Reallocate != null)
             {
-                nativeConfig.Reallocate = m_Reallocator;
+                nativeConfig.Reallocate = config.Reallocate;
             }
 
             nativeConfig.LoadModule = _LoadModule;
@@ -158,10 +153,8 @@ namespace WrenSharp.Unity
         /// </summary>
         protected override void OnInterpretBegin()
         {
-            m_UnityDebugWriter?.Clear();
-#if DEBUG
+            m_UnityDebugOutput?.Clear();
             _profilerMarkerInterpet.Begin();
-#endif
         }
 
         /// <summary>
@@ -170,13 +163,20 @@ namespace WrenSharp.Unity
         /// <param name="result">The result of the interpretation or call.</param>
         protected override void OnInterpretEnd(WrenInterpretResult result)
         {
-#if DEBUG
             _profilerMarkerInterpet.End();
-#endif
-            m_UnityDebugWriter?.Flush();
+            m_UnityDebugOutput?.Flush();
         }
 
         #endregion
+
+        private string ResolveModule(string importer, string module)
+        {
+            IWrenModuleResolver resolver = m_ModuleResolver;
+            if (resolver == null)
+                return module;
+
+            return resolver.ResolveModule(this, importer, module);
+        }
 
         private WrenLoadModuleResult LoadModule(string module)
         {
@@ -199,37 +199,22 @@ namespace WrenSharp.Unity
             {
                 Source = buffer,
                 UserData = IntPtr.Zero,
-#if WRENSHARP_UNITY
-                // Unity IL2CPP fails to marshal the WrenNativeFn.LoadModuleComplete via p/invoke automatically (a bug, most likely).
+
+                // IL2CPP fails to marshal the WrenNativeFn.LoadModuleComplete via p/invoke automatically (a bug, most likely).
                 // It likely has something to do with the signature having a struct argument. Using an IntPtr and marshalling it
                 // manually as the correct type seems to work around this problem.
-                //
-                // Also note that for IL2CPP, the delegate must be a static method.
                 OnCompleteCallback = Marshal.GetFunctionPointerForDelegate(m_LoadModuleCallback),
-#else
-                OnCompleteCallback = m_LoadModuleCompleteCallback,
-#endif
             };
         }
 
         private void OnLoadModuleComplete(string module)
         {
             IWrenSource source = m_LoadModuleSource;
-            
             m_LoadModuleSource = default;
             m_ModuleProvider.OnModuleLoadComplete(this, module, source);
         }
 
-        private string ResolveModule(string importer, string module)
-        {
-            IWrenModuleResolver resolver = m_ModuleResolver;
-            if (resolver == null)
-                return module;
-
-            return resolver.ResolveModule(this, importer, module);
-        }
-
-        private void ReceiveError(WrenErrorType errorType, string module, int lineNumber, string message)
+        private void OnError(WrenErrorType errorType, string module, int lineNumber, string message)
         {
             LogError(errorType, module, lineNumber, message);
             m_ErrorOutput?.OutputError(this, errorType, module, lineNumber, message);
@@ -247,17 +232,13 @@ namespace WrenSharp.Unity
         [AOT.MonoPInvokeCallback(typeof(WrenNativeFn.Error))]
         private static void _ErrorFn(IntPtr vmPtr, WrenErrorType errorType, string module, int line, string message)
         {
-            GetVM<UnityWrenVM>(vmPtr).ReceiveError(errorType, module, line, message);
+            GetVM<UnityWrenVM>(vmPtr).OnError(errorType, module, line, message);
         }
 
         [AOT.MonoPInvokeCallback(typeof(WrenNativeFn.BindForeignMethod))]
-#if WRENSHARP_UNITY
-        private static WrenForeignMethodData _BindForeignMethodFn(IntPtr vmPtr, string module, string className, byte isStatic, string signature)
-#else
-        private static WrenNativeFn.BindForeignMethod _BindForeignMethodFn(IntPtr vmPtr, string module, string className, byte isStatic, string signature)
-#endif
+        private static WrenForeignMethodData _BindForeignMethodFn(IntPtr vmPtr, string module, string cls, byte isStatic, string signature)
         {
-            WrenForeign foreign = GetVM<UnityWrenVM>(vmPtr).m_ForeignLookup.GetClass(module, className);
+            WrenForeign foreign = GetVM<UnityWrenVM>(vmPtr).m_ForeignLookup.GetClass(module, cls);
             if (foreign == null)
                 return WrenForeignMethodData.NotFound;
 
@@ -265,9 +246,9 @@ namespace WrenSharp.Unity
         }
 
         [AOT.MonoPInvokeCallback(typeof(WrenNativeFn.BindForeignClass))]
-        private static WrenForeignClassMethods _BindForeignClassFn(IntPtr vmPtr, string module, string className)
+        private static WrenForeignClassMethods _BindForeignClassFn(IntPtr vmPtr, string module, string cls)
         {
-            WrenForeign foreign = GetVM<UnityWrenVM>(vmPtr).m_ForeignLookup.GetClass(module, className);
+            WrenForeign foreign = GetVM<UnityWrenVM>(vmPtr).m_ForeignLookup.GetClass(module, cls);
             return foreign?.GetClassMethods() ?? default;
         }
 
