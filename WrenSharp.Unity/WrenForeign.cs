@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 using WrenSharp.Native;
 
 namespace WrenSharp.Unity
@@ -87,6 +88,17 @@ namespace WrenSharp.Unity
             {
                 _finalizerDelegates[symbol - 1](data);
             }
+        }
+
+        // Support disabled domain reloads in the Unity editor
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void OnSubsystemRegistration()
+        {
+            _methodSymbolNext = 1;
+            Array.Clear(_methodDelegates, 0, _methodDelegates.Length);
+
+            _finalizerSymbolNext = 1;
+            Array.Clear(_finalizerDelegates, 0, _finalizerDelegates.Length);
         }
 
         #endregion

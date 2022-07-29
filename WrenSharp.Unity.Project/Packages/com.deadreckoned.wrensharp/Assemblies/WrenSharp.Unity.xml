@@ -368,6 +368,21 @@
             The single default instance of <see cref="T:WrenSharp.Memory.HGlobalAllocator"/>.
             </summary>
         </member>
+        <member name="M:WrenSharp.Memory.HGlobalAllocator.Allocate(System.Int32)">
+            <summary>
+            Allocates a contiguous block of memory that is guaranted to be at least <paramref name="size"/> bytes wide.
+            This method wraps <see cref="M:System.Runtime.InteropServices.Marshal.AllocHGlobal(System.Int32)"/>.
+            </summary>
+            <param name="size">The minimum number of bytes to allocate.</param>
+            <returns>An <see cref="T:System.IntPtr"/> to the allocated block of memory.</returns>
+        </member>
+        <member name="M:WrenSharp.Memory.HGlobalAllocator.Free(System.IntPtr)">
+            <summary>
+            Frees a previously allocated block of memory.
+            This method wraps <see cref="M:System.Runtime.InteropServices.Marshal.FreeHGlobal(System.IntPtr)"/>.
+            </summary>
+            <param name="ptr">A pointer to the block of memory to free.</param>
+        </member>
         <member name="T:WrenSharp.Memory.IAllocator">
             <summary>
             An interface for memory allocators used by some WrenSharp wrappers for working with unmanaged memory.

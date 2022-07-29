@@ -18,6 +18,13 @@ namespace WrenSharp.Unity
         private static readonly ProfilerMarker _profilerMarkerInterpet = new ProfilerMarker(ProfilerCategory.Scripts, "Wren Interpret");
         private static readonly UnityWrenDebugOutput _defaultUnityOutput = new UnityWrenDebugOutput();
 
+        // Support disabled domain reloads in the Unity editor
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void OnSubsystemRegistration()
+        {
+            _defaultUnityOutput?.Clear();
+        }
+
         #endregion
 
         private readonly ForeignLookup<WrenForeign> m_ForeignLookup = new ForeignLookup<WrenForeign>();
