@@ -95,6 +95,15 @@ namespace WrenSharp.Unity
             m_LoadModuleCallback = _OnModuleLoadComplete;
         }
 
+        protected override void DisposeManagedState()
+        {
+            base.DisposeManagedState();
+
+            // Ensure all foreign methods free up their symbols so holes in the static delegate tables
+            // can be reused and don't leak memory
+            m_ForeignLookup.ForEachClass(x => x.Dispose());
+        }
+
         #region Public API
 
         /// <summary>

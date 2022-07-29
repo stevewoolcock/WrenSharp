@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace WrenSharp.Native
 {
@@ -29,6 +30,17 @@ namespace WrenSharp.Native
 
             module.Classes.TryGetValue(className, out TForeign foreign);
             return foreign;
+        }
+
+        public void ForEachClass(Action<TForeign> action)
+        {
+            foreach (var module in Modules.Values)
+            {
+                foreach (var cls in module.Classes.Values)
+                {
+                    action(cls);
+                }
+            }
         }
     }
 }

@@ -6,6 +6,7 @@ using WrenSharp.Unity;
 
 public class WrenREPL : MonoBehaviour, IWrenWriteOutput, IWrenErrorOutput
 {
+    private const string ModuleName = "repl";
     private const int MaxOutputLength = 4096;
     private const int MaxHistoryLength = 20;
 
@@ -68,6 +69,8 @@ public class WrenREPL : MonoBehaviour, IWrenWriteOutput, IWrenErrorOutput
 
         ClearOutput();
         ClearInput();
+
+        SetupForeignClass();
     }
 
     private void ProcessInput()
@@ -97,7 +100,7 @@ public class WrenREPL : MonoBehaviour, IWrenWriteOutput, IWrenErrorOutput
         if (string.IsNullOrEmpty(input))
             return;
 
-        m_VM.Interpret("repl", input);
+        m_VM.Interpret(ModuleName, input);
 
         FlushWriteBuffer();
         AppendHistory(input);
@@ -219,5 +222,34 @@ public class WrenREPL : MonoBehaviour, IWrenWriteOutput, IWrenErrorOutput
                 Output($"[Error] {message}", LogType.Error);
                 break;
         }
+    }
+
+
+    private void SetupForeignClass()
+    {
+        m_VM.Foreign(ModuleName, "ForeignTest")
+            .Allocate<int>((UnityWrenVM vm, ref int data) =>
+            {
+                data = 1234;
+            })
+            .Instance("test()", ctx =>
+            {
+                ctx.VM.Print("ForeignTest.test() called");
+            })
+            .Static("greet(_)", ctx =>
+            {
+                ctx.VM.Print(ctx.GetArgString(0));
+            });
+
+        m_VM.Interpret(
+            module: ModuleName,
+            source:
+            @"
+            foreign class ForeignTest {
+                construct new() {}
+                foreign test()
+                foreign static greet(msg)
+            }
+            ");
     }
 }

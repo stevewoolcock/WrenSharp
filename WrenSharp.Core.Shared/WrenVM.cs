@@ -32,7 +32,7 @@ namespace WrenSharp
     {
         #region Static
 
-        private static Dictionary<IntPtr, WrenVM> _vmsByPtr = new Dictionary<IntPtr, WrenVM>();
+        private static readonly Dictionary<IntPtr, WrenVM> _vmsByPtr = new Dictionary<IntPtr, WrenVM>();
 
         /// <summary>
         /// Returns the version number of the Wren library.
@@ -179,7 +179,10 @@ namespace WrenSharp
             m_Allocator = allocator ?? HGlobalAllocator.Default;
 
             m_Ptr = Wren.NewVM(ref m_Config);
-            _vmsByPtr[m_Ptr] = this;
+            lock (_vmsByPtr)
+            {
+                _vmsByPtr[m_Ptr] = this;
+            }
 
             IsInitialized = true;
         }
@@ -820,7 +823,11 @@ namespace WrenSharp
                     // Dispose managed state
                     DisposeManagedState();
 
-                    _vmsByPtr.Remove(m_Ptr);
+                    lock (_vmsByPtr)
+                    {
+                        _vmsByPtr.Remove(m_Ptr);
+                    }
+
                     m_SharedData.Clear();
                     m_Errors.Clear();
                 }

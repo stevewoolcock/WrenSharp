@@ -37,47 +37,66 @@ namespace WrenSharp.Unity
         public delegate void Finalizer<T>(ref T data) where T : unmanaged;
         public delegate void Finalizer(IntPtr data);
 
-        #region Static
-
-        private static WrenNativeFn.ForeignMethod _wrenForeignMethodFn = WrenForeignMethodFn;
-        private static WrenNativeFn.Finalizer _wrenFinalizerMethodFn = WrenFinalizerMethodFn;
-
-        private static readonly object _delegateArrayLocker = new object();
-
-        private static ushort _methodSymbolNext = 1;
-        private static Action[] _methodDelegates = new Action[0];
-
-        private static ushort _finalizerSymbolNext = 1;
-        private static Action<IntPtr>[] _finalizerDelegates = new Action<IntPtr>[0];
-
-        private static ushort StoreDelegate<T>(ref T[] array, ref ushort symbolCounter, T value)
+        // Internal class used to manage a collection of delegates for foreign method binding
+        // Each delegate is given a symbol corresponding to an index within an array
+        // Freed delegates return their symbol to the free stack for reuse
+        private class DelegateTable<T> where T : Delegate
         {
-            lock (_delegateArrayLocker)
+            private readonly Stack<ushort> m_FreeSymbols = new Stack<ushort>();
+            private ushort m_TailSymbol = 1;
+
+            public T[] Delegates = new T[0];
+
+            public ushort Add(T del)
             {
-                ushort symbol = symbolCounter++;
-                if (array.Length < symbol)
+                ushort symbol = m_FreeSymbols.Count > 0 ? m_FreeSymbols.Pop() : m_TailSymbol++;
+
+                if (Delegates.Length < symbol)
                 {
-                    int newCapacity = array.Length == 0 ? 4 : array.Length * 2;
+                    int newCapacity = Delegates.Length == 0 ? 4 : Delegates.Length * 2;
                     int minCapacity = symbol + 1;
                     if (newCapacity < minCapacity)
                     {
                         newCapacity = minCapacity;
                     }
 
-                    Array.Resize(ref array, newCapacity);
+                    Array.Resize(ref Delegates, newCapacity);
                 }
 
-                array[symbol - 1] = value;
+                Delegates[symbol - 1] = del;
                 return symbol;
             }
+
+            public void Remove(ushort symbol)
+            {
+                Delegates[symbol - 1] = null;
+                m_FreeSymbols.Push(symbol);
+            }
+
+            public void Clear()
+            {
+                Array.Clear(Delegates, 0, m_TailSymbol - 1);
+                m_TailSymbol = 1;
+                m_FreeSymbols.Clear();
+            }
         }
+
+        #region Static
+
+        private static WrenNativeFn.ForeignMethod _wrenForeignMethodFn = WrenForeignMethodFn;
+        private static WrenNativeFn.Finalizer _wrenFinalizerMethodFn = WrenFinalizerMethodFn;
+
+        private static readonly object _delegateTableLocker = new object();
+
+        private static readonly DelegateTable<Action> _methodTable = new DelegateTable<Action>();
+        private static readonly DelegateTable<Action<IntPtr>> _finalizerTable = new DelegateTable<Action<IntPtr>>();
 
         [AOT.MonoPInvokeCallback(typeof(WrenNativeFn.ForeignMethod))]
         private static void WrenForeignMethodFn(IntPtr vm, ushort symbol)
         {
             if (symbol > 0)
             {
-                _methodDelegates[symbol - 1]();
+                _methodTable.Delegates[symbol - 1]();
             }
         }
 
@@ -86,7 +105,7 @@ namespace WrenSharp.Unity
         {
             if (symbol > 0)
             {
-                _finalizerDelegates[symbol - 1](data);
+                _finalizerTable.Delegates[symbol - 1](data);
             }
         }
 
@@ -94,11 +113,8 @@ namespace WrenSharp.Unity
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void OnSubsystemRegistration()
         {
-            _methodSymbolNext = 1;
-            Array.Clear(_methodDelegates, 0, _methodDelegates.Length);
-
-            _finalizerSymbolNext = 1;
-            Array.Clear(_finalizerDelegates, 0, _finalizerDelegates.Length);
+            _methodTable.Clear();
+            _finalizerTable.Clear();
         }
 
         #endregion
@@ -114,6 +130,33 @@ namespace WrenSharp.Unity
             m_Vm = vm;
         }
 
+        internal void Dispose()
+        {
+            if (m_Allocator > 0) _methodTable.Remove(m_Allocator);
+            if (m_Finalizer > 0) _finalizerTable.Remove(m_Finalizer);
+
+            if (m_StaticMethods != null)
+            {
+                foreach (var symbol in m_StaticMethods.Values)
+                {
+                    _methodTable.Remove(symbol);
+                }
+            }
+
+            if (m_InstanceMethods != null)
+            {
+                foreach (var symbol in m_InstanceMethods.Values)
+                {
+                    _methodTable.Remove(symbol);
+                }
+            }
+
+            m_Allocator = 0;
+            m_Finalizer = 0;
+            m_StaticMethods = null;
+            m_InstanceMethods = null;
+        }
+
         #region Public API
 
         /// <summary>
@@ -126,11 +169,7 @@ namespace WrenSharp.Unity
         /// <returns>A reference to this <see cref="WrenForeign"/> instance.</returns>
         public WrenForeign Allocate(Allocator allocator)
         {
-            m_Allocator = StoreDelegate(
-                ref _methodDelegates,
-                ref _methodSymbolNext,
-                () => allocator(m_Vm));
-
+            m_Allocator = _methodTable.Add(() => allocator(m_Vm));
             return this;
         }
 
@@ -144,11 +183,7 @@ namespace WrenSharp.Unity
         /// <returns>A reference to this <see cref="WrenForeign"/> instance.</returns>
         public WrenForeign Allocate(AllocatorCall allocator)
         {
-            m_Allocator = StoreDelegate(
-                ref _methodDelegates,
-                ref _methodSymbolNext,
-                () => allocator(new WrenCallContext(m_Vm, WrenMethodType.Allocator, byte.MaxValue)));
-
+            m_Allocator = _methodTable.Add(() => allocator(new WrenCallContext(m_Vm, WrenMethodType.Allocator, byte.MaxValue)));
             return this;
         }
 
@@ -161,16 +196,12 @@ namespace WrenSharp.Unity
         /// <returns>A reference to this <see cref="WrenForeign"/> instance.</returns>
         public unsafe WrenForeign Allocate<T>(Allocator<T> allocator) where T : unmanaged
         {
-            m_Allocator = StoreDelegate(
-                ref _methodDelegates,
-                ref _methodSymbolNext,
-                () =>
-                {
-                    T* data = (T*)Wren.SetSlotNewForeign(m_Vm.m_Ptr, 0, 0, (ulong)sizeof(T));
-                    *data = new T();
-                    allocator(m_Vm, ref *data);
-                });
-
+            m_Allocator = _methodTable.Add(() =>
+            {
+                T* data = (T*)Wren.SetSlotNewForeign(m_Vm.m_Ptr, 0, 0, (ulong)sizeof(T));
+                *data = new T();
+                allocator(m_Vm, ref *data);
+            });
             return this;
         }
 
@@ -183,16 +214,12 @@ namespace WrenSharp.Unity
         /// <returns>A reference to this <see cref="WrenForeign"/> instance.</returns>
         public unsafe WrenForeign Allocate<T>(AllocatorCall<T> allocator) where T : unmanaged
         {
-            m_Allocator = StoreDelegate(
-                ref _methodDelegates,
-                ref _methodSymbolNext,
-                () =>
-                {
-                    T* data = (T*)Wren.SetSlotNewForeign(m_Vm.m_Ptr, 0, 0, (ulong)sizeof(T));
-                    *data = new T();
-                    allocator(new WrenCallContext(m_Vm, WrenMethodType.Allocator, byte.MaxValue), ref *data);
-                });
-
+            m_Allocator = _methodTable.Add(() =>
+            {
+                T* data = (T*)Wren.SetSlotNewForeign(m_Vm.m_Ptr, 0, 0, (ulong)sizeof(T));
+                *data = new T();
+                allocator(new WrenCallContext(m_Vm, WrenMethodType.Allocator, byte.MaxValue), ref *data);
+            });
             return this;
         }
 
@@ -204,11 +231,7 @@ namespace WrenSharp.Unity
         /// <returns>A reference to this <see cref="WrenForeign"/> instance.</returns>
         public WrenForeign Finalize(Finalizer finalizer)
         {
-            m_Finalizer = StoreDelegate(
-                ref _finalizerDelegates,
-                ref _finalizerSymbolNext,
-                (data) => finalizer(data));
-
+            m_Finalizer = _finalizerTable.Add((data) => finalizer(data));
             return this;
         }
 
@@ -220,11 +243,7 @@ namespace WrenSharp.Unity
         /// <returns>A reference to this <see cref="WrenForeign"/> instance.</returns>
         public unsafe WrenForeign Finalize<T>(Finalizer<T> finalizer) where T : unmanaged
         {
-            m_Finalizer = StoreDelegate(
-                ref _finalizerDelegates,
-                ref _finalizerSymbolNext,
-                (data) => finalizer(ref *(T*)data));
-
+            m_Finalizer = _finalizerTable.Add((data) => finalizer(ref *(T*)data));
             return this;
         }
 
@@ -260,10 +279,7 @@ namespace WrenSharp.Unity
             if (paramCount == WrenVM.MaxCallParameters)
                 throw new ArgumentException("Signature exceeds maximum parameter count.");
 
-            var symbol = StoreDelegate(
-                ref _methodDelegates,
-                ref _methodSymbolNext,
-                () => method(new WrenCallContext(m_Vm, methodType, paramCount)));
+            var symbol = _methodTable.Add(() => method(new WrenCallContext(m_Vm, methodType, paramCount)));
 
             if (methodType == WrenMethodType.Static)
             {
