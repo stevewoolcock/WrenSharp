@@ -719,6 +719,11 @@
             The errors in the VM's error log when the exception was thrown.
             </summary>
         </member>
+        <member name="T:WrenSharp.WrenInitializationException">
+            <summary>
+            Represents errors that occur during intialization of a Wren VM.
+            </summary>
+        </member>
         <member name="T:WrenSharp.WrenInterpretException">
             <summary>
             Represents errors that occur during a WrenSharp call.
