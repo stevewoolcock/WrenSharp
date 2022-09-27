@@ -39,6 +39,15 @@ namespace WrenSharp
     }
 
     /// <summary>
+    /// Represents errors that occur during intialization of a Wren VM.
+    /// </summary>
+    public class WrenInitializationException : WrenException
+    {
+        public WrenInitializationException(WrenVM vm, string message) : base(vm, message) { }
+        public WrenInitializationException(WrenVM vm, string message, Exception innerException) : base(vm, message, innerException) { }
+    }
+
+    /// <summary>
     /// Represents errors that occur during a WrenSharp call.
     /// </summary>
     public class WrenInterpretException : WrenException

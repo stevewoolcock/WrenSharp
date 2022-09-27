@@ -179,6 +179,12 @@ namespace WrenSharp
             m_Allocator = allocator ?? HGlobalAllocator.Default;
 
             m_Ptr = Wren.NewVM(ref m_Config);
+
+            if (m_Ptr == IntPtr.Zero)
+            {
+                throw new WrenInitializationException(this, "Failed to intiailize WrenVM");
+            }
+
             lock (_vmsByPtr)
             {
                 _vmsByPtr[m_Ptr] = this;
@@ -835,7 +841,11 @@ namespace WrenSharp
                 // Dispose unmanaged resources
                 DisposeUnmanagedState();
                 ReleaseAllHandles();
-                Wren.FreeVM(m_Ptr);
+
+                if (m_Ptr != IntPtr.Zero)
+                {
+                    Wren.FreeVM(m_Ptr);
+                }
 
                 if (m_StringBuffer != null)
                 {
