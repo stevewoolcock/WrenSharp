@@ -834,7 +834,6 @@
             Gets a pointer to the data for the foreign receiver of the method call. This only applies to calls where the receiver is a
             foreign class or and instance of a foreign class.
             </summary>
-            <typeparam name="T">The data type allocated for the foreign class.</typeparam>
             <returns>The data allocated for receiver (a foreign class instance).</returns>
         </member>
         <member name="M:WrenSharp.WrenCallContext.GetReceiverForeign``1">
@@ -1575,6 +1574,20 @@
             <param name="classSlot">The slot containing the class to instance.</param>
             <param name="size">The number of bytes required for the instance.</param>
             <returns>A pointer to the new instance's data.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlotNewForeign``1(System.Int32,System.Int32)">
+            <summary>
+            Creates a new instance of the foreign class stored in <paramref name="classSlot"/> with enough size to store a value
+            of type <typeparamref name="T"/> and places the resulting object in <paramref name="slot"/>.<para />
+            
+            This does not invoke the foreign class's constructor on the new instance. If you need that to happen, call the
+            constructor from Wren, which will then call the allocator foreign method. In there, call this to create the object
+            and then the constructor will be invoked when the allocator returns.
+            </summary>
+            <typeparam name="T">The value type of the data to allocate for the instance.</typeparam>
+            <param name="slot">The slot to place thew new instance in.</param>
+            <param name="classSlot">The slot containing the class to instance.</param>
+            <returns>A ref to the new instance's data.</returns>
         </member>
         <member name="M:WrenSharp.WrenVM.SetSlotNewForeign``1(System.Int32,System.Int32,``0@)">
             <summary>

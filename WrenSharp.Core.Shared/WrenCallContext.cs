@@ -92,7 +92,6 @@ namespace WrenSharp
         /// Gets a pointer to the data for the foreign receiver of the method call. This only applies to calls where the receiver is a
         /// foreign class or and instance of a foreign class.
         /// </summary>
-        /// <typeparam name="T">The data type allocated for the foreign class.</typeparam>
         /// <returns>The data allocated for receiver (a foreign class instance).</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IntPtr GetReceiverForeign() => Wren.GetSlotForeign(m_Vm.m_Ptr, 0);
@@ -116,7 +115,6 @@ namespace WrenSharp
             return m_Vm.SharedData.Get<T>(handle);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe bool TryGetReceiverSharedData<T>(out T value)
         {
             if (Wren.GetSlotType(m_Vm.m_Ptr, 0) == WrenType.Foreign)

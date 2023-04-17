@@ -548,10 +548,30 @@ namespace WrenSharp
         /// <typeparam name="T">The value type of the data to allocate for the instance.</typeparam>
         /// <param name="slot">The slot to place thew new instance in.</param>
         /// <param name="classSlot">The slot containing the class to instance.</param>
+        /// <returns>A ref to the new instance's data.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ref T SetSlotNewForeign<T>(int slot, int classSlot) where T : unmanaged
+        {
+            T* ptr = (T*)(void*)Wren.SetSlotNewForeign(m_Ptr, slot, classSlot, (ulong)sizeof(T));
+            *ptr = new T();
+            return ref *ptr;
+        }
+
+        /// <summary>
+        /// Creates a new instance of the foreign class stored in <paramref name="classSlot"/> with enough size to store a value
+        /// of type <typeparamref name="T"/> and places the resulting object in <paramref name="slot"/>.<para />
+        /// 
+        /// This does not invoke the foreign class's constructor on the new instance. If you need that to happen, call the
+        /// constructor from Wren, which will then call the allocator foreign method. In there, call this to create the object
+        /// and then the constructor will be invoked when the allocator returns.
+        /// </summary>
+        /// <typeparam name="T">The value type of the data to allocate for the instance.</typeparam>
+        /// <param name="slot">The slot to place thew new instance in.</param>
+        /// <param name="classSlot">The slot containing the class to instance.</param>
         /// <param name="data">The data to initialize the new instance with.</param>
         /// <returns>A ref to the new instance's data.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ref T SetSlotNewForeign<T>(int slot, int classSlot, in T data = default) where T : unmanaged
+        public ref T SetSlotNewForeign<T>(int slot, int classSlot, in T data) where T : unmanaged
         {
             T* ptr = (T*)Wren.SetSlotNewForeign(m_Ptr, slot, classSlot, (ulong)sizeof(T));
             *ptr = data;
