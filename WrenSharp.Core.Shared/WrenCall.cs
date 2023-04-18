@@ -89,23 +89,45 @@ namespace WrenSharp
         }
 
         /// <summary>
-        /// Sets the value in argument slot <paramref name="arg"/> to <paramref name="handle"/>.
-        /// This method does not perform any validation checks on <paramref name="handle"/>.
-        /// </summary>
-        /// <param name="arg">The argument index.</param>
-        /// <param name="handle">The handle to set.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetArgUnsafe(int arg, WrenHandle handle)
-        {
-            Wren.SetSlotHandle(m_Vm.m_Ptr, ArgSlot(arg), handle.m_Ptr);
-        }
-
-        /// <summary>
         /// Sets the value in argument slot <paramref name="arg"/> to null.
         /// </summary>
-        /// <param name="arg"></param>
+        /// <param name="arg">The argument index.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetArgNull(int arg) => Wren.SetSlotNull(m_Vm.m_Ptr, ArgSlot(arg));
+
+        /// <summary>
+        /// Sets the value in argument slot <paramref name="arg"/> to a new foreign class instance.
+        /// </summary>
+        /// <param name="arg">The argument index.</param>
+        /// <param name="classSlot">The slot index containing the class to instantiate.</param>
+        /// <param name="size">The number of bytes to allocate for the instance.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IntPtr SetArgNewForeign(int arg, int classSlot, ulong size) => Wren.SetSlotNewForeign(m_Vm.m_Ptr, ArgSlot(arg), classSlot, size);
+
+        /// <summary>
+        /// Sets the value in argument slot <paramref name="arg"/> to a new foreign class instance.
+        /// </summary>
+        /// <param name="arg">The argument index.</param>
+        /// <param name="classSlot">The slot index containing the class to instantiate.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe ref T SetArgNewForeign<T>(int arg, int classSlot) where T : unmanaged => ref *(T*)Wren.SetSlotNewForeign(m_Vm.m_Ptr, ArgSlot(arg), classSlot, (ulong)sizeof(T));
+
+        /// <summary>
+        /// Sets the value in argument slot <paramref name="arg"/> to a new foreign class instance.
+        /// </summary>
+        /// <param name="arg">The argument index.</param>
+        /// <param name="classSlot">The slot index containing the class to instantiate.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe T* SetArgNewForeignPtr<T>(int arg, int classSlot) where T : unmanaged => (T*)Wren.SetSlotNewForeign(m_Vm.m_Ptr, ArgSlot(arg), classSlot, (ulong)sizeof(T));
+
+        /// <summary>
+        /// Sets the value in argument slot <paramref name="arg"/> to a new foreign class with a shared data reference.
+        /// </summary>
+        /// <param name="arg">The argument index.</param>
+        /// <param name="classSlot">The slot index containing the class to instantiate.</param>
+        /// <param name="data">The shared data to reference.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe WrenSharedDataHandle SetArgNewSharedData(int arg, int classSlot, object data) => m_Vm.SetSlotNewSharedData(ArgSlot(arg), classSlot, data);
 
         #endregion
 
@@ -142,10 +164,10 @@ namespace WrenSharp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public WrenInterpretResult Call(out ReadOnlySpan<byte> returnValue, bool throwOnFailure = false)
+        public WrenInterpretResult Call(out ReadOnlySpan<byte> returnStringBytesValue, bool throwOnFailure = false)
         {
             WrenInterpretResult result = m_Vm.Call(m_CallHandle, throwOnFailure);
-            returnValue = GetReturnStringBytes();
+            returnStringBytesValue = GetReturnStringBytes();
             return result;
         }
 
@@ -153,7 +175,15 @@ namespace WrenSharp
         public WrenInterpretResult Call(out WrenHandle returnValue, bool throwOnFailure = false)
         {
             WrenInterpretResult result = m_Vm.Call(m_CallHandle, throwOnFailure);
-            returnValue = GetReturnHandle();
+            returnValue = CreateReturnHandle();
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public WrenInterpretResult Call(out WrenSharedDataHandle returnValue, bool throwOnFailure = false)
+        {
+            WrenInterpretResult result = m_Vm.Call(m_CallHandle, throwOnFailure);
+            returnValue = GetReturnSharedDataHandle();
             return result;
         }
 
@@ -168,6 +198,14 @@ namespace WrenSharp
         #endregion
 
         #region Return Values
+
+        /// <summary>
+        /// Creates a new <see cref="WrenHandle"/> wrapping the call's return value. The handle should be released
+        /// when it is no longer required.
+        /// </summary>
+        /// <returns>A <see cref="WrenHandle"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public WrenHandle CreateReturnHandle() => m_Vm.CreateHandle(0);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public WrenType GetReturnType() => Wren.GetSlotType(m_Vm.m_Ptr, 0);
@@ -185,7 +223,23 @@ namespace WrenSharp
         public ReadOnlySpan<byte> GetReturnStringBytes() => WrenInternal.GetSlotStringBytes(m_Vm.m_Ptr, 0);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public WrenHandle GetReturnHandle() => m_Vm.CreateHandle(0);
+        public IntPtr GetReturnForeign() => Wren.GetSlotForeign(m_Vm.m_Ptr, 0);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe ref T GetReturnForeign<T>() where T : unmanaged => ref *(T*)Wren.GetSlotForeign(m_Vm.m_Ptr, 0);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe T* GetReturnForeignPtr<T>() where T : unmanaged => (T*)Wren.GetSlotForeign(m_Vm.m_Ptr, 0);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe T GetReturnSharedData<T>()
+        {
+            ref var handle = ref *(WrenSharedDataHandle*)Wren.GetSlotForeign(m_Vm.m_Ptr, 0);
+            return m_Vm.SharedData.Get<T>(handle);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe WrenSharedDataHandle GetReturnSharedDataHandle() => *(WrenSharedDataHandle*)Wren.GetSlotForeign(m_Vm.m_Ptr, 0);
 
         #endregion
     }

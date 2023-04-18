@@ -125,7 +125,7 @@
             <param name="allocator">The allocator delegate to call when an instance is created. Use this create the foriegn data and to set the initial state of the memory.</param>
             <returns>A reference to this <see cref="T:WrenSharp.Unity.WrenForeign"/> instance.</returns>
         </member>
-        <member name="M:WrenSharp.Unity.WrenForeign.Allocate(WrenSharp.Unity.WrenForeign.AllocatorCall)">
+        <member name="M:WrenSharp.Unity.WrenForeign.Allocate(WrenSharp.Unity.WrenForeign.AllocatorCall,System.Byte)">
             <summary>
             Sets the allocator function called when an instance of this foreign class is created from a Wren program.<para />
             This is a bare allocator, and does not actually create any foreign class data. To do so, you must call one of the foreign instance constructor API methods:<para/>
@@ -133,6 +133,16 @@
             <see cref="M:WrenSharp.WrenVM.SetSlotNewForeign``1(System.Int32,System.Int32,``0@)"/>
             </summary>
             <param name="allocator">The allocator delegate to call when an instance is created. Use this create the foriegn data and to set the initial state of the memory.</param>
+            <param name="paramCount">The number of parameters expected in the constructor. Note that it is not possible to know which constructor was invoked on the Wren
+            side from within the allocator. This parameter defaults to <see cref="F:WrenSharp.WrenVM.MaxCallParameters"/>.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.Unity.WrenForeign"/> instance.</returns>
+        </member>
+        <member name="M:WrenSharp.Unity.WrenForeign.Allocate``1">
+            <summary>
+            Sets the allocator function called when an instance of this foreign class is created from a Wren program.<para />
+            This allocator creates allocates the memory to hold a value of <typeparamref name="T"/> and places an initialized value
+            of <typeparamref name="T"/> at the address of the newly allocated memory, ready to be used.
+            </summary>
             <returns>A reference to this <see cref="T:WrenSharp.Unity.WrenForeign"/> instance.</returns>
         </member>
         <member name="M:WrenSharp.Unity.WrenForeign.Allocate``1(WrenSharp.Unity.WrenForeign.Allocator{``0})">
@@ -144,13 +154,15 @@
             <param name="allocator">The allocator delegate to call when an instance is created. Use this to set the initial state of the memory.</param>
             <returns>A reference to this <see cref="T:WrenSharp.Unity.WrenForeign"/> instance.</returns>
         </member>
-        <member name="M:WrenSharp.Unity.WrenForeign.Allocate``1(WrenSharp.Unity.WrenForeign.AllocatorCall{``0})">
+        <member name="M:WrenSharp.Unity.WrenForeign.Allocate``1(WrenSharp.Unity.WrenForeign.AllocatorCall{``0},System.Byte)">
             <summary>
             Sets the allocator function called when an instance of this foreign class is created from a Wren program.<para />
             This allocator creates allocates the memory to hold a value of <typeparamref name="T"/> and places an initialized value
             of <typeparamref name="T"/> at the address of the newly allocated memory, ready to be used.
             </summary>
             <param name="allocator">The allocator delegate to call when an instance is created. Use this to set the initial state of the memory.</param>
+            <param name="paramCount">The number of parameters expected in the constructor. Note that it is not possible to know which constructor was invoked on the Wren
+            side from within the allocator. This parameter defaults to <see cref="F:WrenSharp.WrenVM.MaxCallParameters"/>.</param>
             <returns>A reference to this <see cref="T:WrenSharp.Unity.WrenForeign"/> instance.</returns>
         </member>
         <member name="M:WrenSharp.Unity.WrenForeign.Finalize(WrenSharp.Unity.WrenForeign.Finalizer)">
@@ -610,19 +622,48 @@
             <param name="arg">The argument index.</param>
             <param name="handle">The handle to set.</param>
         </member>
-        <member name="M:WrenSharp.WrenCall.SetArgUnsafe(System.Int32,WrenSharp.WrenHandle)">
-            <summary>
-            Sets the value in argument slot <paramref name="arg"/> to <paramref name="handle"/>.
-            This method does not perform any validation checks on <paramref name="handle"/>.
-            </summary>
-            <param name="arg">The argument index.</param>
-            <param name="handle">The handle to set.</param>
-        </member>
         <member name="M:WrenSharp.WrenCall.SetArgNull(System.Int32)">
             <summary>
             Sets the value in argument slot <paramref name="arg"/> to null.
             </summary>
-            <param name="arg"></param>
+            <param name="arg">The argument index.</param>
+        </member>
+        <member name="M:WrenSharp.WrenCall.SetArgNewForeign(System.Int32,System.Int32,System.UInt64)">
+            <summary>
+            Sets the value in argument slot <paramref name="arg"/> to a new foreign class instance.
+            </summary>
+            <param name="arg">The argument index.</param>
+            <param name="classSlot">The slot index containing the class to instantiate.</param>
+            <param name="size">The number of bytes to allocate for the instance.</param>
+        </member>
+        <member name="M:WrenSharp.WrenCall.SetArgNewForeign``1(System.Int32,System.Int32)">
+            <summary>
+            Sets the value in argument slot <paramref name="arg"/> to a new foreign class instance.
+            </summary>
+            <param name="arg">The argument index.</param>
+            <param name="classSlot">The slot index containing the class to instantiate.</param>
+        </member>
+        <member name="M:WrenSharp.WrenCall.SetArgNewForeignPtr``1(System.Int32,System.Int32)">
+            <summary>
+            Sets the value in argument slot <paramref name="arg"/> to a new foreign class instance.
+            </summary>
+            <param name="arg">The argument index.</param>
+            <param name="classSlot">The slot index containing the class to instantiate.</param>
+        </member>
+        <member name="M:WrenSharp.WrenCall.SetArgNewSharedData(System.Int32,System.Int32,System.Object)">
+            <summary>
+            Sets the value in argument slot <paramref name="arg"/> to a new foreign class with a shared data reference.
+            </summary>
+            <param name="arg">The argument index.</param>
+            <param name="classSlot">The slot index containing the class to instantiate.</param>
+            <param name="data">The shared data to reference.</param>
+        </member>
+        <member name="M:WrenSharp.WrenCall.CreateReturnHandle">
+            <summary>
+            Creates a new <see cref="T:WrenSharp.WrenHandle"/> wrapping the call's return value. The handle should be released
+            when it is no longer required.
+            </summary>
+            <returns>A <see cref="T:WrenSharp.WrenHandle"/>.</returns>
         </member>
         <member name="T:WrenSharp.WrenCallHandle">
             <summary>
@@ -822,13 +863,6 @@
             </summary>
             <returns>The type of the receiver object.</returns>
         </member>
-        <member name="M:WrenSharp.WrenCallContext.ArgSlot(System.Int32)">
-            <summary>
-            Returns the slot index for an argument index.
-            </summary>
-            <param name="arg">The argument index</param>
-            <returns>The slot index for <paramref name="arg"/>.</returns>
-        </member>
         <member name="M:WrenSharp.WrenCallContext.GetReceiverForeign">
             <summary>
             Gets a pointer to the data for the foreign receiver of the method call. This only applies to calls where the receiver is a
@@ -843,6 +877,29 @@
             </summary>
             <typeparam name="T">The data type allocated for the foreign class.</typeparam>
             <returns>The data allocated for receiver (a foreign class instance).</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCallContext.ArgSlot(System.Int32)">
+            <summary>
+            Returns the slot index for an argument index.
+            </summary>
+            <param name="arg">The argument index</param>
+            <returns>The slot index for <paramref name="arg"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCallContext.ArgIsType(System.Int32,WrenSharp.WrenType)">
+            <summary>
+            Compares the <see cref="T:WrenSharp.WrenType"/> of the argument at index <paramref name="arg"/> to <paramref name="type"/>.
+            </summary>
+            <param name="arg">The argument index.</param>
+            <param name="type">The type to check the value at <paramref name="arg"/> against.</param>
+            <returns>True if the argument is of the specified type.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCallContext.CreateArgHandle(System.Int32)">
+            <summary>
+            Creates a handle wrapping the value of the argument at index <paramref name="arg"/>.<para />
+            The handle should be released when it is no longer needed.
+            </summary>
+            <param name="arg">The argument index.</param>
+            <returns>The value of the argument.</returns>
         </member>
         <member name="M:WrenSharp.WrenCallContext.GetArgBool(System.Int32)">
             <summary>
@@ -872,14 +929,6 @@
             <param name="arg">The argument index.</param>
             <returns>The value of the argument.</returns>
         </member>
-        <member name="M:WrenSharp.WrenCallContext.GetArgHandle(System.Int32)">
-            <summary>
-            Creates a handle wrapping the value of the argument at index <paramref name="arg"/>.<para />
-            The handle should be released when it is no longer needed.
-            </summary>
-            <param name="arg">The argument index.</param>
-            <returns>The value of the argument.</returns>
-        </member>
         <member name="M:WrenSharp.WrenCallContext.GetArgString(System.Int32)">
             <summary>
             Gets the value of a <see cref="T:System.String"/> argument at index <paramref name="arg"/>.
@@ -899,7 +948,7 @@
             Gets the <see cref="T:WrenSharp.WrenType"/> of the argument at index <paramref name="arg"/>.
             </summary>
             <param name="arg">The argument index.</param>
-            <returns>The value of the argument.</returns>
+            <returns>The type of the argument.</returns>
         </member>
         <member name="M:WrenSharp.WrenCallContext.Return(System.Boolean)">
             <summary>
@@ -930,6 +979,54 @@
             Sets a <see cref="T:WrenSharp.WrenHandle"/> value as the return value for the method call.
             </summary>
             <param name="value">The value to return.</param>
+        </member>
+        <member name="M:WrenSharp.WrenCallContext.ReturnForeign(WrenSharp.WrenHandle,System.UInt64)">
+            <summary>
+            Sets a new instance of a foreign class as the return value for the method call.
+            </summary>
+            <typeparam name="T">The foreign class' data type.</typeparam>
+            <param name="classHandle">A handle to the class being instantiated.</param>
+            <param name="size">The number of bytes to allocate for the instance.</param>
+        </member>
+        <member name="M:WrenSharp.WrenCallContext.ReturnForeign(System.String,System.String,System.UInt64)">
+            <summary>
+            Sets a new instance of a foreign class as the return value for the method call.
+            </summary>
+            <typeparam name="T">The foreign class' data type.</typeparam>
+            <param name="module">The name of the module the class resides in.</param>
+            <param name="className">The name of the class to instantiate.</param>
+            <param name="size">The number of bytes to allocate for the instance.</param>
+        </member>
+        <member name="M:WrenSharp.WrenCallContext.ReturnForeign``1(WrenSharp.WrenHandle,``0@)">
+            <summary>
+            Sets a new instance of a foreign class as the return value for the method call.
+            </summary>
+            <typeparam name="T">The foreign class' data type.</typeparam>
+            <param name="classHandle">A handle to the class being instantiated.</param>
+            <param name="value">The value of the new instance.</param>
+        </member>
+        <member name="M:WrenSharp.WrenCallContext.ReturnForeign``1(System.String,System.String,``0@)">
+            <summary>
+            Sets a new instance of a foreign class as the return value for the method call.
+            </summary>
+            <typeparam name="T">The foreign class' data type.</typeparam>
+            <param name="module">The name of the module the class resides in.</param>
+            <param name="className">The name of the class to instantiate.</param>
+            <param name="value">The value of the new instance.</param>
+        </member>
+        <member name="M:WrenSharp.WrenCallContext.ReturnSharedData(System.Object)">
+            <summary>
+            Sets a new shared data reference as the return value for the method call. <paramref name="value"/> will be added
+            to the VM's shared data table and the handle to it is returned.
+            </summary>
+            <param name="value">The value to add to the shared data table and return the handle of.</param>
+            <returns>The new <see cref="T:WrenSharp.WrenSharedDataHandle"/> for <paramref name="value"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCallContext.ReturnSharedData(WrenSharp.WrenSharedDataHandle@)">
+            <summary>
+            Sets a shared data reference as the return value for the method call.
+            </summary>
+            <param name="handle">A handle to the shared data value.</param>
         </member>
         <member name="M:WrenSharp.WrenCallContext.Abort">
             <summary>
@@ -1561,6 +1658,14 @@
             <param name="slot">The slot index to read from.</param>
             <returns>A ref to the foreign value of type <typeparamref name="T"/>.</returns>
         </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotForeignPtr``1(System.Int32)">
+            <summary>
+            Gets a pointer to to the foreign value stored in <paramref name="slot"/>, cast to <typeparamref name="T"/>.<para/>
+            It is an error to call this if the slot does not contain a foreign class type or instance.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <returns>A pointer to the foreign value of type <typeparamref name="T"/>.</returns>
+        </member>
         <member name="M:WrenSharp.WrenVM.SetSlotNewForeign(System.Int32,System.Int32,System.UInt64)">
             <summary>
             Creates a new instance of the foreign class stored in <paramref name="classSlot"/> with <paramref name="size"/>
@@ -1574,20 +1679,6 @@
             <param name="classSlot">The slot containing the class to instance.</param>
             <param name="size">The number of bytes required for the instance.</param>
             <returns>A pointer to the new instance's data.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetSlotNewForeign``1(System.Int32,System.Int32)">
-            <summary>
-            Creates a new instance of the foreign class stored in <paramref name="classSlot"/> with enough size to store a value
-            of type <typeparamref name="T"/> and places the resulting object in <paramref name="slot"/>.<para />
-            
-            This does not invoke the foreign class's constructor on the new instance. If you need that to happen, call the
-            constructor from Wren, which will then call the allocator foreign method. In there, call this to create the object
-            and then the constructor will be invoked when the allocator returns.
-            </summary>
-            <typeparam name="T">The value type of the data to allocate for the instance.</typeparam>
-            <param name="slot">The slot to place thew new instance in.</param>
-            <param name="classSlot">The slot containing the class to instance.</param>
-            <returns>A ref to the new instance's data.</returns>
         </member>
         <member name="M:WrenSharp.WrenVM.SetSlotNewForeign``1(System.Int32,System.Int32,``0@)">
             <summary>
@@ -1603,6 +1694,36 @@
             <param name="classSlot">The slot containing the class to instance.</param>
             <param name="data">The data to initialize the new instance with.</param>
             <returns>A ref to the new instance's data.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlotNewForeignPtr``1(System.Int32,System.Int32,``0@)">
+            <summary>
+            Creates a new instance of the foreign class stored in <paramref name="classSlot"/> with enough size to store a value
+            of type <typeparamref name="T"/> and places the resulting object in <paramref name="slot"/>.<para />
+            
+            This does not invoke the foreign class's constructor on the new instance. If you need that to happen, call the
+            constructor from Wren, which will then call the allocator foreign method. In there, call this to create the object
+            and then the constructor will be invoked when the allocator returns.
+            </summary>
+            <typeparam name="T">The value type of the data to allocate for the instance.</typeparam>
+            <param name="slot">The slot to place thew new instance in.</param>
+            <param name="classSlot">The slot containing the class to instance.</param>
+            <param name="data">The data to initialize the new instance with.</param>
+            <returns>The pointer to the new instance's data.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlotNewForeignPtr``1(System.Int32,System.Int32,System.ReadOnlySpan{``0}@)">
+            <summary>
+            Creates a new instance of the foreign class stored in <paramref name="classSlot"/> with enough size to store <paramref name="span"/>.
+            Copies the memory within <paramref name="span"/> to the resulting object and places it in <paramref name="slot"/>.<para />
+            
+            This does not invoke the foreign class's constructor on the new instance. If you need that to happen, call the
+            constructor from Wren, which will then call the allocator foreign method. In there, call this to create the object
+            and then the constructor will be invoked when the allocator returns.
+            </summary>
+            <typeparam name="T">The value type of the data to allocate for the instance.</typeparam>
+            <param name="slot">The slot to place thew new instance in.</param>
+            <param name="classSlot">The slot containing the class to instance.</param>
+            <param name="span">The span to copy into the new instance.</param>
+            <returns>The pointer to the new instance's data.</returns>
         </member>
         <member name="M:WrenSharp.WrenVM.TryGetSlotForeign(System.Int32,System.IntPtr@)">
             <summary>
@@ -1622,13 +1743,23 @@
             <param name="value">The location to store the value.</param>
             <returns>True if the slot exists and the value stored is of type <see cref="F:WrenSharp.WrenType.Foreign"/>, otherwise false.</returns>
         </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlotForeign``1(System.Int32,``0*@)">
+        <member name="M:WrenSharp.WrenVM.TryGetSlotForeignPtr``1(System.Int32,``0*@)">
             <summary>
             Attempts to retrieve a pointer to the of the foreign class instance data in <paramref name="slot"/> of type <typeparamref name="T"/>.
             Returns true if <paramref name="slot"/> is less than the number of slots and the value it stores is of type <see cref="F:WrenSharp.WrenType.Foreign"/>.
             </summary>
             <param name="slot">The slot index to read from.</param>
             <param name="value">The location to store the value.</param>
+            <returns>True if the slot exists and the value stored is of type <see cref="F:WrenSharp.WrenType.Foreign"/>, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlotForeignSpan``1(System.Int32,System.Int32,System.Span{``0}@)">
+            <summary>
+            Attempts to retrieve the value of the foreign class instance data in <paramref name="slot"/> of type <see cref="T:System.Span`1"/>.
+            Returns true if <paramref name="slot"/> is less than the number of slots and the value it stores is of type <see cref="F:WrenSharp.WrenType.Foreign"/>.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="elementCount">The number of elements expected in type <typeparamref name="T"/>.</param>
+            <param name="span">The location to store the value.</param>
             <returns>True if the slot exists and the value stored is of type <see cref="F:WrenSharp.WrenType.Foreign"/>, otherwise false.</returns>
         </member>
         <member name="M:WrenSharp.WrenVM.GetSlotSharedData(System.Int32)">
@@ -1663,6 +1794,16 @@
             </summary>
             <param name="slot">The slot containing the handle.</param>
             <param name="value">The value to set the shared data entry to.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlotSharedData(System.Int32,System.Object,WrenSharp.WrenSharedDataHandle@)">
+            <summary>
+            Gets the <see cref="T:WrenSharp.WrenSharedDataHandle"/> in <paramref name="slot"/>, and sets the value it points to
+            in the shared data table to <paramref name="value"/>.
+            </summary>
+            <param name="slot">The slot containing the handle.</param>
+            <param name="value">The value to set the shared data entry to.</param>
+            <param name="handle">The handle for <paramref name="value"/>.</param>
             <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
         </member>
         <member name="M:WrenSharp.WrenVM.SetSlotNewSharedData(System.Int32,System.Int32,WrenSharp.WrenSharedDataHandle)">

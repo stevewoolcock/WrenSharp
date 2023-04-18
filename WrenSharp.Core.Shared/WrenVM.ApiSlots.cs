@@ -523,6 +523,15 @@ namespace WrenSharp
         public ref T GetSlotForeign<T>(int slot) where T : unmanaged => ref *(T*)Wren.GetSlotForeign(m_Ptr, slot);
 
         /// <summary>
+        /// Gets a pointer to to the foreign value stored in <paramref name="slot"/>, cast to <typeparamref name="T"/>.<para/>
+        /// It is an error to call this if the slot does not contain a foreign class type or instance.
+        /// </summary>
+        /// <param name="slot">The slot index to read from.</param>
+        /// <returns>A pointer to the foreign value of type <typeparamref name="T"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T* GetSlotForeignPtr<T>(int slot) where T : unmanaged => (T*)Wren.GetSlotForeign(m_Ptr, slot);
+
+        /// <summary>
         /// Creates a new instance of the foreign class stored in <paramref name="classSlot"/> with <paramref name="size"/>
         /// bytes of raw storage and places the resulting object in <paramref name="slot"/>.<para />
         /// 
@@ -548,12 +557,13 @@ namespace WrenSharp
         /// <typeparam name="T">The value type of the data to allocate for the instance.</typeparam>
         /// <param name="slot">The slot to place thew new instance in.</param>
         /// <param name="classSlot">The slot containing the class to instance.</param>
+        /// <param name="data">The data to initialize the new instance with.</param>
         /// <returns>A ref to the new instance's data.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ref T SetSlotNewForeign<T>(int slot, int classSlot) where T : unmanaged
+        public ref T SetSlotNewForeign<T>(int slot, int classSlot, in T data = default) where T : unmanaged
         {
-            T* ptr = (T*)(void*)Wren.SetSlotNewForeign(m_Ptr, slot, classSlot, (ulong)sizeof(T));
-            *ptr = new T();
+            T* ptr = (T*)Wren.SetSlotNewForeign(m_Ptr, slot, classSlot, (ulong)sizeof(T));
+            *ptr = data;
             return ref *ptr;
         }
 
@@ -569,14 +579,40 @@ namespace WrenSharp
         /// <param name="slot">The slot to place thew new instance in.</param>
         /// <param name="classSlot">The slot containing the class to instance.</param>
         /// <param name="data">The data to initialize the new instance with.</param>
-        /// <returns>A ref to the new instance's data.</returns>
+        /// <returns>The pointer to the new instance's data.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ref T SetSlotNewForeign<T>(int slot, int classSlot, in T data) where T : unmanaged
+        public T* SetSlotNewForeignPtr<T>(int slot, int classSlot, in T data = default) where T : unmanaged
         {
             T* ptr = (T*)Wren.SetSlotNewForeign(m_Ptr, slot, classSlot, (ulong)sizeof(T));
             *ptr = data;
-            return ref *ptr;
+            return ptr;
         }
+
+        /// <summary>
+        /// Creates a new instance of the foreign class stored in <paramref name="classSlot"/> with enough size to store <paramref name="span"/>.
+        /// Copies the memory within <paramref name="span"/> to the resulting object and places it in <paramref name="slot"/>.<para />
+        /// 
+        /// This does not invoke the foreign class's constructor on the new instance. If you need that to happen, call the
+        /// constructor from Wren, which will then call the allocator foreign method. In there, call this to create the object
+        /// and then the constructor will be invoked when the allocator returns.
+        /// </summary>
+        /// <typeparam name="T">The value type of the data to allocate for the instance.</typeparam>
+        /// <param name="slot">The slot to place thew new instance in.</param>
+        /// <param name="classSlot">The slot containing the class to instance.</param>
+        /// <param name="span">The span to copy into the new instance.</param>
+        /// <returns>The pointer to the new instance's data.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T* SetSlotNewForeignPtr<T>(int slot, int classSlot, in ReadOnlySpan<T> span) where T : unmanaged
+        {
+            int len = span.Length * sizeof(T);
+            T* ptr = (T*)Wren.SetSlotNewForeign(m_Ptr, slot, classSlot, (ulong)len);
+            fixed (T* spanPtr = span)
+            {
+                Buffer.MemoryCopy(spanPtr, ptr, len, len);
+            }
+            return ptr;
+        }
+
 
         /// <summary>
         /// Attempts to retrieve a pointer to the foreign class instance data in <paramref name="slot"/>.
@@ -623,7 +659,7 @@ namespace WrenSharp
         /// <param name="slot">The slot index to read from.</param>
         /// <param name="value">The location to store the value.</param>
         /// <returns>True if the slot exists and the value stored is of type <see cref="WrenType.Foreign"/>, otherwise false.</returns>
-        public bool TryGetSlotForeign<T>(int slot, out T* value) where T : unmanaged
+        public bool TryGetSlotForeignPtr<T>(int slot, out T* value) where T : unmanaged
         {
             if (Wren.GetSlotCount(m_Ptr) > slot && Wren.GetSlotType(m_Ptr, slot) == WrenType.Foreign)
             {
@@ -632,6 +668,26 @@ namespace WrenSharp
             }
 
             value = default;
+            return false;
+        }
+
+        /// <summary>
+        /// Attempts to retrieve the value of the foreign class instance data in <paramref name="slot"/> of type <see cref="Span{T}"/>.
+        /// Returns true if <paramref name="slot"/> is less than the number of slots and the value it stores is of type <see cref="WrenType.Foreign"/>.
+        /// </summary>
+        /// <param name="slot">The slot index to read from.</param>
+        /// <param name="elementCount">The number of elements expected in type <typeparamref name="T"/>.</param>
+        /// <param name="span">The location to store the value.</param>
+        /// <returns>True if the slot exists and the value stored is of type <see cref="WrenType.Foreign"/>, otherwise false.</returns>
+        public bool TryGetSlotForeignSpan<T>(int slot, int elementCount, out Span<T> span) where T : unmanaged
+        {
+            if (Wren.GetSlotCount(m_Ptr) > slot && Wren.GetSlotType(m_Ptr, slot) == WrenType.Foreign)
+            {
+                span = new Span<T>((void*)Wren.GetSlotForeign(m_Ptr, slot), elementCount * sizeof(T));
+                return true;
+            }
+
+            span = default;
             return false;
         }
 
@@ -685,6 +741,22 @@ namespace WrenSharp
         public WrenVM SetSlotSharedData(int slot, object value)
         {
             var handle = *(WrenSharedDataHandle*)Wren.GetSlotForeign(m_Ptr, slot);
+            m_SharedData.Set(handle, value);
+            return this;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="WrenSharedDataHandle"/> in <paramref name="slot"/>, and sets the value it points to
+        /// in the shared data table to <paramref name="value"/>.
+        /// </summary>
+        /// <param name="slot">The slot containing the handle.</param>
+        /// <param name="value">The value to set the shared data entry to.</param>
+        /// <param name="handle">The handle for <paramref name="value"/>.</param>
+        /// <returns>A reference to this <see cref="WrenVM"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public WrenVM SetSlotSharedData(int slot, object value, out WrenSharedDataHandle handle)
+        {
+            handle = *(WrenSharedDataHandle*)Wren.GetSlotForeign(m_Ptr, slot);
             m_SharedData.Set(handle, value);
             return this;
         }

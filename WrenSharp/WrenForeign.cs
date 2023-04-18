@@ -48,10 +48,28 @@ namespace WrenSharp
         /// <see cref="WrenVM.SetSlotNewForeign{T}(int, int, in T)"/>
         /// </summary>
         /// <param name="allocator">The allocator delegate to call when an instance is created. Use this create the foriegn data and to set the initial state of the memory.</param>
+        /// <param name="paramCount">The number of parameters expected in the constructor. Note that it is not possible to know which constructor was invoked on the Wren
+        /// side from within the allocator. This parameter defaults to <see cref="WrenVM.MaxCallParameters"/>.</param>
         /// <returns>A reference to this <see cref="WrenForeign"/> instance.</returns>
-        public WrenForeign Allocate(AllocatorCall allocator)
+        public WrenForeign Allocate(AllocatorCall allocator, byte paramCount = WrenVM.MaxCallParameters)
         {
-            m_Allocator = (_) => allocator(new WrenCallContext(m_Vm, WrenMethodType.Allocator, byte.MaxValue));
+            m_Allocator = (_) => allocator(new WrenCallContext(m_Vm, WrenMethodType.Allocator, paramCount));
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the allocator function called when an instance of this foreign class is created from a Wren program.<para />
+        /// This allocator creates allocates the memory to hold a value of <typeparamref name="T"/> and places an initialized value
+        /// of <typeparamref name="T"/> at the address of the newly allocated memory, ready to be used.
+        /// </summary>
+        /// <returns>A reference to this <see cref="WrenForeign"/> instance.</returns>
+        public unsafe WrenForeign Allocate<T>() where T : unmanaged
+        {
+            m_Allocator = (vmPtr) =>
+            {
+                T* data = (T*)Wren.SetSlotNewForeign(vmPtr, 0, 0, (ulong)sizeof(T));
+                *data = new T();
+            };
             return this;
         }
 
@@ -62,11 +80,11 @@ namespace WrenSharp
         /// </summary>
         /// <param name="allocator">The allocator delegate to call when an instance is created. Use this to set the initial state of the memory.</param>
         /// <returns>A reference to this <see cref="WrenForeign"/> instance.</returns>
-        public unsafe WrenForeign Allocate<T>(Allocator<T> allocator, int paramCount = 0) where T : unmanaged
+        public unsafe WrenForeign Allocate<T>(Allocator<T> allocator) where T : unmanaged
         {
-            m_Allocator = (_) =>
+            m_Allocator = (vmPtr) =>
             {
-                T* data = (T*)Wren.SetSlotNewForeign(m_Vm.m_Ptr, 0, 0, (ulong)sizeof(T));
+                T* data = (T*)Wren.SetSlotNewForeign(vmPtr, 0, 0, (ulong)sizeof(T));
                 *data = new T();
                 allocator(m_Vm, ref *data);
             };
@@ -79,14 +97,16 @@ namespace WrenSharp
         /// of <typeparamref name="T"/> at the address of the newly allocated memory, ready to be used.
         /// </summary>
         /// <param name="allocator">The allocator delegate to call when an instance is created. Use this to set the initial state of the memory.</param>
+        /// <param name="paramCount">The number of parameters expected in the constructor. Note that it is not possible to know which constructor was invoked on the Wren
+        /// side from within the allocator. This parameter defaults to <see cref="WrenVM.MaxCallParameters"/>.</param>
         /// <returns>A reference to this <see cref="WrenForeign"/> instance.</returns>
-        public unsafe WrenForeign Allocate<T>(AllocatorCall<T> allocator, int paramCount = 0) where T : unmanaged
+        public unsafe WrenForeign Allocate<T>(AllocatorCall<T> allocator, byte paramCount = WrenVM.MaxCallParameters) where T : unmanaged
         {
             m_Allocator = (_) =>
             {
                 T* data = (T*)Wren.SetSlotNewForeign(m_Vm.m_Ptr, 0, 0, (ulong)sizeof(T));
                 *data = new T();
-                allocator(new WrenCallContext(m_Vm, WrenMethodType.Allocator, byte.MaxValue), ref *data);
+                allocator(new WrenCallContext(m_Vm, WrenMethodType.Allocator, paramCount), ref *data);
             };
             return this;
         }

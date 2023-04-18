@@ -28,4 +28,8 @@
 
   <Import Project="..\WrenSharp.Core.Shared\WrenSharp.Core.Shared.projitems" Label="Shared" />
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="powershell.exe $(ProjectDir)CopyToUnityProject.ps1" />
+  </Target>
+
 </Project>
