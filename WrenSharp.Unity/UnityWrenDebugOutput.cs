@@ -8,13 +8,18 @@ namespace WrenSharp.Unity
     /// </summary>
     public class UnityWrenDebugOutput : IWrenWriteOutput, IWrenErrorOutput
     {
+        public const string WarnPrefix = "!warn:";
+        public const string ErrorPrefix = "!error:";
+
         private readonly StringBuilder m_WriteBuffer = new StringBuilder(256);
+        private LogType m_CurrentType = LogType.Log;
 
         /// <summary>
         /// Clear the write buffer.
         /// </summary>
         public void Clear()
         {
+            m_CurrentType = LogType.Log;
             m_WriteBuffer.Clear();
         }
 
@@ -28,12 +33,14 @@ namespace WrenSharp.Unity
                 return;
             
             // Trim final newline, as Debug.Log will add one
+            // Buffer could be empty after that, so check and bail out if so
             if (m_WriteBuffer[m_WriteBuffer.Length - 1] == '\n')
             {
-                m_WriteBuffer.Length--;
+                if (--m_WriteBuffer.Length <= 0)
+                    return;
             }
 
-            Debug.Log(m_WriteBuffer.ToString());
+            Debug.unityLogger.Log(m_CurrentType, m_WriteBuffer.ToString());
             m_WriteBuffer.Clear();
         }
 
@@ -41,7 +48,28 @@ namespace WrenSharp.Unity
 
         void IWrenWriteOutput.OutputWrite(WrenVM vm, string text)
         {
-            m_WriteBuffer.Append(text);
+            if (m_CurrentType != LogType.Error && text.StartsWith(ErrorPrefix, System.StringComparison.OrdinalIgnoreCase))
+            {
+                Flush();
+                m_CurrentType = LogType.Error;
+                m_WriteBuffer.Append(text, ErrorPrefix.Length, text.Length - ErrorPrefix.Length);
+            }
+            else if (m_CurrentType != LogType.Warning && text.StartsWith(WarnPrefix, System.StringComparison.OrdinalIgnoreCase))
+            {
+                Flush();
+                m_CurrentType = LogType.Warning;
+                m_WriteBuffer.Append(text, WarnPrefix.Length, text.Length - WarnPrefix.Length);
+            }
+            else
+            {
+                if (m_CurrentType != LogType.Log)
+                {
+                    Flush();
+                }
+
+                m_CurrentType = LogType.Log;
+                m_WriteBuffer.Append(text);
+            }
         }
 
         void IWrenErrorOutput.OutputError(WrenVM vm, WrenErrorType errorType, string module, int lineNumber, string message)
