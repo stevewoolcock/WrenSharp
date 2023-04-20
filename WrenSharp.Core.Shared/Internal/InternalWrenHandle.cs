@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace WrenSharp.Native
 {
-    internal class WrenHandleInternal
+    internal sealed class WrenHandleInternal
     {
         public readonly WrenVM VM;
         public IntPtr Ptr = IntPtr.Zero;
@@ -11,5 +12,8 @@ namespace WrenSharp.Native
         {
             VM = vm;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsValid() => Ptr != IntPtr.Zero;
     }
 }
