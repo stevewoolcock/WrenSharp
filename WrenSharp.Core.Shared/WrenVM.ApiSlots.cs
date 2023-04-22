@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using WrenSharp.Native;
 
@@ -873,44 +874,42 @@ namespace WrenSharp
         #region Lists
 
         /// <summary>
-        /// If the value in slot 0 is of type <see cref="WrenType.List"/>, calls the clear() method
+        /// If the value in <paramref name="listSlot"/> is of type <see cref="WrenType.List"/>, calls the clear() method
         /// to remove all values in the list. If the value is not a list, this method does nothing.<para/>
         /// 
         /// Note that this method invokes a Wren call which will clear the API stack and the value in slot
-        /// 0 will become null. See <see cref="ListLoadAndClear(WrenHandle)"/> for an alternative implementation that
+        /// 0 will become null. See <see cref="ListLoadAndClear(WrenHandle, int)"/> for an alternative implementation that
         /// avoids this problem.
         /// </summary>
+        /// <param name="listSlot">The slot the list has been placed in.</param>
         /// <returns>A reference to this <see cref="WrenVM"/>.</returns>
-        public WrenVM ListClear()
+        public WrenVM ListClear(int listSlot = 0)
         {
-            if (Wren.GetSlotType(m_Ptr, 0) == WrenType.List)
-            {
-                CallClearMethod();
-            }
-
+            EnsureType(Wren.GetSlotType(m_Ptr, listSlot), WrenType.List);
+            CallClearMethod();
             return this;
         }
 
         /// <summary>
-        /// Loads <paramref name="listHandle"/> into slot 0, calls the clear() method to remove all values
-        /// in the list, and places <paramref name="listHandle"/> back into slot 0. If the handle is invalid,
+        /// Loads <paramref name="listHandle"/> into <paramref name="listSlot"/>, calls the clear() method to remove all values
+        /// in the list, and places <paramref name="listHandle"/> back into <paramref name="listSlot"/>. If the handle is invalid,
         /// this method does nothing.
         /// </summary>
         /// <param name="listHandle">The handle wrapping the list.</param>
+        /// <param name="listSlot">The slot to load the list into.</param>
         /// <returns>A reference to this <see cref="WrenVM"/>.</returns>
-        public WrenVM ListLoadAndClear(WrenHandle listHandle)
+        public WrenVM ListLoadAndClear(WrenHandle listHandle, int listSlot = 0)
         {
-            if (listHandle.IsValid)
-            {
-                Wren.SetSlotHandle(m_Ptr, 0, listHandle.m_Ptr);
-                CallClearMethod();
+            EnsureValidHandle(in listHandle);
 
-                // As a Wren call was invoked, the API stack is reset afterwards. Place
-                // the list handle back into slot zero to make the API friendlier. This way
-                // operations on the list can continue without having to remember to restore
-                // the list handle into slot zero.
-                Wren.SetSlotHandle(m_Ptr, 0, listHandle.m_Ptr);
-            }
+            Wren.SetSlotHandle(m_Ptr, listSlot, listHandle.m_Ptr);
+            CallClearMethod();
+
+            // As a Wren call was invoked, the API stack is reset afterwards. Place
+            // the list handle back into the original slot to make the API friendlier.
+            // This wayoperations on the list can continue without having to remember
+            // to restore the list handle into the slot.
+            Wren.SetSlotHandle(m_Ptr, listSlot, listHandle.m_Ptr);
 
             return this;
         }
@@ -1000,21 +999,19 @@ namespace WrenSharp
         #region Maps
 
         /// <summary>
-        /// If the value in slot 0 is of type <see cref="WrenType.Map"/>, calls the clear() method
+        /// If the value in <paramref name="mapSlot"/> is of type <see cref="WrenType.Map"/>, calls the clear() method
         /// to remove all values in the map. If the value is not a map, this method does nothing.<para/>
         /// 
-        /// Note that this method invokes a Wren call which will clear the API stack and the value in slot
-        /// 0 will become null. See <see cref="MapLoadAndClear(WrenHandle)"/> for an alternative implementation that
+        /// Note that this method invokes a Wren call which will clear the API stack and the value in <paramref name="mapSlot"/>
+        /// will become null. See <see cref="MapLoadAndClear(WrenHandle, int)"/> for an alternative implementation that
         /// avoids this problem.
         /// </summary>
+        /// <param name="mapSlot">The slot the map has been placed in.</param>
         /// <returns>A reference to this <see cref="WrenVM"/>.</returns>
-        public WrenVM MapClear()
+        public WrenVM MapClear(int mapSlot = 0)
         {
-            if (Wren.GetSlotType(m_Ptr, 0) == WrenType.Map)
-            {
-                CallClearMethod();
-            }
-
+            EnsureType(Wren.GetSlotType(m_Ptr, mapSlot), WrenType.Map);
+            CallClearMethod();
             return this;
         }
 
@@ -1024,20 +1021,19 @@ namespace WrenSharp
         /// this method does nothing.
         /// </summary>
         /// <param name="mapHandle">The handle wrapping the map.</param>
+        /// <param name="mapSlot">The slot to load the map into.</param>
         /// <returns>A reference to this <see cref="WrenVM"/>.</returns>
-        public WrenVM MapLoadAndClear(WrenHandle mapHandle)
+        public WrenVM MapLoadAndClear(WrenHandle mapHandle, int mapSlot = 0)
         {
-            if (mapHandle.IsValid)
-            {
-                Wren.SetSlotHandle(m_Ptr, 0, mapHandle.m_Ptr);
-                CallClearMethod();
+            EnsureValidHandle(in mapHandle);
 
-                // As a Wren call was invoked, the API stack is reset afterwards. Place
-                // the list handle back into slot zero to make the API friendlier. This way
-                // operations on the list can continue without having to remember to restore
-                // the list handle into slot zero.
-                Wren.SetSlotHandle(m_Ptr, 0, mapHandle.m_Ptr);
-            }
+            Wren.SetSlotHandle(m_Ptr, mapSlot, mapHandle.m_Ptr);
+            CallClearMethod();
+
+            // As a Wren call was invoked, the API stack is reset afterwards. Place
+            // the handle back into the original slot to make the API friendlier. This way
+            // operations on the map can continue without having to remember to restore the handle.
+            Wren.SetSlotHandle(m_Ptr, mapSlot, mapHandle.m_Ptr);
 
             return this;
         }

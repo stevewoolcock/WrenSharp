@@ -73,6 +73,7 @@ namespace WrenSharp
         /// </summary>
         protected internal IntPtr m_Ptr;
 
+        private readonly object m_HandleLocker = new object();
         private readonly Queue<WrenHandleInternal> m_PooledHandles = new Queue<WrenHandleInternal>();
         private readonly HashSet<WrenHandleInternal> m_ActiveHandles = new HashSet<WrenHandleInternal>();
         private readonly WrenSharedDataTable m_SharedData = new WrenSharedDataTable();
@@ -755,18 +756,23 @@ namespace WrenSharp
 
         private WrenHandleInternal AcquireHandle(IntPtr handlePtr)
         {
-            var handle = m_PooledHandles.Count > 0
-                ? m_PooledHandles.Dequeue()
-                : new WrenHandleInternal(this);
+            WrenHandleInternal handle;
+            lock (m_HandleLocker)
+            {
+                handle = m_PooledHandles.Count > 0
+                    ? m_PooledHandles.Dequeue()
+                    : new WrenHandleInternal(this);
 
-            handle.Ptr = handlePtr;
-            m_ActiveHandles.Add(handle);
+                handle.Ptr = handlePtr;
+                handle.Version++;
+                m_ActiveHandles.Add(handle);
+            }
             return handle;
         }
 
         private void ReleaseHandle(WrenHandleInternal handle, bool removeFromActiveSet)
         {
-            if (handle == null || handle.Ptr == IntPtr.Zero)
+            if (handle == null || !handle.IsValid())
                 return;
 
             if (handle.VM != this)
@@ -775,14 +781,18 @@ namespace WrenSharp
             Wren.ReleaseHandle(m_Ptr, handle.Ptr);
             handle.Ptr = IntPtr.Zero;
 
-            m_PooledHandles.Enqueue(handle);
-
-            if (removeFromActiveSet)
+            lock (m_HandleLocker)
             {
-                m_ActiveHandles.Remove(handle);
+                m_PooledHandles.Enqueue(handle);
+
+                if (removeFromActiveSet)
+                {
+                    m_ActiveHandles.Remove(handle);
+                }
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void EnsureValidHandle(in WrenHandle handle)
         {
             if (!handle.IsValid)
@@ -791,6 +801,7 @@ namespace WrenSharp
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void EnsureValidHandle(in WrenCallHandle handle)
         {
             if (!handle.IsValid)
@@ -799,12 +810,20 @@ namespace WrenSharp
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void EnsureValidHandle(in WrenSharedDataHandle handle)
         {
             if (!handle.IsValid)
             {
                 throw new WrenInvalidHandleException(this);
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void EnsureType(WrenType type, WrenType expectedType)
+        {
+            if (type != expectedType)
+                throw new WrenTypeException(this, $"Expected type {expectedType}, but received {type}");
         }
 
         #region IDisposable

@@ -350,20 +350,20 @@ namespace WrenSharp
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int HandleToIndex(WrenSharedDataHandle handle)
+        private static int HandleToIndex(WrenSharedDataHandle handle)
         {
             return handle - 1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private WrenSharedDataHandle IndexToHandle(int index)
+        private static WrenSharedDataHandle IndexToHandle(int index)
         {
             return (WrenSharedDataHandle)(index + 1);
         }
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsTombstone(in Entry entry)
+        private static bool IsTombstone(in Entry entry)
         {
             return entry.NextFree != WrenSharedDataHandle.Invalid;
         }

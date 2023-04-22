@@ -17,6 +17,7 @@ namespace WrenSharp
     {
         internal readonly WrenHandleInternal m_Handle;
         internal readonly IntPtr m_Ptr;
+        internal readonly int m_Version;
 
         #region Properties
 
@@ -24,7 +25,7 @@ namespace WrenSharp
         /// Indicates if the handle is valid. A handle is valid if it has been created and not released.
         /// Once a handle is released, all <see cref="WrenHandle"/> values pointing to it will become invalid.
         /// </summary>
-        public bool IsValid => m_Handle != null && m_Handle.IsValid() && m_Ptr == m_Handle.Ptr;
+        public bool IsValid => m_Handle != null && m_Handle.IsValid() && m_Version == m_Handle.Version && m_Ptr == m_Handle.Ptr;
 
         #endregion
 
@@ -32,6 +33,7 @@ namespace WrenSharp
         {
             m_Handle = handle;
             m_Ptr = m_Handle.Ptr;
+            m_Version = m_Handle.Version;
         }
 
         /// <summary>

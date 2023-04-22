@@ -87,62 +87,77 @@ namespace WrenSharp
         /// </summary>
         /// <param name="methodName">The name of the method.</param>
         /// <param name="paramCount">The number of parameters the call requires.</param>
+        /// <param name="isStatic">Indicates if the method is static.</param>
         /// <returns>A method signature.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="paramCount"/> is out of the valid parameter count range.</exception>
-        public static string MethodSignature(string methodName, int paramCount)
+        public static string MethodSignature(string methodName, int paramCount, bool isStatic = false)
         {
             if (paramCount < 0 || paramCount > WrenVM.MaxCallParameters)
                 throw new ArgumentOutOfRangeException(nameof(paramCount), "Parameter count must be between 0 and 16, inclusive.");
 
-            return $"{methodName}({CallArgSignatures[paramCount]})";
+            return isStatic
+                ? $"static {methodName}({CallArgSignatures[paramCount]})"
+                : $"{methodName}({CallArgSignatures[paramCount]})";
         }
 
         /// <summary>
         /// Creates a subscrupt signature from the input arguments.
         /// </summary>
         /// <param name="paramCount">The number of parameters the call requires.</param>
+        /// <param name="isStatic">Indicates if the method is static.</param>
         /// <returns>A subscript signature.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="paramCount"/> is out of the valid parameter count range.</exception>
-        public static string SubscriptSignature(int paramCount)
+        public static string SubscriptSignature(int paramCount, bool isStatic = false)
         {
             if (paramCount < 0 || paramCount > WrenVM.MaxCallParameters)
                 throw new ArgumentOutOfRangeException(nameof(paramCount), "Parameter count must be between 0 and 16, inclusive.");
 
-            return $"[{CallArgSignatures[paramCount]}]";
+            return isStatic
+                ? $"static [{CallArgSignatures[paramCount]}]"
+                : $"[{CallArgSignatures[paramCount]}]";
         }
 
         /// <summary>
         /// Creates a subscript setter signature from the input arguments.
         /// </summary>
         /// <param name="paramCount">The number of parameters the call requires.</param>
+        /// <param name="isStatic">Indicates if the method is static.</param>
         /// <returns>A subscript setter signature.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="paramCount"/> is out of the valid parameter count range.</exception>
-        public static string SubscriptSetterSignature(int paramCount)
+        public static string SubscriptSetterSignature(int paramCount, bool isStatic = false)
         {
             if (paramCount < 0 || paramCount > WrenVM.MaxCallParameters)
                 throw new ArgumentOutOfRangeException(nameof(paramCount), "Parameter count must be between 0 and 16, inclusive.");
 
-            return $"[{CallArgSignatures[paramCount]}]=(_)";
+            return isStatic
+                ? $"static [{CallArgSignatures[paramCount]}]=(_)"
+                : $"[{CallArgSignatures[paramCount]}]=(_)";
         }
 
         /// <summary>
         /// Creates a property getter signature from the input arguments.
         /// </summary>
         /// <param name="propertyName">The name of the property.</param>
+        /// <param name="isStatic">Indicates if the property is static.</param>
         /// <returns>A property getter signature.</returns>
-        public static string GetterSignature(string propertyName)
+        public static string GetterSignature(string propertyName, bool isStatic = false)
         {
-            return propertyName;
+            return isStatic
+                ? $"static {propertyName}"
+                : propertyName;
         }
 
         /// <summary>
         /// Creates a property setter signature from the input arguments.
         /// </summary>
         /// <param name="propertyName">The name of the property.</param>
+        /// <param name="isStatic">Indicates if the property is static.</param>
         /// <returns>A property setter signature.</returns>
-        public static string SetterSignature(string propertyName)
+        public static string SetterSignature(string propertyName, bool isStatic = false)
         {
-            return $"{propertyName}=(_)";
+            return isStatic
+                ? $"static {propertyName}=(_)"
+                : $"{propertyName}=(_)";
         }
     }
 }

@@ -780,6 +780,11 @@
             Represents errors that occur relating to invalid Wren handles.
             </summary>
         </member>
+        <member name="T:WrenSharp.WrenTypeException">
+            <summary>
+            Represents errors that occur relating to Wren types.
+            </summary>
+        </member>
         <member name="T:WrenSharp.WrenHandle">
             <summary>
             A handle wrapping a Wren value. When a handle is allocated, Wren guarantees the object
@@ -1296,43 +1301,48 @@
             <param name="signature">The call signature to scan.</param>
             <returns>The number of arugment tokens in <paramref name="signature"/>.</returns>
         </member>
-        <member name="M:WrenSharp.WrenUtils.MethodSignature(System.String,System.Int32)">
+        <member name="M:WrenSharp.WrenUtils.MethodSignature(System.String,System.Int32,System.Boolean)">
             <summary>
             Creates a method signature from the input arguments.
             </summary>
             <param name="methodName">The name of the method.</param>
             <param name="paramCount">The number of parameters the call requires.</param>
+            <param name="isStatic">Indicates if the method is static.</param>
             <returns>A method signature.</returns>
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown if <paramref name="paramCount"/> is out of the valid parameter count range.</exception>
         </member>
-        <member name="M:WrenSharp.WrenUtils.SubscriptSignature(System.Int32)">
+        <member name="M:WrenSharp.WrenUtils.SubscriptSignature(System.Int32,System.Boolean)">
             <summary>
             Creates a subscrupt signature from the input arguments.
             </summary>
             <param name="paramCount">The number of parameters the call requires.</param>
+            <param name="isStatic">Indicates if the method is static.</param>
             <returns>A subscript signature.</returns>
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown if <paramref name="paramCount"/> is out of the valid parameter count range.</exception>
         </member>
-        <member name="M:WrenSharp.WrenUtils.SubscriptSetterSignature(System.Int32)">
+        <member name="M:WrenSharp.WrenUtils.SubscriptSetterSignature(System.Int32,System.Boolean)">
             <summary>
             Creates a subscript setter signature from the input arguments.
             </summary>
             <param name="paramCount">The number of parameters the call requires.</param>
+            <param name="isStatic">Indicates if the method is static.</param>
             <returns>A subscript setter signature.</returns>
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown if <paramref name="paramCount"/> is out of the valid parameter count range.</exception>
         </member>
-        <member name="M:WrenSharp.WrenUtils.GetterSignature(System.String)">
+        <member name="M:WrenSharp.WrenUtils.GetterSignature(System.String,System.Boolean)">
             <summary>
             Creates a property getter signature from the input arguments.
             </summary>
             <param name="propertyName">The name of the property.</param>
+            <param name="isStatic">Indicates if the property is static.</param>
             <returns>A property getter signature.</returns>
         </member>
-        <member name="M:WrenSharp.WrenUtils.SetterSignature(System.String)">
+        <member name="M:WrenSharp.WrenUtils.SetterSignature(System.String,System.Boolean)">
             <summary>
             Creates a property setter signature from the input arguments.
             </summary>
             <param name="propertyName">The name of the property.</param>
+            <param name="isStatic">Indicates if the property is static.</param>
             <returns>A property setter signature.</returns>
         </member>
         <member name="T:WrenSharp.WrenVM">
@@ -1872,24 +1882,26 @@
             <returns>True if the slot exists, the value stored is of type <see cref="F:WrenSharp.WrenType.Foreign"/> and its <see cref="T:WrenSharp.WrenSharedDataHandle"/>
             pints to a valid entry, otherwise false.</returns>
         </member>
-        <member name="M:WrenSharp.WrenVM.ListClear">
+        <member name="M:WrenSharp.WrenVM.ListClear(System.Int32)">
             <summary>
-            If the value in slot 0 is of type <see cref="F:WrenSharp.WrenType.List"/>, calls the clear() method
+            If the value in <paramref name="listSlot"/> is of type <see cref="F:WrenSharp.WrenType.List"/>, calls the clear() method
             to remove all values in the list. If the value is not a list, this method does nothing.<para/>
             
             Note that this method invokes a Wren call which will clear the API stack and the value in slot
-            0 will become null. See <see cref="M:WrenSharp.WrenVM.ListLoadAndClear(WrenSharp.WrenHandle)"/> for an alternative implementation that
+            0 will become null. See <see cref="M:WrenSharp.WrenVM.ListLoadAndClear(WrenSharp.WrenHandle,System.Int32)"/> for an alternative implementation that
             avoids this problem.
             </summary>
+            <param name="listSlot">The slot the list has been placed in.</param>
             <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
         </member>
-        <member name="M:WrenSharp.WrenVM.ListLoadAndClear(WrenSharp.WrenHandle)">
+        <member name="M:WrenSharp.WrenVM.ListLoadAndClear(WrenSharp.WrenHandle,System.Int32)">
             <summary>
-            Loads <paramref name="listHandle"/> into slot 0, calls the clear() method to remove all values
-            in the list, and places <paramref name="listHandle"/> back into slot 0. If the handle is invalid,
+            Loads <paramref name="listHandle"/> into <paramref name="listSlot"/>, calls the clear() method to remove all values
+            in the list, and places <paramref name="listHandle"/> back into <paramref name="listSlot"/>. If the handle is invalid,
             this method does nothing.
             </summary>
             <param name="listHandle">The handle wrapping the list.</param>
+            <param name="listSlot">The slot to load the list into.</param>
             <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
         </member>
         <member name="M:WrenSharp.WrenVM.ListGetCount(System.Int32)">
@@ -1947,24 +1959,26 @@
             <param name="slot">The slot index to write to.</param>
             <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
         </member>
-        <member name="M:WrenSharp.WrenVM.MapClear">
+        <member name="M:WrenSharp.WrenVM.MapClear(System.Int32)">
             <summary>
-            If the value in slot 0 is of type <see cref="F:WrenSharp.WrenType.Map"/>, calls the clear() method
+            If the value in <paramref name="mapSlot"/> is of type <see cref="F:WrenSharp.WrenType.Map"/>, calls the clear() method
             to remove all values in the map. If the value is not a map, this method does nothing.<para/>
             
-            Note that this method invokes a Wren call which will clear the API stack and the value in slot
-            0 will become null. See <see cref="M:WrenSharp.WrenVM.MapLoadAndClear(WrenSharp.WrenHandle)"/> for an alternative implementation that
+            Note that this method invokes a Wren call which will clear the API stack and the value in <paramref name="mapSlot"/>
+            will become null. See <see cref="M:WrenSharp.WrenVM.MapLoadAndClear(WrenSharp.WrenHandle,System.Int32)"/> for an alternative implementation that
             avoids this problem.
             </summary>
+            <param name="mapSlot">The slot the map has been placed in.</param>
             <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
         </member>
-        <member name="M:WrenSharp.WrenVM.MapLoadAndClear(WrenSharp.WrenHandle)">
+        <member name="M:WrenSharp.WrenVM.MapLoadAndClear(WrenSharp.WrenHandle,System.Int32)">
             <summary>
             Loads <paramref name="mapHandle"/> into slot 0, calls the clear() method to remove all values
             in the map, and places <paramref name="mapHandle"/> back into slot 0. If the handle is invalid,
             this method does nothing.
             </summary>
             <param name="mapHandle">The handle wrapping the map.</param>
+            <param name="mapSlot">The slot to load the map into.</param>
             <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
         </member>
         <member name="M:WrenSharp.WrenVM.MapContainsKey(System.Int32,System.Int32)">

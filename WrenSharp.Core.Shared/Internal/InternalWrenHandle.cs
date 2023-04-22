@@ -6,7 +6,8 @@ namespace WrenSharp.Native
     internal sealed class WrenHandleInternal
     {
         public readonly WrenVM VM;
-        public IntPtr Ptr = IntPtr.Zero;
+        public int Version;
+        public IntPtr Ptr;
 
         public WrenHandleInternal(WrenVM vm)
         {

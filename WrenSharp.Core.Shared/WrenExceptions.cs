@@ -72,4 +72,13 @@ namespace WrenSharp
         public WrenInvalidHandleException(WrenVM vm) : base(vm, null, null) { }
         public WrenInvalidHandleException(WrenVM vm, string message) : base(vm, message, null) { }
     }
+
+    /// <summary>
+    /// Represents errors that occur relating to Wren types.
+    /// </summary>
+    public class WrenTypeException : WrenException
+    {
+        public WrenTypeException(WrenVM vm) : base(vm, null, null) { }
+        public WrenTypeException(WrenVM vm, string message) : base(vm, message, null) { }
+    }
 }
