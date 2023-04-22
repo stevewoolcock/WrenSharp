@@ -178,7 +178,7 @@ namespace WrenSharp
         /// <param name="arg">The argument index.</param>
         /// <returns>The value of the argument.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public double GetArgFloat(int arg) => (float)Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
+        public float GetArgFloat(int arg) => (float)Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
 
         /// <summary>
         /// Gets the value of a <see cref="double"/> argument at index <paramref name="arg"/>.
