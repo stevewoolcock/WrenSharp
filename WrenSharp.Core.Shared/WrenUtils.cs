@@ -295,7 +295,7 @@ namespace WrenSharp
             double trunc = Math.Truncate(value);
             if (trunc == value)
             {
-                return (long)trunc;
+                return (ulong)trunc;
             }
 
             throw new ArgumentException($"Value is not a valid unsigned 64 bit integer: {value}");

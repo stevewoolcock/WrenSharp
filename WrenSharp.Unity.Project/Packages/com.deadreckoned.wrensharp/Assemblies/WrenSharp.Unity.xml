@@ -913,12 +913,83 @@
             <param name="arg">The argument index.</param>
             <returns>The value of the argument.</returns>
         </member>
+        <member name="M:WrenSharp.WrenCallContext.GetArgFloat(System.Int32)">
+            <summary>
+            Gets the value of a <see cref="T:System.Double"/> argument at index <paramref name="arg"/> and casts it to a <see cref="T:System.Single"/>.
+            </summary>
+            <param name="arg">The argument index.</param>
+            <returns>The value of the argument.</returns>
+        </member>
         <member name="M:WrenSharp.WrenCallContext.GetArgDouble(System.Int32)">
             <summary>
             Gets the value of a <see cref="T:System.Double"/> argument at index <paramref name="arg"/>.
             </summary>
             <param name="arg">The argument index.</param>
             <returns>The value of the argument.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCallContext.GetArgInt8(System.Int32)">
+            <summary>
+            Gets the value of a <see cref="T:System.Byte"/> argument at index <paramref name="arg"/>.
+            </summary>
+            <param name="arg">The argument index.</param>
+            <returns>The value of the argument.</returns>
+            <exception cref="T:System.ArgumentException">Thrown if the value is not an a valid intergral.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenCallContext.GetArgUInt8(System.Int32)">
+            <summary>
+            Gets the value of a <see cref="T:System.SByte"/> argument at index <paramref name="arg"/>.
+            </summary>
+            <param name="arg">The argument index.</param>
+            <returns>The value of the argument.</returns>
+            <exception cref="T:System.ArgumentException">Thrown if the value is not an a valid intergral.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenCallContext.GetArgInt16(System.Int32)">
+            <summary>
+            Gets the value of a <see cref="T:System.Int16"/> argument at index <paramref name="arg"/>.
+            </summary>
+            <param name="arg">The argument index.</param>
+            <returns>The value of the argument.</returns>
+            <exception cref="T:System.ArgumentException">Thrown if the value is not an a valid intergral.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenCallContext.GetArgUInt16(System.Int32)">
+            <summary>
+            Gets the value of a <see cref="T:System.UInt16"/> argument at index <paramref name="arg"/>.
+            </summary>
+            <param name="arg">The argument index.</param>
+            <returns>The value of the argument.</returns>
+            <exception cref="T:System.ArgumentException">Thrown if the value is not an a valid intergral.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenCallContext.GetArgInt32(System.Int32)">
+            <summary>
+            Gets the value of a <see cref="T:System.Int32"/> argument at index <paramref name="arg"/>.
+            </summary>
+            <param name="arg">The argument index.</param>
+            <returns>The value of the argument.</returns>
+            <exception cref="T:System.ArgumentException">Thrown if the value is not an a valid intergral.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenCallContext.GetArgUInt32(System.Int32)">
+            <summary>
+            Gets the value of a <see cref="T:System.UInt32"/> argument at index <paramref name="arg"/>.
+            </summary>
+            <param name="arg">The argument index.</param>
+            <returns>The value of the argument.</returns>
+            <exception cref="T:System.ArgumentException">Thrown if the value is not an a valid intergral.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenCallContext.GetArgInt64(System.Int32)">
+            <summary>
+            Gets the value of a <see cref="T:System.Int64"/> argument at index <paramref name="arg"/>.
+            </summary>
+            <param name="arg">The argument index.</param>
+            <returns>The value of the argument.</returns>
+            <exception cref="T:System.ArgumentException">Thrown if the value is not an a valid intergral.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenCallContext.GetArgUInt64(System.Int32)">
+            <summary>
+            Gets the value of a <see cref="T:System.UInt64"/> argument at index <paramref name="arg"/>.
+            </summary>
+            <param name="arg">The argument index.</param>
+            <returns>The value of the argument.</returns>
+            <exception cref="T:System.ArgumentException">Thrown if the value is not an a valid intergral.</exception>
         </member>
         <member name="M:WrenSharp.WrenCallContext.GetArgForeign(System.Int32)">
             <summary>
@@ -1344,6 +1415,77 @@
             <param name="propertyName">The name of the property.</param>
             <param name="isStatic">Indicates if the property is static.</param>
             <returns>A property setter signature.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenUtils.AsInt8(System.Double)">
+            <summary>
+            If <paramref name="value"/> is an integer, returns the integral value as a signed 8 bit integer. Otherwise, a <see cref="T:System.ArgumentException"/> is thrown.
+            </summary>
+            <param name="value">The value to conver to an integer.</param>
+            <returns>The integral value.</returns>
+            <exception cref="T:System.ArgumentException">Thrown is <paramref name="value"/> does not represent an integral value.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenUtils.AsUInt8(System.Double)">
+            <summary>
+            If <paramref name="value"/> is an integer, returns the integral value as an unsigned 8 bit integer. Otherwise, a <see cref="T:System.ArgumentException"/> is thrown.
+            </summary>
+            <param name="value">The value to conver to an integer.</param>
+            <returns>The integral value.</returns>
+            <exception cref="T:System.ArgumentException">Thrown is <paramref name="value"/> does not represent an integral value.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenUtils.AsInt16(System.Double)">
+            <summary>
+            If <paramref name="value"/> is an integer, returns the integral value as a signed 16 bit integer. Otherwise, a <see cref="T:System.ArgumentException"/> is thrown.
+            </summary>
+            <param name="value">The value to conver to an integer.</param>
+            <returns>The integral value.</returns>
+            <exception cref="T:System.ArgumentException">Thrown is <paramref name="value"/> does not represent an integral value.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenUtils.AsUInt16(System.Double)">
+            <summary>
+            If <paramref name="value"/> is an integer, returns the integral value as an usigned 16 bit integer. Otherwise, a <see cref="T:System.ArgumentException"/> is thrown.
+            </summary>
+            <param name="value">The value to conver to an integer.</param>
+            <returns>The integral value.</returns>
+            <exception cref="T:System.ArgumentException">Thrown is <paramref name="value"/> does not represent an integral value.</exception>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:WrenSharp.WrenUtils.AsInt32(System.Double)" -->
+        <!-- Badly formed XML comment ignored for member "M:WrenSharp.WrenUtils.AsUInt32(System.Double)" -->
+        <!-- Badly formed XML comment ignored for member "M:WrenSharp.WrenUtils.AsInt64(System.Double)" -->
+        <!-- Badly formed XML comment ignored for member "M:WrenSharp.WrenUtils.AsUInt64(System.Double)" -->
+        <member name="M:WrenSharp.WrenUtils.IsInteger(System.Double)">
+            <summary>
+            Indicates if <paramref name="value"/> represents an integral value with no fractional components.
+            </summary>
+            <param name="value">The value to test.</param>
+            <returns>True if <paramref name="value"/> has no fractional component.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenUtils.IsInt8(System.Double)">
+            <summary>
+            Indicates if <paramref name="value"/> represents a signed 16 bit integral value with no fractional components.
+            </summary>
+            <param name="value">The value to test.</param>
+            <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="!:=byte"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenUtils.IsInt16(System.Double)">
+            <summary>
+            Indicates if <paramref name="value"/> represents a signed 16 bit integral value with no fractional components.
+            </summary>
+            <param name="value">The value to test.</param>
+            <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="!:=short"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenUtils.IsInt32(System.Double)">
+            <summary>
+            Indicates if <paramref name="value"/> represents a signed 32 bit integral value with no fractional components.
+            </summary>
+            <param name="value">The value to test.</param>
+            <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="!:=int"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenUtils.IsInt64(System.Double)">
+            <summary>
+            Indicates if <paramref name="value"/> represents a signed 16 bit integral value with no fractional components.
+            </summary>
+            <param name="value">The value to test.</param>
+            <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="!:=long"/>.</returns>
         </member>
         <member name="T:WrenSharp.WrenVM">
             <summary>
@@ -2377,7 +2519,7 @@
             <returns>The result of the call operation.</returns>
             <exception cref="T:WrenSharp.WrenInterpretException">Thrown if the call is unsuccessful and <paramref name="throwOnFailure"/> is true.</exception>
             <seealso cref="M:WrenSharp.WrenVM.CreateHandle(System.Int32)"/>
-            <seealso cref="M:WrenSharp.WrenVM.CreateHandle(System.String,System.String)"/>
+            <seealso cref="!:CreateHandle(string, string)"/>
         </member>
         <member name="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle,System.Boolean)">
             <summary>
@@ -2426,7 +2568,7 @@
             <param name="signature">The call signature.</param>
             <returns></returns>
         </member>
-        <member name="M:WrenSharp.WrenVM.CreateFunction(System.String,System.String,System.String,System.Boolean)">
+        <member name="M:WrenSharp.WrenVM.CreateFunction(System.String,System.String,System.String,System.Int32,System.Boolean)">
             <summary>
             Interprets a Wren function by wrapping <paramref name="functionBody"/> in the Wren function syntax (<c>Fn.new {...}</c>)
             and returns a handle to the newly created function object. This is useful for creating functions dynamically from managed code
@@ -2436,9 +2578,13 @@
             </summary>
             <example>
             <code>
-            var dynamicFn = vm.CreateFunction("main", "active, num", @"
-                System.print(""arguments: active=%(active), num=%(num)"")
-                return num * 2");
+            var dynamicFn = vm.CreateFunction(
+                module: "main",
+                paramsSignature: "active, num",
+                functionBody: @"
+                    System.print(""arguments: active=%(active), num=%(num)"")
+                    return num * 2"
+                );
             
             // If the function did not compile, the handle will be invalid
             if (dynamicFn.IsValid)
@@ -2455,6 +2601,7 @@
             <param name="module">The module to create the function in.</param>
             <param name="paramsSignature">The function's parameter signature.</param>
             <param name="functionBody">The function's body.</param>
+            <param name="slot">The slot index to load the function into and create the handle from.</param>
             <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
             <returns>A handle to the newly created function.</returns>
         </member>
@@ -2464,15 +2611,6 @@
             </summary>
             <param name="slot">The slot containing the value to wrap.</param>
             <returns>A <see cref="T:WrenSharp.WrenHandle"/> value.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.CreateHandle(System.String,System.String)">
-            <summary>
-            Creates a handle to <paramref name="variableName"/> in resolved module <paramref name="module"/>. The value of the variable
-            is loaded into slot 0, from which the handle will be created.
-            </summary>
-            <param name="module">The module the variable resides in.</param>
-            <param name="variableName">The name of the variable.</param>
-            <returns>A <see cref="T:WrenSharp.WrenHandle"/> wrapping the value stored in <paramref name="variableName"/>.</returns>
         </member>
         <member name="M:WrenSharp.WrenVM.CreateHandle(System.String,System.String,System.Int32)">
             <summary>
