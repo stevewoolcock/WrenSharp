@@ -171,6 +171,15 @@ namespace WrenSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool GetArgBool(int arg) => Wren.GetSlotBool(m_Vm.m_Ptr, ArgSlot(arg)) != 0;
 
+
+        /// <summary>
+        /// Gets the value of a <see cref="double"/> argument at index <paramref name="arg"/> and casts it to a <see cref="float"/>.
+        /// </summary>
+        /// <param name="arg">The argument index.</param>
+        /// <returns>The value of the argument.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public double GetArgFloat(int arg) => (float)Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
+
         /// <summary>
         /// Gets the value of a <see cref="double"/> argument at index <paramref name="arg"/>.
         /// </summary>
@@ -178,6 +187,111 @@ namespace WrenSharp
         /// <returns>The value of the argument.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public double GetArgDouble(int arg) => Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
+
+        /// <summary>
+        /// Gets the value of a <see cref="byte"/> argument at index <paramref name="arg"/>.
+        /// </summary>
+        /// <param name="arg">The argument index.</param>
+        /// <returns>The value of the argument.</returns>
+        /// <exception cref="ArgumentException">Thrown if the value is not an a valid intergral.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte GetArgInt8(int arg)
+        {
+            double value = Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
+            return WrenUtils.AsInt8(value);
+        }
+
+        /// <summary>
+        /// Gets the value of a <see cref="sbyte"/> argument at index <paramref name="arg"/>.
+        /// </summary>
+        /// <param name="arg">The argument index.</param>
+        /// <returns>The value of the argument.</returns>
+        /// <exception cref="ArgumentException">Thrown if the value is not an a valid intergral.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public sbyte GetArgUInt8(int arg)
+        {
+            double value = Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
+            return WrenUtils.AsUInt8(value);
+        }
+
+        /// <summary>
+        /// Gets the value of a <see cref="short"/> argument at index <paramref name="arg"/>.
+        /// </summary>
+        /// <param name="arg">The argument index.</param>
+        /// <returns>The value of the argument.</returns>
+        /// <exception cref="ArgumentException">Thrown if the value is not an a valid intergral.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public short GetArgInt16(int arg)
+        {
+            double value = Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
+            return WrenUtils.AsInt16(value);
+        }
+
+        /// <summary>
+        /// Gets the value of a <see cref="ushort"/> argument at index <paramref name="arg"/>.
+        /// </summary>
+        /// <param name="arg">The argument index.</param>
+        /// <returns>The value of the argument.</returns>
+        /// <exception cref="ArgumentException">Thrown if the value is not an a valid intergral.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ushort GetArgUInt16(int arg)
+        {
+            double value = Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
+            return WrenUtils.AsUInt16(value);
+        }
+
+        /// <summary>
+        /// Gets the value of a <see cref="int"/> argument at index <paramref name="arg"/>.
+        /// </summary>
+        /// <param name="arg">The argument index.</param>
+        /// <returns>The value of the argument.</returns>
+        /// <exception cref="ArgumentException">Thrown if the value is not an a valid intergral.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int GetArgInt32(int arg)
+        {
+            double value = Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
+            return WrenUtils.AsInt32(value);
+        }
+
+        /// <summary>
+        /// Gets the value of a <see cref="uint"/> argument at index <paramref name="arg"/>.
+        /// </summary>
+        /// <param name="arg">The argument index.</param>
+        /// <returns>The value of the argument.</returns>
+        /// <exception cref="ArgumentException">Thrown if the value is not an a valid intergral.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public uint GetArgUInt32(int arg)
+        {
+            double value = Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
+            return WrenUtils.AsUInt32(value);
+        }
+
+        /// <summary>
+        /// Gets the value of a <see cref="long"/> argument at index <paramref name="arg"/>.
+        /// </summary>
+        /// <param name="arg">The argument index.</param>
+        /// <returns>The value of the argument.</returns>
+        /// <exception cref="ArgumentException">Thrown if the value is not an a valid intergral.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public long GetArgInt64(int arg)
+        {
+            double value = Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
+            return WrenUtils.AsInt64(value);
+        }
+
+        /// <summary>
+        /// Gets the value of a <see cref="ulong"/> argument at index <paramref name="arg"/>.
+        /// </summary>
+        /// <param name="arg">The argument index.</param>
+        /// <returns>The value of the argument.</returns>
+        /// <exception cref="ArgumentException">Thrown if the value is not an a valid intergral.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ulong GetArgUInt64(int arg)
+        {
+            double value = Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
+            return WrenUtils.AsUInt64(value);
+        }
+
 
         /// <summary>
         /// Gets a pointer to the data of a foreign object argument at index <paramref name="arg"/>.

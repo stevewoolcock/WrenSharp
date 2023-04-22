@@ -159,5 +159,198 @@ namespace WrenSharp
                 ? $"static {propertyName}=(_)"
                 : $"{propertyName}=(_)";
         }
+
+
+        /// <summary>
+        /// If <paramref name="value"/> is an integer, returns the integral value as a signed 8 bit integer. Otherwise, a <see cref="ArgumentException"/> is thrown.
+        /// </summary>
+        /// <param name="value">The value to conver to an integer.</param>
+        /// <returns>The integral value.</returns>
+        /// <exception cref="ArgumentException">Thrown is <paramref name="value"/> does not represent an integral value.</exception>
+        public static byte AsInt8(double value)
+        {
+            double trunc = Math.Truncate(value);
+            if (trunc == value)
+            {
+                return (byte)trunc;
+            }
+
+            throw new ArgumentException($"Value is not a valid 8 bit integer: {value}");
+        }
+
+        /// <summary>
+        /// If <paramref name="value"/> is an integer, returns the integral value as an unsigned 8 bit integer. Otherwise, a <see cref="ArgumentException"/> is thrown.
+        /// </summary>
+        /// <param name="value">The value to conver to an integer.</param>
+        /// <returns>The integral value.</returns>
+        /// <exception cref="ArgumentException">Thrown is <paramref name="value"/> does not represent an integral value.</exception>
+        public static sbyte AsUInt8(double value)
+        {
+            double trunc = Math.Truncate(value);
+            if (trunc == value)
+            {
+                return (sbyte)trunc;
+            }
+
+            throw new ArgumentException($"Value is not a valid unsigned 8 bit integer: {value}");
+        }
+
+        /// <summary>
+        /// If <paramref name="value"/> is an integer, returns the integral value as a signed 16 bit integer. Otherwise, a <see cref="ArgumentException"/> is thrown.
+        /// </summary>
+        /// <param name="value">The value to conver to an integer.</param>
+        /// <returns>The integral value.</returns>
+        /// <exception cref="ArgumentException">Thrown is <paramref name="value"/> does not represent an integral value.</exception>
+        public static short AsInt16(double value)
+        {
+            double trunc = Math.Truncate(value);
+            if (trunc == value)
+            {
+                return (short)trunc;
+            }
+
+            throw new ArgumentException($"Value is not a valid signed 16 bit integer: {value}");
+        }
+
+        /// <summary>
+        /// If <paramref name="value"/> is an integer, returns the integral value as an usigned 16 bit integer. Otherwise, a <see cref="ArgumentException"/> is thrown.
+        /// </summary>
+        /// <param name="value">The value to conver to an integer.</param>
+        /// <returns>The integral value.</returns>
+        /// <exception cref="ArgumentException">Thrown is <paramref name="value"/> does not represent an integral value.</exception>
+        public static ushort AsUInt16(double value)
+        {
+            double trunc = Math.Truncate(value);
+            if (trunc == value)
+            {
+                return (ushort)trunc;
+            }
+
+            throw new ArgumentException($"Value is not a valid unsigned 16 bit integer: {value}");
+        }
+
+        /// <summary>
+        /// <summary>
+        /// If <paramref name="value"/> is an integer, returns the integral value as a signed 32 bit integer. Otherwise, a <see cref="ArgumentException"/> is thrown.
+        /// </summary>
+        /// <param name="value">The value to conver to an integer.</param>
+        /// <returns>The integral value.</returns>
+        /// <exception cref="ArgumentException">Thrown is <paramref name="value"/> does not represent an integral value.</exception>
+        public static int AsInt32(double value)
+        {
+            double trunc = Math.Truncate(value);
+            if (trunc == value)
+            {
+                return (int)trunc;
+            }
+
+            throw new ArgumentException($"Value is not a valid signed 32 bit integer: {value}");
+        }
+
+        /// <summary>
+        /// <summary>
+        /// If <paramref name="value"/> is an integer, returns the integral value as an unsigned 32 bit integer. Otherwise, a <see cref="ArgumentException"/> is thrown.
+        /// </summary>
+        /// <param name="value">The value to conver to an integer.</param>
+        /// <returns>The integral value.</returns>
+        /// <exception cref="ArgumentException">Thrown is <paramref name="value"/> does not represent an integral value.</exception>
+        public static uint AsUInt32(double value)
+        {
+            double trunc = Math.Truncate(value);
+            if (trunc == value)
+            {
+                return (uint)trunc;
+            }
+
+            throw new ArgumentException($"Value is not a valid unsigned 32 bit integer: {value}");
+        }
+
+        /// <summary>
+        /// <summary>
+        /// If <paramref name="value"/> is an integer, returns the integral value as a signed 64 bit integer. Otherwise, a <see cref="ArgumentException"/> is thrown.
+        /// </summary>
+        /// <param name="value">The value to conver to an integer.</param>
+        /// <returns>The integral value.</returns>
+        /// <exception cref="ArgumentException">Thrown is <paramref name="value"/> does not represent an integral value.</exception>
+        public static long AsInt64(double value)
+        {
+            double trunc = Math.Truncate(value);
+            if (trunc == value)
+            {
+                return (long)trunc;
+            }
+
+            throw new ArgumentException($"Value is not a valid signed 64 bit integer: {value}");
+        }
+
+        /// <summary>
+        /// <summary>
+        /// If <paramref name="value"/> is an integer, returns the integral value as an unsigned 64 bit integer. Otherwise, a <see cref="ArgumentException"/> is thrown.
+        /// </summary>
+        /// <param name="value">The value to conver to an integer.</param>
+        /// <returns>The integral value.</returns>
+        /// <exception cref="ArgumentException">Thrown is <paramref name="value"/> does not represent an integral value.</exception>
+        public static ulong AsUInt64(double value)
+        {
+            double trunc = Math.Truncate(value);
+            if (trunc == value)
+            {
+                return (long)trunc;
+            }
+
+            throw new ArgumentException($"Value is not a valid unsigned 64 bit integer: {value}");
+        }
+
+
+        /// <summary>
+        /// Indicates if <paramref name="value"/> represents an integral value with no fractional components.
+        /// </summary>
+        /// <param name="value">The value to test.</param>
+        /// <returns>True if <paramref name="value"/> has no fractional component.</returns>
+        public static bool IsInteger(double value) => Math.Truncate(value) == value;
+
+        /// <summary>
+        /// Indicates if <paramref name="value"/> represents a signed 16 bit integral value with no fractional components.
+        /// </summary>
+        /// <param name="value">The value to test.</param>
+        /// <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="=byte"/>.</returns>
+        public static bool IsInt8(double value)
+        {
+            double trunc = Math.Truncate(value);
+            return trunc >= byte.MinValue && trunc <= byte.MaxValue;
+        }
+
+        /// <summary>
+        /// Indicates if <paramref name="value"/> represents a signed 16 bit integral value with no fractional components.
+        /// </summary>
+        /// <param name="value">The value to test.</param>
+        /// <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="=short"/>.</returns>
+        public static bool IsInt16(double value)
+        {
+            double trunc = Math.Truncate(value);
+            return trunc >= short.MinValue && trunc <= short.MaxValue;
+        }
+
+        /// <summary>
+        /// Indicates if <paramref name="value"/> represents a signed 32 bit integral value with no fractional components.
+        /// </summary>
+        /// <param name="value">The value to test.</param>
+        /// <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="=int"/>.</returns>
+        public static bool IsInt32(double value)
+        {
+            double trunc = Math.Truncate(value);
+            return trunc >= int.MinValue && trunc <= int.MaxValue;
+        }
+
+        /// <summary>
+        /// Indicates if <paramref name="value"/> represents a signed 16 bit integral value with no fractional components.
+        /// </summary>
+        /// <param name="value">The value to test.</param>
+        /// <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="=long"/>.</returns>
+        public static bool IsInt64(double value)
+        {
+            double trunc = Math.Truncate(value);
+            return trunc>= long.MinValue && trunc <= long.MaxValue;
+        }
     }
 }

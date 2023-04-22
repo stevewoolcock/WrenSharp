@@ -494,9 +494,13 @@ namespace WrenSharp
         /// </summary>
         /// <example>
         /// <code>
-        /// var dynamicFn = vm.CreateFunction("main", "active, num", @"
-        ///     System.print(""arguments: active=%(active), num=%(num)"")
-        ///     return num * 2");
+        /// var dynamicFn = vm.CreateFunction(
+        ///     module: "main",
+        ///     paramsSignature: "active, num",
+        ///     functionBody: @"
+        ///         System.print(""arguments: active=%(active), num=%(num)"")
+        ///         return num * 2"
+        ///     );
         /// 
         /// // If the function did not compile, the handle will be invalid
         /// if (dynamicFn.IsValid)
@@ -513,9 +517,10 @@ namespace WrenSharp
         /// <param name="module">The module to create the function in.</param>
         /// <param name="paramsSignature">The function's parameter signature.</param>
         /// <param name="functionBody">The function's body.</param>
+        /// <param name="slot">The slot index to load the function into and create the handle from.</param>
         /// <param name="throwOnFailure">If true, a <see cref="WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
         /// <returns>A handle to the newly created function.</returns>
-        public WrenHandle CreateFunction(string module, string paramsSignature, string functionBody, bool throwOnFailure = false)
+        public WrenHandle CreateFunction(string module, string paramsSignature, string functionBody, int slot = 0, bool throwOnFailure = false)
         {
             // This method works by interpreting dynamically created Wren source that assigns
             // a new Wren function to a variable, then creating a handle to that variable. This
@@ -535,8 +540,8 @@ namespace WrenSharp
             if (result != WrenInterpretResult.Success)
                 return default;
 
-            LoadVariable(module, varName, 0);
-            return CreateHandle(0);
+            LoadVariable(module, varName, slot);
+            return CreateHandle(slot);
         }
 
         /// <summary>
@@ -552,16 +557,6 @@ namespace WrenSharp
         }
 
         /// <summary>
-        /// Creates a handle to <paramref name="variableName"/> in resolved module <paramref name="module"/>. The value of the variable
-        /// is loaded into slot 0, from which the handle will be created.
-        /// </summary>
-        /// <param name="module">The module the variable resides in.</param>
-        /// <param name="variableName">The name of the variable.</param>
-        /// <returns>A <see cref="WrenHandle"/> wrapping the value stored in <paramref name="variableName"/>.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public WrenHandle CreateHandle(string module, string variableName) => CreateHandle(module, variableName, 0);
-
-        /// <summary>
         /// Creates a handle to <paramref name="variableName"/> in resolved module <paramref name="module"/>.
         /// The value of the variable is loaded into slot <paramref name="slot"/>, and the handle is created from the value in that slot.
         /// </summary>
@@ -570,7 +565,7 @@ namespace WrenSharp
         /// <param name="slot">The slot to place the value in and create the handle from.</param>
         /// <returns>A <see cref="WrenHandle"/> wrapping the value stored in <paramref name="variableName"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public WrenHandle CreateHandle(string module, string variableName, int slot)
+        public WrenHandle CreateHandle(string module, string variableName, int slot = 0)
         {
             Wren.GetVariable(m_Ptr, module, variableName, slot);
             return CreateHandle(slot);
