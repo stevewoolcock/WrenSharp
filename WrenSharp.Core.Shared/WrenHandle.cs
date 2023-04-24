@@ -13,7 +13,7 @@ namespace WrenSharp
     /// or <see cref="WrenVM.ReleaseHandle(in WrenHandle)"/>. <see cref="WrenVM"/> instances
     /// will automatically release all handles allocated when disposed.
     /// </summary>
-    public readonly struct WrenHandle : IDisposable
+    public readonly struct WrenHandle : IDisposable, IEquatable<WrenHandle>
     {
         internal readonly WrenHandleInternal m_Handle;
         internal readonly IntPtr m_Ptr;
@@ -40,5 +40,31 @@ namespace WrenSharp
         /// Releases the handle. Once released, the handle can no longer be used.
         /// </summary>
         public void Dispose() => m_Handle.VM.ReleaseHandle(in this);
+
+        #region Object
+
+        /// <inheritdoc/>
+        public bool Equals(WrenHandle other) => other.m_Ptr == m_Ptr && other.m_Version == m_Version && other.m_Handle == m_Handle;
+
+        /// <inheritdoc/>
+        public override bool Equals(object other) => other is WrenHandle && Equals(other);
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => HashCode.Combine(m_Ptr, m_Version, m_Handle);
+
+        /// <inheritdoc/>
+        public override string ToString() => IsValid ? m_Ptr.ToString() : string.Empty;
+
+        #endregion
+
+        #region Operator Overloads
+
+        /// <inheritdoc/>
+        public static bool operator ==(WrenHandle left, WrenHandle right) => left.Equals(right);
+
+        /// <inheritdoc/>
+        public static bool operator !=(WrenHandle left, WrenHandle right) => !(left == right);
+
+        #endregion
     }
 }

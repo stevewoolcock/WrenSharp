@@ -8,7 +8,14 @@ namespace WrenSharp.Unity
     /// </summary>
     public class UnityWrenDebugOutput : IWrenWriteOutput, IWrenErrorOutput
     {
+        /// <summary>
+        /// Prefix used to print messages from Wren as warnings to the Unity log and console.
+        /// </summary>
         public const string WarnPrefix = "!warn:";
+
+        /// <summary>
+        /// Prefix used to print messages from Wren as errors to the Unity log and console.
+        /// </summary>
         public const string ErrorPrefix = "!error:";
 
         private readonly StringBuilder m_WriteBuffer = new StringBuilder(256);
@@ -44,9 +51,7 @@ namespace WrenSharp.Unity
             m_WriteBuffer.Clear();
         }
 
-        #region WrenSharp Interfaces
-
-        void IWrenWriteOutput.OutputWrite(WrenVM vm, string text)
+        private void Write(string text)
         {
             if (m_CurrentType != LogType.Error && text.StartsWith(ErrorPrefix, System.StringComparison.OrdinalIgnoreCase))
             {
@@ -72,20 +77,29 @@ namespace WrenSharp.Unity
             }
         }
 
-        void IWrenErrorOutput.OutputError(WrenVM vm, WrenErrorType errorType, string module, int lineNumber, string message)
+        #region WrenSharp Interfaces
+
+        void IWrenWriteOutput.OutputWrite(WrenVM vm, string text)
+        {
+            Write(text);
+        }
+
+        void IWrenErrorOutput.OutputError(WrenVM vm, WrenErrorType errorType, string moduleName, int lineNumber, string message)
         {
             switch (errorType)
             {
                 case WrenErrorType.Compile:
-                    Debug.LogError($"[{module}: ln {lineNumber}] [Error] {message}");
+                    Write($"{ErrorPrefix}Wren compile error in {moduleName}:{lineNumber} : {message}");
                     break;
 
                 case WrenErrorType.StackTrace:
-                    Debug.LogError($"[{module}: ln {lineNumber}] in {message}");
+                    Write($"{ErrorPrefix}at {message} in {moduleName}:{lineNumber}");
                     break;
 
                 case WrenErrorType.Runtime:
-                    Debug.LogError($"[Error] {message}");
+                    Write(string.IsNullOrEmpty(moduleName)
+                        ? $"{ErrorPrefix}Wren error: {message}"
+                        : $"{ErrorPrefix}Wren error in {moduleName}: {message}");
                     break;
             }
         }

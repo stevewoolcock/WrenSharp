@@ -23,4 +23,21 @@
         /// </summary>
         RuntimeError,
     }
+
+    public static class WrenInterpretResultExtensions
+    {
+        /// <summary>
+        /// Indicates if <paramref name="result"/> is equal to <see cref="WrenInterpretResult.Success"/>.
+        /// </summary>
+        /// <param name="result">The result to check.</param>
+        /// <returns>True if <paramref name="result"/> is a success, otherwise false.</returns>
+        public static bool IsSuccess(this WrenInterpretResult result) => result == WrenInterpretResult.Success;
+
+        /// <summary>
+        /// Indicates if <paramref name="result"/> is not equal to <see cref="WrenInterpretResult.Success"/>.
+        /// </summary>
+        /// <param name="result">The result to check.</param>
+        /// <returns>True if <paramref name="result"/> is not a success, otherwise false.</returns>
+        public static bool IsFailure(this WrenInterpretResult result) => result != WrenInterpretResult.Success;
+    }
 }

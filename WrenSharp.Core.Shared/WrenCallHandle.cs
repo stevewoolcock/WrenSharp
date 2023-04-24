@@ -13,8 +13,8 @@ namespace WrenSharp
     /// will automatically release all handles allocated when disposed.
     /// </summary>
     /// <seealso cref="WrenVM.Call(WrenCallHandle, bool)"/>
-    /// <seealso cref="WrenVM.CreateCall(WrenHandle, WrenCallHandle)"/>
-    public readonly struct WrenCallHandle : IDisposable
+    /// <seealso cref="WrenVM.CreateCall(WrenHandle, WrenCallHandle, bool)"/>
+    public readonly struct WrenCallHandle : IDisposable, IEquatable<WrenCallHandle>
     {
         internal readonly WrenHandleInternal m_Handle;
         internal readonly IntPtr m_Ptr;
@@ -47,6 +47,39 @@ namespace WrenSharp
         /// <summary>
         /// Releases the handle. Once released, the handle can no longer be used.
         /// </summary>
-        public void Dispose() => m_Handle.VM.ReleaseHandle(in this);
+        public void Dispose() => m_Handle.VM?.ReleaseHandle(in this);
+
+        #region Object
+
+        /// <inheritdoc/>
+        public bool Equals(WrenCallHandle other)
+        {
+            return
+                other.m_Ptr == m_Ptr &&
+                other.m_Version == m_Version &&
+                other.m_ParamCount == m_ParamCount &&
+                other.m_Handle == m_Handle;
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is WrenCallHandle callHandle && Equals(callHandle);
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => HashCode.Combine(m_Ptr, m_Version, m_ParamCount, m_Handle);
+
+        /// <inheritdoc/>
+        public override string ToString() => IsValid ? m_Ptr.ToString() : string.Empty;
+
+        #endregion
+
+        #region Operator Overloads
+
+        /// <inheritdoc/>
+        public static bool operator ==(WrenCallHandle left, WrenCallHandle right) => left.Equals(right);
+
+        /// <inheritdoc/>
+        public static bool operator !=(WrenCallHandle left, WrenCallHandle right) => !(left == right);
+
+        #endregion
     }
 }

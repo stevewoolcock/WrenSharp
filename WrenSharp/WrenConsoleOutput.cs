@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace WrenSharp
+﻿namespace WrenSharp
 {
     /// <summary>
     /// A Wren writer and error receiver that forwards output to <see cref="System.Console"/>.
@@ -17,15 +15,17 @@ namespace WrenSharp
             switch (errorType)
             {
                 case WrenErrorType.Compile:
-                    Console.WriteLine($"[{moduleName}: ln {lineNumber}] [Error] {message}");
+                    Console.WriteLine($"Wren compile error in {moduleName}:{lineNumber} : {message}");
                     break;
 
                 case WrenErrorType.StackTrace:
-                    Console.WriteLine($"[{moduleName}: ln {lineNumber}] in {message}");
+                    Console.WriteLine($"at {message} in {moduleName}:{lineNumber}");
                     break;
 
                 case WrenErrorType.Runtime:
-                    Console.WriteLine($"[Error] {message}");
+                    Console.WriteLine(string.IsNullOrEmpty(moduleName)
+                        ? $"Wren error: {message}"
+                        : $"Wren error in {moduleName}: {message}");
                     break;
             }
         }

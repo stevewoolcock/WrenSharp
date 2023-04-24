@@ -140,5 +140,21 @@ namespace WrenSharp.Native
 
         [DllImport(NativeLibrary, EntryPoint = "wrenSetUserData", CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetUserData(IntPtr vm, IntPtr userData);
+
+        [DllImport(NativeLibrary, EntryPoint = "wrenCreateFiber", CallingConvention = CallingConvention.Cdecl)]
+        public static extern WrenFiberResume CreateFiber(IntPtr vm);
+
+        [DllImport(NativeLibrary, EntryPoint = "wrenResumeFiber", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void ResumeFiber(IntPtr vm, WrenFiberResume resume);
+
+        [DllImport(NativeLibrary, EntryPoint = "wrenSetGCEnabled", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetGCEnabled(IntPtr vm, [MarshalAs(UnmanagedType.I1)] bool value);
+
+        [DllImport(NativeLibrary, EntryPoint = "wrenGetGCEnabled", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool GetGCEnabled(IntPtr vm);
+
+        [DllImport(NativeLibrary, EntryPoint = "wrenBytesAllocated", CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong BytesAllocated(IntPtr vm);
     }
 }

@@ -112,7 +112,7 @@ namespace WrenSharp.Native
 #if WRENSHARP_UNITY
         // Unity IL2CPP fails to marshal the WrenNativeFn.LoadModuleComplete via p/invoke automatically.
         // Using an IntPtr and marshalling it manually as the correct type seems to work around this problem.
-        // Likely something to do with it have a struct argument?
+        // Possibly because one of its arguments is a struct of this type (WrenLoadModuleResult)?
         public IntPtr OnCompleteCallback;
 #else
         public WrenNativeFn.LoadModuleComplete OnCompleteCallback;
@@ -122,5 +122,17 @@ namespace WrenSharp.Native
         /// Pointer to user data
         /// </summary>
         public IntPtr UserData;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Size = 16)]
+    public readonly struct WrenFiberResume
+    {
+        private readonly IntPtr m_Fiber;
+        private readonly IntPtr m_ApiStack;
+
+        /// <summary>
+        /// Indicates if the value represents a value resume token.
+        /// </summary>
+        public bool IsValid => m_Fiber != IntPtr.Zero;
     }
 }

@@ -87,77 +87,62 @@ namespace WrenSharp
         /// </summary>
         /// <param name="methodName">The name of the method.</param>
         /// <param name="paramCount">The number of parameters the call requires.</param>
-        /// <param name="isStatic">Indicates if the method is static.</param>
         /// <returns>A method signature.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="paramCount"/> is out of the valid parameter count range.</exception>
-        public static string MethodSignature(string methodName, int paramCount, bool isStatic = false)
+        public static string MethodSignature(string methodName, int paramCount)
         {
             if (paramCount < 0 || paramCount > WrenVM.MaxCallParameters)
                 throw new ArgumentOutOfRangeException(nameof(paramCount), "Parameter count must be between 0 and 16, inclusive.");
 
-            return isStatic
-                ? $"static {methodName}({CallArgSignatures[paramCount]})"
-                : $"{methodName}({CallArgSignatures[paramCount]})";
+            return $"{methodName}({CallArgSignatures[paramCount]})";
         }
 
         /// <summary>
         /// Creates a subscrupt signature from the input arguments.
         /// </summary>
         /// <param name="paramCount">The number of parameters the call requires.</param>
-        /// <param name="isStatic">Indicates if the method is static.</param>
         /// <returns>A subscript signature.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="paramCount"/> is out of the valid parameter count range.</exception>
-        public static string SubscriptSignature(int paramCount, bool isStatic = false)
+        public static string SubscriptSignature(int paramCount)
         {
             if (paramCount < 0 || paramCount > WrenVM.MaxCallParameters)
                 throw new ArgumentOutOfRangeException(nameof(paramCount), "Parameter count must be between 0 and 16, inclusive.");
 
-            return isStatic
-                ? $"static [{CallArgSignatures[paramCount]}]"
-                : $"[{CallArgSignatures[paramCount]}]";
+            return $"[{CallArgSignatures[paramCount]}]";
         }
 
         /// <summary>
         /// Creates a subscript setter signature from the input arguments.
         /// </summary>
         /// <param name="paramCount">The number of parameters the call requires.</param>
-        /// <param name="isStatic">Indicates if the method is static.</param>
         /// <returns>A subscript setter signature.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="paramCount"/> is out of the valid parameter count range.</exception>
-        public static string SubscriptSetterSignature(int paramCount, bool isStatic = false)
+        public static string SubscriptSetterSignature(int paramCount)
         {
             if (paramCount < 0 || paramCount > WrenVM.MaxCallParameters)
                 throw new ArgumentOutOfRangeException(nameof(paramCount), "Parameter count must be between 0 and 16, inclusive.");
 
-            return isStatic
-                ? $"static [{CallArgSignatures[paramCount]}]=(_)"
-                : $"[{CallArgSignatures[paramCount]}]=(_)";
+            return $"[{CallArgSignatures[paramCount]}]=(_)";
         }
 
         /// <summary>
         /// Creates a property getter signature from the input arguments.
         /// </summary>
         /// <param name="propertyName">The name of the property.</param>
-        /// <param name="isStatic">Indicates if the property is static.</param>
         /// <returns>A property getter signature.</returns>
-        public static string GetterSignature(string propertyName, bool isStatic = false)
+        public static string GetterSignature(string propertyName)
         {
-            return isStatic
-                ? $"static {propertyName}"
-                : propertyName;
+            return propertyName;
         }
 
         /// <summary>
         /// Creates a property setter signature from the input arguments.
         /// </summary>
         /// <param name="propertyName">The name of the property.</param>
-        /// <param name="isStatic">Indicates if the property is static.</param>
         /// <returns>A property setter signature.</returns>
-        public static string SetterSignature(string propertyName, bool isStatic = false)
+        public static string SetterSignature(string propertyName)
         {
-            return isStatic
-                ? $"static {propertyName}=(_)"
-                : $"{propertyName}=(_)";
+            return $"{propertyName}=(_)";
         }
 
 
@@ -230,7 +215,6 @@ namespace WrenSharp
         }
 
         /// <summary>
-        /// <summary>
         /// If <paramref name="value"/> is an integer, returns the integral value as a signed 32 bit integer. Otherwise, a <see cref="ArgumentException"/> is thrown.
         /// </summary>
         /// <param name="value">The value to conver to an integer.</param>
@@ -247,7 +231,6 @@ namespace WrenSharp
             throw new ArgumentException($"Value is not a valid signed 32 bit integer: {value}");
         }
 
-        /// <summary>
         /// <summary>
         /// If <paramref name="value"/> is an integer, returns the integral value as an unsigned 32 bit integer. Otherwise, a <see cref="ArgumentException"/> is thrown.
         /// </summary>
@@ -266,7 +249,6 @@ namespace WrenSharp
         }
 
         /// <summary>
-        /// <summary>
         /// If <paramref name="value"/> is an integer, returns the integral value as a signed 64 bit integer. Otherwise, a <see cref="ArgumentException"/> is thrown.
         /// </summary>
         /// <param name="value">The value to conver to an integer.</param>
@@ -283,7 +265,6 @@ namespace WrenSharp
             throw new ArgumentException($"Value is not a valid signed 64 bit integer: {value}");
         }
 
-        /// <summary>
         /// <summary>
         /// If <paramref name="value"/> is an integer, returns the integral value as an unsigned 64 bit integer. Otherwise, a <see cref="ArgumentException"/> is thrown.
         /// </summary>
@@ -313,7 +294,7 @@ namespace WrenSharp
         /// Indicates if <paramref name="value"/> represents a signed 16 bit integral value with no fractional components.
         /// </summary>
         /// <param name="value">The value to test.</param>
-        /// <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="=byte"/>.</returns>
+        /// <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="byte"/>.</returns>
         public static bool IsInt8(double value)
         {
             double trunc = Math.Truncate(value);
@@ -324,7 +305,7 @@ namespace WrenSharp
         /// Indicates if <paramref name="value"/> represents a signed 16 bit integral value with no fractional components.
         /// </summary>
         /// <param name="value">The value to test.</param>
-        /// <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="=short"/>.</returns>
+        /// <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="short"/>.</returns>
         public static bool IsInt16(double value)
         {
             double trunc = Math.Truncate(value);
@@ -335,7 +316,7 @@ namespace WrenSharp
         /// Indicates if <paramref name="value"/> represents a signed 32 bit integral value with no fractional components.
         /// </summary>
         /// <param name="value">The value to test.</param>
-        /// <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="=int"/>.</returns>
+        /// <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="int"/>.</returns>
         public static bool IsInt32(double value)
         {
             double trunc = Math.Truncate(value);
@@ -346,7 +327,7 @@ namespace WrenSharp
         /// Indicates if <paramref name="value"/> represents a signed 16 bit integral value with no fractional components.
         /// </summary>
         /// <param name="value">The value to test.</param>
-        /// <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="=long"/>.</returns>
+        /// <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="long"/>.</returns>
         public static bool IsInt64(double value)
         {
             double trunc = Math.Truncate(value);

@@ -521,7 +521,6 @@ namespace WrenSharp
         /// <summary>
         /// Sets a new instance of a foreign class as the return value for the method call.
         /// </summary>
-        /// <typeparam name="T">The foreign class' data type.</typeparam>
         /// <param name="classHandle">A handle to the class being instantiated.</param>
         /// <param name="size">The number of bytes to allocate for the instance.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -535,7 +534,6 @@ namespace WrenSharp
         /// <summary>
         /// Sets a new instance of a foreign class as the return value for the method call.
         /// </summary>
-        /// <typeparam name="T">The foreign class' data type.</typeparam>
         /// <param name="module">The name of the module the class resides in.</param>
         /// <param name="className">The name of the class to instantiate.</param>
         /// <param name="size">The number of bytes to allocate for the instance.</param>

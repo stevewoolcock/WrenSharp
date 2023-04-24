@@ -146,6 +146,24 @@ namespace WrenSharp
         /// </summary>
         public bool IsDisposed => m_Disposed;
 
+        /// <summary>
+        /// Gets the number of bytes known to be allocated for alive objects in the VM.
+        /// </summary>
+        public ulong BytesAllocated => Wren.BytesAllocated(m_Ptr);
+
+        /// <summary>
+        /// Gets or sets the enabled state of the Wren garbage collected. Use <see cref="CollectGarbage"/>
+        /// to trigger manual garbage collections.
+        /// </summary>
+        public bool GCEnabled
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Wren.GetGCEnabled(m_Ptr);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => Wren.SetGCEnabled(m_Ptr, value);
+        }
+
         #endregion
 
         /// <summary>
@@ -362,6 +380,10 @@ namespace WrenSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void CollectGarbage() => Wren.CollectGarbage(m_Ptr);
 
+        public void SetGCEnabled(bool gcEnabled) => Wren.SetGCEnabled(m_Ptr, gcEnabled);
+
+        public bool GetGCEnabled() => Wren.GetGCEnabled(m_Ptr);
+
         /// <summary>
         /// Indicates if the module <paramref name="module"/> has been imported and resolved.
         /// </summary>
@@ -396,7 +418,7 @@ namespace WrenSharp
         /// <returns>The result of the call operation.</returns>
         /// <exception cref="WrenInterpretException">Thrown if the call is unsuccessful and <paramref name="throwOnFailure"/> is true.</exception>
         /// <seealso cref="CreateHandle(int)"/>
-        /// <seealso cref="CreateHandle(string, string)"/>
+        /// <seealso cref="CreateHandle(string, string, int)"/>
         public WrenInterpretResult Call(WrenHandle handle, bool throwOnFailure = true)
         {
             EnsureValidHandle(handle);
@@ -415,15 +437,13 @@ namespace WrenSharp
         /// <param name="throwOnFailure">If true, a <see cref="WrenInterpretException"/> will be thrown if the call is unsuccessful.</param>
         /// <returns>The result of the call operation.</returns>
         /// <exception cref="WrenInterpretException">Thrown if the call is unsuccessful and <paramref name="throwOnFailure"/> is true.</exception>
-        /// <seealso cref="CreateCall(WrenHandle, WrenCallHandle)"/>
+        /// <seealso cref="CreateCall(WrenHandle, WrenCallHandle, bool)"/>
         /// <seealso cref="CreateCallHandle(string)"/>
         public WrenInterpretResult Call(WrenCallHandle callHandle, bool throwOnFailure = true)
         {
             EnsureValidHandle(callHandle);
             InterpretBegin();
-
-            var result = Wren.Call(m_Ptr, callHandle.m_Ptr);
-
+            WrenInterpretResult result = Wren.Call(m_Ptr, callHandle.m_Ptr);
             InterpretEnd(result, throwOnFailure);
             return result;
         }
@@ -433,12 +453,29 @@ namespace WrenSharp
         /// </summary>
         /// <param name="receiverHandle">A handle to the receiver object.</param>
         /// <param name="callHandle">A handle for the method to call.</param>
+        /// <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
+        /// to call back into Wren from the managed side without clobbering the Wren API stack.</param>
         /// <returns>A <see cref="WrenCall"/> value.</returns>
-        public WrenCall CreateCall(WrenHandle receiverHandle, WrenCallHandle callHandle)
+        public WrenCall CreateCall(WrenHandle receiverHandle, WrenCallHandle callHandle, bool createNewFiber = true)
         {
             EnsureValidHandle(receiverHandle);
             EnsureValidHandle(callHandle);
-            return new WrenCall(this, receiverHandle, callHandle);
+            return new WrenCall(this, receiverHandle, callHandle, createNewFiber);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="WrenCall"/> value that can be used to prepare and execute a call to a static class method.
+        /// </summary>
+        /// <param name="module">The name of the module the class resides in.</param>
+        /// <param name="className">The name of the class to execute the call on.</param>
+        /// <param name="callHandle">A handle for the method to call.</param>
+        /// <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
+        /// to call back into Wren from the managed side without clobbering the Wren API stack.</param>
+        /// <returns>A <see cref="WrenCall"/> value.</returns>
+        public WrenCall CreateCall(string module, string className, WrenCallHandle callHandle, bool createNewFiber = true)
+        {
+            EnsureValidHandle(callHandle);
+            return new WrenCall(this, module, className, callHandle, createNewFiber);
         }
 
         /// <summary>
@@ -446,11 +483,13 @@ namespace WrenSharp
         /// </summary>
         /// <param name="functionHandle">A handle wrapping a Wren Fn object.</param>
         /// <param name="argCount">The number of arguments the function expects.</param>
-        /// <returns></returns>
-        public WrenCall CreateFunctionCall(WrenHandle functionHandle, int argCount)
+        /// <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
+        /// to call back into Wren from the managed side without clobbering the Wren API stack.</param>
+        /// <returns>A <see cref="WrenCall"/> value.</returns>
+        public WrenCall CreateFunctionCall(WrenHandle functionHandle, int argCount, bool createNewFiber = true)
         {
             WrenCallHandle callHandle = GetFunctionCallHandle(argCount);
-            return new WrenCall(this, functionHandle, callHandle);
+            return new WrenCall(this, functionHandle, callHandle, createNewFiber);
         }
 
         #endregion
@@ -458,7 +497,7 @@ namespace WrenSharp
         #region Handles
 
         /// <summary>
-        /// Creates a <see cref="WrenCallHandle"/> that can be used with the <see cref="Call(WrenCallHandle, bool)"/> and <see cref="CreateCall(WrenHandle, WrenCallHandle)"/> methods
+        /// Creates a <see cref="WrenCallHandle"/> that can be used with the <see cref="Call(WrenCallHandle, bool)"/> and <see cref="CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods
         /// to call a Wren method from C#.<para />
         /// Call signatures must conform to standard Wren call signatures, for example:
         /// <code>
@@ -489,7 +528,7 @@ namespace WrenSharp
         /// Interprets a Wren function by wrapping <paramref name="functionBody"/> in the Wren function syntax (<c>Fn.new {...}</c>)
         /// and returns a handle to the newly created function object. This is useful for creating functions dynamically from managed code
         /// that can then be called at a later time.<para/>
-        /// Use <see cref="CreateFunctionCall(WrenHandle, int)"/> to call the function after it has been created.<para/>
+        /// Use <see cref="CreateFunctionCall(WrenHandle, int, bool)"/> to call the function after it has been created.<para/>
         /// See <see href="https://wren.io/functions.html"/> for more information on functions in Wren.
         /// </summary>
         /// <example>
@@ -656,12 +695,21 @@ namespace WrenSharp
         /// </summary>
         public void ReleaseAllHandles()
         {
-            foreach (WrenHandleInternal handle in m_ActiveHandles)
-            {
-                ReleaseHandle(handle, removeFromActiveSet: false);
-            }
+            if (m_ActiveHandles.Count <= 0)
+                return;
 
-            m_ActiveHandles.Clear();
+            lock (m_HandleLocker)
+            {
+                foreach (WrenHandleInternal handle in m_ActiveHandles)
+                {
+                    Wren.ReleaseHandle(m_Ptr, handle.Ptr);
+                    handle.Ptr = IntPtr.Zero;
+
+                    m_PooledHandles.Enqueue(handle);
+                }
+
+                m_ActiveHandles.Clear();
+            }
         }
 
         /// <summary>
@@ -674,7 +722,7 @@ namespace WrenSharp
             if (!handle.IsValid)
                 return;
 
-            ReleaseHandle(handle.m_Handle, removeFromActiveSet: true);
+            ReleaseHandle(handle.m_Handle);
         }
 
         /// <summary>
@@ -687,7 +735,7 @@ namespace WrenSharp
             if (!handle.IsValid)
                 return;
 
-            ReleaseHandle(handle.m_Handle, removeFromActiveSet: true);
+            ReleaseHandle(handle.m_Handle);
         }
 
         #endregion
@@ -765,7 +813,7 @@ namespace WrenSharp
             return handle;
         }
 
-        private void ReleaseHandle(WrenHandleInternal handle, bool removeFromActiveSet)
+        private void ReleaseHandle(WrenHandleInternal handle)
         {
             if (handle == null || !handle.IsValid())
                 return;
@@ -779,11 +827,7 @@ namespace WrenSharp
             lock (m_HandleLocker)
             {
                 m_PooledHandles.Enqueue(handle);
-
-                if (removeFromActiveSet)
-                {
-                    m_ActiveHandles.Remove(handle);
-                }
+                m_ActiveHandles.Remove(handle);
             }
         }
 

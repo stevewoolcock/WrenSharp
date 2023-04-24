@@ -38,20 +38,30 @@ namespace WrenSharp
 
         #region Object
 
+        /// <inheritdoc/>
         public bool Equals(WrenSharedDataHandle other) => other.m_Value == m_Value;
 
+        /// <inheritdoc/>
         public override bool Equals(object obj) => (obj is WrenSharedDataHandle handle) && Equals(handle);
 
+        /// <inheritdoc/>
         public override int GetHashCode() => m_Value;
 
+        /// <inheritdoc/>
         public override string ToString() => $"0x{m_Value:X8}";
 
         #endregion
 
+        /// <inheritdoc/>
         public static bool operator ==(WrenSharedDataHandle left, WrenSharedDataHandle right) => left.Equals(right);
+
+        /// <inheritdoc/>
         public static bool operator !=(WrenSharedDataHandle left, WrenSharedDataHandle right) => !(left == right);
 
+        /// <inheritdoc/>
         public static implicit operator int(WrenSharedDataHandle handle) => handle.m_Value;
+
+        /// <inheritdoc/>
         public static implicit operator WrenSharedDataHandle(int handle) => new WrenSharedDataHandle(handle);
     }
 }
