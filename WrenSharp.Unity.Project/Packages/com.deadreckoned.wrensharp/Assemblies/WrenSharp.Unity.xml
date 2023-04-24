@@ -38,6 +38,16 @@
             Forwards Wren write and error operations to the Unity <see cref="T:UnityEngine.Debug"/> logging methods.
             </summary>
         </member>
+        <member name="F:WrenSharp.Unity.UnityWrenDebugOutput.WarnPrefix">
+            <summary>
+            Prefix used to print messages from Wren as warnings to the Unity log and console.
+            </summary>
+        </member>
+        <member name="F:WrenSharp.Unity.UnityWrenDebugOutput.ErrorPrefix">
+            <summary>
+            Prefix used to print messages from Wren as errors to the Unity log and console.
+            </summary>
+        </member>
         <member name="M:WrenSharp.Unity.UnityWrenDebugOutput.Clear">
             <summary>
             Clear the write buffer.
@@ -567,7 +577,9 @@
         </member>
         <member name="T:WrenSharp.WrenCall">
             <summary>
-            A utility value used to construct a call into the Wren VM.
+            A utility value used to construct a call into the Wren VM. This struct implements <see cref="T:System.IDisposable"/>,
+            so should be dispsosed of when finished with. This ensures that if a new Wren Fiber is created for the call
+            it is cleaned up and the previous Fiber is correctly resumed when the call completes.
             </summary>
         </member>
         <member name="P:WrenSharp.WrenCall.VM">
@@ -579,6 +591,12 @@
             <summary>
             The number of parameters required by the call.
             </summary>
+        </member>
+        <member name="M:WrenSharp.WrenCall.Dispose">
+            <summary>
+            Disposes of the call and restores the Wren API stack pointer if a new Fiber was created for this call.
+            </summary>
+            <seealso cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)"/>
         </member>
         <member name="M:WrenSharp.WrenCall.ArgSlot(System.Int32)">
             <summary>
@@ -658,12 +676,136 @@
             <param name="classSlot">The slot index containing the class to instantiate.</param>
             <param name="data">The shared data to reference.</param>
         </member>
+        <member name="M:WrenSharp.WrenCall.Call(System.Boolean)">
+            <summary>
+            Calls the Wren method.
+            </summary>
+            <param name="throwOnFailure">Determines if a <see cref="T:WrenSharp.WrenInterpretException"/> is thrown if the call fails.</param>
+            <returns>A <see cref="T:WrenSharp.WrenInterpretResult"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCall.Call(System.Boolean@,System.Boolean)">
+            <summary>
+            Calls the Wren method and assigns the return value to <paramref name="returnValue"/>.
+            </summary>
+            <param name="returnValue">The return value of the call.</param>
+            <param name="throwOnFailure">Determines if a <see cref="T:WrenSharp.WrenInterpretException"/> is thrown if the call fails.</param>
+            <returns>A <see cref="T:WrenSharp.WrenInterpretResult"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCall.Call(System.Double@,System.Boolean)">
+            <summary>
+            Calls the Wren method and assigns the return value to <paramref name="returnValue"/>.
+            </summary>
+            <param name="returnValue">The return value of the call.</param>
+            <param name="throwOnFailure">Determines if a <see cref="T:WrenSharp.WrenInterpretException"/> is thrown if the call fails.</param>
+            <returns>A <see cref="T:WrenSharp.WrenInterpretResult"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCall.Call(System.String@,System.Boolean)">
+            <summary>
+            Calls the Wren method and assigns the return value to <paramref name="returnValue"/>.
+            </summary>
+            <param name="returnValue">The return value of the call.</param>
+            <param name="throwOnFailure">Determines if a <see cref="T:WrenSharp.WrenInterpretException"/> is thrown if the call fails.</param>
+            <returns>A <see cref="T:WrenSharp.WrenInterpretResult"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCall.Call(System.ReadOnlySpan{System.Byte}@,System.Boolean)">
+            <summary>
+            Calls the Wren method and assigns the return value to <paramref name="returnStringBytesValue"/>.
+            </summary>
+            <param name="returnStringBytesValue">The return value of the call.</param>
+            <param name="throwOnFailure">Determines if a <see cref="T:WrenSharp.WrenInterpretException"/> is thrown if the call fails.</param>
+            <returns>A <see cref="T:WrenSharp.WrenInterpretResult"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCall.Call(WrenSharp.WrenHandle@,System.Boolean)">
+            <summary>
+            Calls the Wren method, creates a <see cref="T:WrenSharp.WrenHandle"/> to wrap the return value and assigns the handle to <paramref name="returnValue"/>.
+            </summary>
+            <param name="returnValue">A <see cref="T:WrenSharp.WrenHandle"/> wrapping the return value of the call.</param>
+            <param name="throwOnFailure">Determines if a <see cref="T:WrenSharp.WrenInterpretException"/> is thrown if the call fails.</param>
+            <returns>A <see cref="T:WrenSharp.WrenInterpretResult"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCall.Call(WrenSharp.WrenSharedDataHandle@,System.Boolean)">
+            <summary>
+            Calls the Wren method and assigns the return value to <paramref name="returnValue"/>.
+            </summary>
+            <param name="returnValue">The return value of the call.</param>
+            <param name="throwOnFailure">Determines if a <see cref="T:WrenSharp.WrenInterpretException"/> is thrown if the call fails.</param>
+            <returns>A <see cref="T:WrenSharp.WrenInterpretResult"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCall.Call(WrenSharp.WrenType@,System.Boolean)">
+            <summary>
+            Calls the Wren method and assigns the return value type to <paramref name="returnValueType"/>.
+            </summary>
+            <param name="returnValueType">The type of the return value of the call.</param>
+            <param name="throwOnFailure">Determines if a <see cref="T:WrenSharp.WrenInterpretException"/> is thrown if the call fails.</param>
+            <returns>A <see cref="T:WrenSharp.WrenInterpretResult"/>.</returns>
+        </member>
         <member name="M:WrenSharp.WrenCall.CreateReturnHandle">
             <summary>
             Creates a new <see cref="T:WrenSharp.WrenHandle"/> wrapping the call's return value. The handle should be released
             when it is no longer required.
             </summary>
             <returns>A <see cref="T:WrenSharp.WrenHandle"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCall.GetReturnType">
+            <summary>
+            Returns the type of the call's return value. This is only valid after calling the method
+            </summary>
+            <returns>The <see cref="T:WrenSharp.WrenType"/> of the return value.</returns>
+            <seealso cref="M:WrenSharp.WrenCall.Call(System.Boolean)"/>.
+        </member>
+        <member name="M:WrenSharp.WrenCall.GetReturnBool">
+            <summary>
+            Returns a <see cref="T:System.Boolean"/> value from the call's return slot.
+            </summary>
+            <returns>A <see cref="T:System.Boolean"/> value.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCall.GetReturnDouble">
+            <summary>
+            Returns a <see cref="T:System.Double"/> value from the call's return slot.
+            </summary>
+            <returns>A <see cref="T:System.Double"/> value.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCall.GetReturnString">
+            <summary>
+            Returns a <see cref="T:System.String"/> value from the call's return slot.
+            </summary>
+            <returns>A <see cref="T:System.String"/> value.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCall.GetReturnStringBytes">
+            <summary>
+            Returns a <see cref="T:System.ReadOnlySpan`1"/> (with a generic type of <see cref="T:System.Byte"/>) value from the call's return slot.
+            </summary>
+            <returns>A <see cref="T:System.ReadOnlySpan`1"/> (with a generic type of <see cref="T:System.Byte"/>).</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCall.GetReturnForeign">
+            <summary>
+            Returns a foreign type <see cref="T:System.IntPtr"/> from the call's return slot.
+            </summary>
+            <returns>A <see cref="T:System.IntPtr"/> value.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCall.GetReturnForeign``1">
+            <summary>
+            Returns a foreign <typeparamref name="T"/> reference from the call's return slot.
+            </summary>
+            <returns>A <typeparamref name="T"/> reference.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCall.GetReturnForeignPtr``1">
+            <summary>
+            Returns a foreign <typeparamref name="T"/> pointer from the call's return slot.
+            </summary>
+            <returns>A <typeparamref name="T"/> value.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCall.GetReturnSharedData``1">
+            <summary>
+            Returns a shared data reference of <typeparamref name="T"/> from the call's return slot.
+            </summary>
+            <returns>A <typeparamref name="T"/> reference.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenCall.GetReturnSharedDataHandle">
+            <summary>
+            Returns a <see cref="T:WrenSharp.WrenSharedDataHandle"/> from the call's return slot.
+            </summary>
+            <returns>A <see cref="T:WrenSharp.WrenSharedDataHandle"/> value.</returns>
         </member>
         <member name="T:WrenSharp.WrenCallHandle">
             <summary>
@@ -676,7 +818,7 @@
             will automatically release all handles allocated when disposed.
             </summary>
             <seealso cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle,System.Boolean)"/>
-            <seealso cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle)"/>
+            <seealso cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)"/>
         </member>
         <member name="P:WrenSharp.WrenCallHandle.IsValid">
             <summary>
@@ -693,6 +835,24 @@
             <summary>
             Releases the handle. Once released, the handle can no longer be used.
             </summary>
+        </member>
+        <member name="M:WrenSharp.WrenCallHandle.Equals(WrenSharp.WrenCallHandle)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenCallHandle.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenCallHandle.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenCallHandle.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenCallHandle.op_Equality(WrenSharp.WrenCallHandle,WrenSharp.WrenCallHandle)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenCallHandle.op_Inequality(WrenSharp.WrenCallHandle,WrenSharp.WrenCallHandle)">
+            <inheritdoc/>
         </member>
         <member name="T:WrenSharp.WrenFileSource">
             <summary>
@@ -807,6 +967,24 @@
             <summary>
             Releases the handle. Once released, the handle can no longer be used.
             </summary>
+        </member>
+        <member name="M:WrenSharp.WrenHandle.Equals(WrenSharp.WrenHandle)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenHandle.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenHandle.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenHandle.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenHandle.op_Equality(WrenSharp.WrenHandle,WrenSharp.WrenHandle)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenHandle.op_Inequality(WrenSharp.WrenHandle,WrenSharp.WrenHandle)">
+            <inheritdoc/>
         </member>
         <member name="T:WrenSharp.WrenMethodType">
             <summary>
@@ -1060,7 +1238,6 @@
             <summary>
             Sets a new instance of a foreign class as the return value for the method call.
             </summary>
-            <typeparam name="T">The foreign class' data type.</typeparam>
             <param name="classHandle">A handle to the class being instantiated.</param>
             <param name="size">The number of bytes to allocate for the instance.</param>
         </member>
@@ -1068,7 +1245,6 @@
             <summary>
             Sets a new instance of a foreign class as the return value for the method call.
             </summary>
-            <typeparam name="T">The foreign class' data type.</typeparam>
             <param name="module">The name of the module the class resides in.</param>
             <param name="className">The name of the class to instantiate.</param>
             <param name="size">The number of bytes to allocate for the instance.</param>
@@ -1284,6 +1460,30 @@
             Indicates if the handle represents a valid address.
             </summary>
         </member>
+        <member name="M:WrenSharp.WrenSharedDataHandle.Equals(WrenSharp.WrenSharedDataHandle)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenSharedDataHandle.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenSharedDataHandle.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenSharedDataHandle.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenSharedDataHandle.op_Equality(WrenSharp.WrenSharedDataHandle,WrenSharp.WrenSharedDataHandle)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenSharedDataHandle.op_Inequality(WrenSharp.WrenSharedDataHandle,WrenSharp.WrenSharedDataHandle)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenSharedDataHandle.op_Implicit(WrenSharp.WrenSharedDataHandle)~System.Int32">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenSharedDataHandle.op_Implicit(System.Int32)~WrenSharp.WrenSharedDataHandle">
+            <inheritdoc/>
+        </member>
         <member name="T:WrenSharp.WrenStringBuilderSource">
             <summary>
             A Wren script source that wraps a <see cref="T:System.Text.StringBuilder"/>. The contents of the source is copied
@@ -1372,48 +1572,43 @@
             <param name="signature">The call signature to scan.</param>
             <returns>The number of arugment tokens in <paramref name="signature"/>.</returns>
         </member>
-        <member name="M:WrenSharp.WrenUtils.MethodSignature(System.String,System.Int32,System.Boolean)">
+        <member name="M:WrenSharp.WrenUtils.MethodSignature(System.String,System.Int32)">
             <summary>
             Creates a method signature from the input arguments.
             </summary>
             <param name="methodName">The name of the method.</param>
             <param name="paramCount">The number of parameters the call requires.</param>
-            <param name="isStatic">Indicates if the method is static.</param>
             <returns>A method signature.</returns>
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown if <paramref name="paramCount"/> is out of the valid parameter count range.</exception>
         </member>
-        <member name="M:WrenSharp.WrenUtils.SubscriptSignature(System.Int32,System.Boolean)">
+        <member name="M:WrenSharp.WrenUtils.SubscriptSignature(System.Int32)">
             <summary>
             Creates a subscrupt signature from the input arguments.
             </summary>
             <param name="paramCount">The number of parameters the call requires.</param>
-            <param name="isStatic">Indicates if the method is static.</param>
             <returns>A subscript signature.</returns>
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown if <paramref name="paramCount"/> is out of the valid parameter count range.</exception>
         </member>
-        <member name="M:WrenSharp.WrenUtils.SubscriptSetterSignature(System.Int32,System.Boolean)">
+        <member name="M:WrenSharp.WrenUtils.SubscriptSetterSignature(System.Int32)">
             <summary>
             Creates a subscript setter signature from the input arguments.
             </summary>
             <param name="paramCount">The number of parameters the call requires.</param>
-            <param name="isStatic">Indicates if the method is static.</param>
             <returns>A subscript setter signature.</returns>
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown if <paramref name="paramCount"/> is out of the valid parameter count range.</exception>
         </member>
-        <member name="M:WrenSharp.WrenUtils.GetterSignature(System.String,System.Boolean)">
+        <member name="M:WrenSharp.WrenUtils.GetterSignature(System.String)">
             <summary>
             Creates a property getter signature from the input arguments.
             </summary>
             <param name="propertyName">The name of the property.</param>
-            <param name="isStatic">Indicates if the property is static.</param>
             <returns>A property getter signature.</returns>
         </member>
-        <member name="M:WrenSharp.WrenUtils.SetterSignature(System.String,System.Boolean)">
+        <member name="M:WrenSharp.WrenUtils.SetterSignature(System.String)">
             <summary>
             Creates a property setter signature from the input arguments.
             </summary>
             <param name="propertyName">The name of the property.</param>
-            <param name="isStatic">Indicates if the property is static.</param>
             <returns>A property setter signature.</returns>
         </member>
         <member name="M:WrenSharp.WrenUtils.AsInt8(System.Double)">
@@ -1448,10 +1643,38 @@
             <returns>The integral value.</returns>
             <exception cref="T:System.ArgumentException">Thrown is <paramref name="value"/> does not represent an integral value.</exception>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:WrenSharp.WrenUtils.AsInt32(System.Double)" -->
-        <!-- Badly formed XML comment ignored for member "M:WrenSharp.WrenUtils.AsUInt32(System.Double)" -->
-        <!-- Badly formed XML comment ignored for member "M:WrenSharp.WrenUtils.AsInt64(System.Double)" -->
-        <!-- Badly formed XML comment ignored for member "M:WrenSharp.WrenUtils.AsUInt64(System.Double)" -->
+        <member name="M:WrenSharp.WrenUtils.AsInt32(System.Double)">
+            <summary>
+            If <paramref name="value"/> is an integer, returns the integral value as a signed 32 bit integer. Otherwise, a <see cref="T:System.ArgumentException"/> is thrown.
+            </summary>
+            <param name="value">The value to conver to an integer.</param>
+            <returns>The integral value.</returns>
+            <exception cref="T:System.ArgumentException">Thrown is <paramref name="value"/> does not represent an integral value.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenUtils.AsUInt32(System.Double)">
+            <summary>
+            If <paramref name="value"/> is an integer, returns the integral value as an unsigned 32 bit integer. Otherwise, a <see cref="T:System.ArgumentException"/> is thrown.
+            </summary>
+            <param name="value">The value to conver to an integer.</param>
+            <returns>The integral value.</returns>
+            <exception cref="T:System.ArgumentException">Thrown is <paramref name="value"/> does not represent an integral value.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenUtils.AsInt64(System.Double)">
+            <summary>
+            If <paramref name="value"/> is an integer, returns the integral value as a signed 64 bit integer. Otherwise, a <see cref="T:System.ArgumentException"/> is thrown.
+            </summary>
+            <param name="value">The value to conver to an integer.</param>
+            <returns>The integral value.</returns>
+            <exception cref="T:System.ArgumentException">Thrown is <paramref name="value"/> does not represent an integral value.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenUtils.AsUInt64(System.Double)">
+            <summary>
+            If <paramref name="value"/> is an integer, returns the integral value as an unsigned 64 bit integer. Otherwise, a <see cref="T:System.ArgumentException"/> is thrown.
+            </summary>
+            <param name="value">The value to conver to an integer.</param>
+            <returns>The integral value.</returns>
+            <exception cref="T:System.ArgumentException">Thrown is <paramref name="value"/> does not represent an integral value.</exception>
+        </member>
         <member name="M:WrenSharp.WrenUtils.IsInteger(System.Double)">
             <summary>
             Indicates if <paramref name="value"/> represents an integral value with no fractional components.
@@ -1464,28 +1687,28 @@
             Indicates if <paramref name="value"/> represents a signed 16 bit integral value with no fractional components.
             </summary>
             <param name="value">The value to test.</param>
-            <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="!:=byte"/>.</returns>
+            <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="T:System.Byte"/>.</returns>
         </member>
         <member name="M:WrenSharp.WrenUtils.IsInt16(System.Double)">
             <summary>
             Indicates if <paramref name="value"/> represents a signed 16 bit integral value with no fractional components.
             </summary>
             <param name="value">The value to test.</param>
-            <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="!:=short"/>.</returns>
+            <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="T:System.Int16"/>.</returns>
         </member>
         <member name="M:WrenSharp.WrenUtils.IsInt32(System.Double)">
             <summary>
             Indicates if <paramref name="value"/> represents a signed 32 bit integral value with no fractional components.
             </summary>
             <param name="value">The value to test.</param>
-            <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="!:=int"/>.</returns>
+            <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="T:System.Int32"/>.</returns>
         </member>
         <member name="M:WrenSharp.WrenUtils.IsInt64(System.Double)">
             <summary>
             Indicates if <paramref name="value"/> represents a signed 16 bit integral value with no fractional components.
             </summary>
             <param name="value">The value to test.</param>
-            <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="!:=long"/>.</returns>
+            <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="T:System.Int64"/>.</returns>
         </member>
         <member name="T:WrenSharp.WrenVM">
             <summary>
@@ -2373,6 +2596,17 @@
             or by the garbage collector when the instance is finalized.
             </summary>
         </member>
+        <member name="P:WrenSharp.WrenVM.BytesAllocated">
+            <summary>
+            Gets the number of bytes known to be allocated for alive objects in the VM.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenVM.GCEnabled">
+            <summary>
+            Gets or sets the enabled state of the Wren garbage collected. Use <see cref="M:WrenSharp.WrenVM.CollectGarbage"/>
+            to trigger manual garbage collections.
+            </summary>
+        </member>
         <member name="M:WrenSharp.WrenVM.#ctor(WrenSharp.Native.WrenConfiguration@,WrenSharp.Memory.IAllocator)">
             <summary>
             Creates a new Wren VM to run Wren scripts. This constructor provides the ability to explicitly
@@ -2519,7 +2753,7 @@
             <returns>The result of the call operation.</returns>
             <exception cref="T:WrenSharp.WrenInterpretException">Thrown if the call is unsuccessful and <paramref name="throwOnFailure"/> is true.</exception>
             <seealso cref="M:WrenSharp.WrenVM.CreateHandle(System.Int32)"/>
-            <seealso cref="!:CreateHandle(string, string)"/>
+            <seealso cref="M:WrenSharp.WrenVM.CreateHandle(System.String,System.String,System.Int32)"/>
         </member>
         <member name="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle,System.Boolean)">
             <summary>
@@ -2529,28 +2763,43 @@
             <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if the call is unsuccessful.</param>
             <returns>The result of the call operation.</returns>
             <exception cref="T:WrenSharp.WrenInterpretException">Thrown if the call is unsuccessful and <paramref name="throwOnFailure"/> is true.</exception>
-            <seealso cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle)"/>
+            <seealso cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)"/>
             <seealso cref="M:WrenSharp.WrenVM.CreateCallHandle(System.String)"/>
         </member>
-        <member name="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle)">
+        <member name="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)">
             <summary>
             Creates a <see cref="T:WrenSharp.WrenCall"/> value that can be used to prepare and execute a call.
             </summary>
             <param name="receiverHandle">A handle to the receiver object.</param>
             <param name="callHandle">A handle for the method to call.</param>
+            <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
+            to call back into Wren from the managed side without clobbering the Wren API stack.</param>
             <returns>A <see cref="T:WrenSharp.WrenCall"/> value.</returns>
         </member>
-        <member name="M:WrenSharp.WrenVM.CreateFunctionCall(WrenSharp.WrenHandle,System.Int32)">
+        <member name="M:WrenSharp.WrenVM.CreateCall(System.String,System.String,WrenSharp.WrenCallHandle,System.Boolean)">
+            <summary>
+            Creates a <see cref="T:WrenSharp.WrenCall"/> value that can be used to prepare and execute a call to a static class method.
+            </summary>
+            <param name="module">The name of the module the class resides in.</param>
+            <param name="className">The name of the class to execute the call on.</param>
+            <param name="callHandle">A handle for the method to call.</param>
+            <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
+            to call back into Wren from the managed side without clobbering the Wren API stack.</param>
+            <returns>A <see cref="T:WrenSharp.WrenCall"/> value.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.CreateFunctionCall(WrenSharp.WrenHandle,System.Int32,System.Boolean)">
             <summary>
             Creates a <see cref="T:WrenSharp.WrenCall"/> for a Wren Fn object, that can be used to prepare and execute the call.
             </summary>
             <param name="functionHandle">A handle wrapping a Wren Fn object.</param>
             <param name="argCount">The number of arguments the function expects.</param>
-            <returns></returns>
+            <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
+            to call back into Wren from the managed side without clobbering the Wren API stack.</param>
+            <returns>A <see cref="T:WrenSharp.WrenCall"/> value.</returns>
         </member>
         <member name="M:WrenSharp.WrenVM.CreateCallHandle(System.String)">
             <summary>
-            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> that can be used with the <see cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle,System.Boolean)"/> and <see cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle)"/> methods
+            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> that can be used with the <see cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle,System.Boolean)"/> and <see cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)"/> methods
             to call a Wren method from C#.<para />
             Call signatures must conform to standard Wren call signatures, for example:
             <code>
@@ -2573,7 +2822,7 @@
             Interprets a Wren function by wrapping <paramref name="functionBody"/> in the Wren function syntax (<c>Fn.new {...}</c>)
             and returns a handle to the newly created function object. This is useful for creating functions dynamically from managed code
             that can then be called at a later time.<para/>
-            Use <see cref="M:WrenSharp.WrenVM.CreateFunctionCall(WrenSharp.WrenHandle,System.Int32)"/> to call the function after it has been created.<para/>
+            Use <see cref="M:WrenSharp.WrenVM.CreateFunctionCall(WrenSharp.WrenHandle,System.Int32,System.Boolean)"/> to call the function after it has been created.<para/>
             See <see href="https://wren.io/functions.html"/> for more information on functions in Wren.
             </summary>
             <example>
