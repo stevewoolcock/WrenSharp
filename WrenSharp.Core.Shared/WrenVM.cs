@@ -456,7 +456,7 @@ namespace WrenSharp
         /// <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
         /// to call back into Wren from the managed side without clobbering the Wren API stack.</param>
         /// <returns>A <see cref="WrenCall"/> value.</returns>
-        public WrenCall CreateCall(WrenHandle receiverHandle, WrenCallHandle callHandle, bool createNewFiber = true)
+        public WrenCall CreateCall(WrenHandle receiverHandle, WrenCallHandle callHandle, bool createNewFiber = false)
         {
             EnsureValidHandle(receiverHandle);
             EnsureValidHandle(callHandle);
@@ -472,7 +472,7 @@ namespace WrenSharp
         /// <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
         /// to call back into Wren from the managed side without clobbering the Wren API stack.</param>
         /// <returns>A <see cref="WrenCall"/> value.</returns>
-        public WrenCall CreateCall(string module, string className, WrenCallHandle callHandle, bool createNewFiber = true)
+        public WrenCall CreateCall(string module, string className, WrenCallHandle callHandle, bool createNewFiber = false)
         {
             EnsureValidHandle(callHandle);
             return new WrenCall(this, module, className, callHandle, createNewFiber);
@@ -486,7 +486,7 @@ namespace WrenSharp
         /// <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
         /// to call back into Wren from the managed side without clobbering the Wren API stack.</param>
         /// <returns>A <see cref="WrenCall"/> value.</returns>
-        public WrenCall CreateFunctionCall(WrenHandle functionHandle, int argCount, bool createNewFiber = true)
+        public WrenCall CreateFunctionCall(WrenHandle functionHandle, int argCount, bool createNewFiber = false)
         {
             WrenCallHandle callHandle = GetFunctionCallHandle(argCount);
             return new WrenCall(this, functionHandle, callHandle, createNewFiber);
