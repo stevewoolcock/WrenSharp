@@ -977,46 +977,27 @@
             been loaded. Otherwise, calling this method does nothing.
             </summary>
         </member>
-        <member name="T:WrenSharp.WrenSlots">
-            <summary>
-            Exposes an API for manipulating Wren API slots.
-            </summary>
-        </member>
-        <member name="P:WrenSharp.WrenSlots.Count">
-            <summary>
-            Returns the number of allocated API slots for the current Wren fiber.
-            </summary>
-        </member>
-        <member name="P:WrenSharp.WrenSlots.Item(System.Int32)">
-            <summary>
-            Gets a <see cref="T:WrenSharp.WrenSlot"/> value for slot[<paramref name="index"/>].
-            </summary>
-            <param name="index">The index of the slot.</param>
-            <returns>A <see cref="T:WrenSharp.WrenSlot"/> value.</returns>
-            <exception cref="T:System.ArgumentOutOfRangeException">Thrown if <paramref name="index"/>is less than zero or greater or equal to <see cref="P:WrenSharp.WrenSlots.Count"/>.</exception>
-        </member>
-        <member name="M:WrenSharp.WrenSlots.Copy(System.Int32,System.Int32)">
-            <summary>
-            Copies the value in slot[<paramref name="slotFrom"/>] to slot[<paramref name="slotTo"/>].
-            If <paramref name="slotFrom"/> is equal to <paramref name="slotTo"/>, this method does nothing.
-            This method does not ensure that <paramref name="slotFrom"/> or <paramref name="slotTo"/> are valid
-            before attempting the copy.
-            </summary>
-            <param name="slotFrom">The slot containing the value to copy.</param>
-            <param name="slotTo">The slot to copy the value into.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenSlots"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenSlots.EnsureCapacity(System.Int32)">
-            <summary>
-            Ensures the current Wren fiber has at least <paramref name="capacity"/> API slots available.
-            </summary>
-            <param name="capacity">The capacity of API slots to ensure.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenSlots"/>.</returns>
-        </member>
         <member name="T:WrenSharp.WrenSlot">
             <summary>
             A wrapper for a Wren API slot.
             </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlot.ValuePtr">
+            <summary>
+            A pointer to the <see cref="T:WrenSharp.Unsafe.WrenValue"/> in the API slot.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlot.Value">
+            <summary>
+            The <see cref="T:WrenSharp.Unsafe.WrenValue"/> in the API slot.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenSlot.ValueEquals(System.Int32)">
+            <summary>
+            Indicates if the values in this slot is equal to the value in slot[<paramref name="otherSlot"/>].
+            </summary>
+            <param name="otherSlot">The slot to compare to.</param>
+            <returns>True if the values are the same, otherwise false.</returns>
         </member>
         <member name="P:WrenSharp.WrenSlot.Index">
             <summary>
@@ -1202,6 +1183,1375 @@
             <param name="defaultKeySlot">The default key slot of the returned <see cref="T:WrenSharp.WrenMap"/>.</param>
             <param name="defaultValueSlot">The default value slot of the returned <see cref="T:WrenSharp.WrenMap"/>.</param>
             <returns>A <see cref="T:WrenSharp.WrenMap"/> wrapper for the newly created map.</returns>
+        </member>
+        <member name="T:WrenSharp.WrenSlots">
+            <summary>
+            Exposes an API for manipulating Wren API slots.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlots.Count">
+            <summary>
+            Returns the number of allocated API slots for the current Wren fiber.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlots.Item(System.Int32)">
+            <summary>
+            Gets a <see cref="T:WrenSharp.WrenSlot"/> value for slot[<paramref name="index"/>].
+            </summary>
+            <param name="index">The index of the slot.</param>
+            <returns>A <see cref="T:WrenSharp.WrenSlot"/> value.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown if <paramref name="index"/>is less than zero or greater or equal to <see cref="P:WrenSharp.WrenSlots.Count"/>.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenSlots.Copy(System.Int32,System.Int32)">
+            <summary>
+            Copies the value in slot[<paramref name="slotFrom"/>] to slot[<paramref name="slotTo"/>].
+            If <paramref name="slotFrom"/> is equal to <paramref name="slotTo"/>, this method does nothing.
+            This method does not ensure that <paramref name="slotFrom"/> or <paramref name="slotTo"/> are valid
+            before attempting the copy.
+            </summary>
+            <param name="slotFrom">The slot containing the value to copy.</param>
+            <param name="slotTo">The slot to copy the value into.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenSlots"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenSlots.EnsureCapacity(System.Int32)">
+            <summary>
+            Ensures the current Wren fiber has at least <paramref name="capacity"/> API slots available.
+            </summary>
+            <param name="capacity">The capacity of API slots to ensure.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenSlots"/>.</returns>
+        </member>
+        <member name="P:WrenSharp.WrenSlots.Values">
+            <summary>
+            Returns a direct view to the native Wren API slot memory for fast access by avoiding subsequent
+            calls into the Wren API to retrieve value information. This method retrieves the current total number
+            of slots and a pointer to the first slot, therefore the returned <see cref="T:System.Span`1"/> should be cached
+            in a local variable, or any performance gains are lost.
+            <para/>
+            The returned span beings at slot[0] and ends at slot[Count]. Call <see cref="M:WrenSharp.WrenSlots.EnsureCapacity(System.Int32)"/>
+            first to ensure the span contains at least the required number of slots.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenSlots.GetValues(System.Int32)">
+            <summary>
+            Returns a direct view to the native Wren API slot memory for fast access by avoiding subsequent
+            calls into the Wren API to retrieve value information. This method ensures that <paramref name="count"/>
+            slots will exist, there is no need to call <see cref="M:WrenSharp.WrenSlots.EnsureCapacity(System.Int32)"/> before invoking this method.
+            The returned <see cref="T:System.Span`1"/> should be cached in a local variable, or any performance gains are lost.
+            <para/>
+            The returned span beings at slot[0] and ends at slot[<paramref name="count"/>].
+            </summary>
+            <param name="count">The number of slots to span.</param>
+        </member>
+        <member name="M:WrenSharp.WrenSlots.ValuesEqual(System.Int32,System.Int32)">
+            <summary>
+            Indicates if the values in slot[<paramref name="slot1"/>] and slot[<paramref name="slot2"/>] hold the same values.
+            </summary>
+            <param name="slot1">The first slot to compare.</param>
+            <param name="slot2">The second slot to compare.</param>
+            <returns>True if the values are the same, otherwise false.</returns>
+        </member>
+        <member name="T:WrenSharp.WrenVM">
+            <summary>
+            A managed instance of a Wren virtual machine. This class wraps the native VM and provides a clean, convenient API
+            for working with the VM in a managed environment.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenVM.BytesAllocated">
+            <summary>
+            Gets the number of bytes known to be allocated for alive objects in the VM.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenVM.GCEnabled">
+            <summary>
+            Gets or sets the enabled state of the Wren garbage collected. Use <see cref="M:WrenSharp.WrenVM.CollectGarbage"/>
+            to trigger manual garbage collections.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetGCEnabled(System.Boolean)">
+            <summary>
+            Sets the enabled state of the Wren garbage collector.
+            </summary>
+            <param name="gcEnabled"></param>
+        </member>
+        <member name="M:WrenSharp.WrenVM.EnsureSlotCount(System.Int32)">
+            <summary>
+            Ensures that the foreign method stack has at least <paramref name="slotCount"/> available for use, growing the stack if needed.<para />
+            Does not shrink the stack if it has more than enough slots.<para />
+            It is an error to call this from a Wren foriegn finalizer.
+            </summary>
+            <param name="slotCount">The number of slots to ensure are allocated.</param>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotCount">
+            <summary>
+            Returns the number of slots available to the current foreign method.
+            </summary>
+            <returns>The number of slots available to the current foreign method.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotBool(System.Int32)">
+            <summary>
+            Reads a boolean value from <paramref name="slot"/>.<para/>
+            It is an error to call this if the slot does not contain a boolean value.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <returns>The boolean value in the slot.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotByte(System.Int32)">
+            <summary>
+            Reads a byte value from <paramref name="slot"/>.<para/>
+            It is an error to call this if the slot does not contain a number value.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <returns>The byte value in the slot.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotSByte(System.Int32)">
+            <summary>
+            Reads a sbyte value from <paramref name="slot"/>.<para/>
+            It is an error to call this if the slot does not contain a number value.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <returns>The sbyte value in the slot.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotInt16(System.Int32)">
+            <summary>
+            Reads a signed 16bit integer value from <paramref name="slot"/>.<para/>
+            It is an error to call this if the slot does not contain a number value.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <returns>The signed 16bit integer value in the slot.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotUInt16(System.Int32)">
+            <summary>
+            Reads an unsigned 16bit integer value from <paramref name="slot"/>.<para/>
+            It is an error to call this if the slot does not contain a number value.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <returns>The unsigned 16bit integer value in the slot.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotInt32(System.Int32)">
+            <summary>
+            Reads a signed 32bit integer value from <paramref name="slot"/>.<para/>
+            It is an error to call this if the slot does not contain a number value.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <returns>The signed 32bit integer value in the slot.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotUInt32(System.Int32)">
+            <summary>
+            Reads an unsigned 32bit integer value from <paramref name="slot"/>.<para/>
+            It is an error to call this if the slot does not contain a number value.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <returns>The unsigned 32bit integer value in the slot.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotInt64(System.Int32)">
+            <summary>
+            Reads a signed 64bit integer value from <paramref name="slot"/>.<para/>
+            It is an error to call this if the slot does not contain a number value.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <returns>The signed 64bit integer value in the slot.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotUInt64(System.Int32)">
+            <summary>
+            Reads a unsigned 64bit integer value from <paramref name="slot"/>.<para/>
+            It is an error to call this if the slot does not contain a number value.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <returns>The unsigned 64bit integer value in the slot.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotFloat(System.Int32)">
+            <summary>
+            Reads a 32bit float value from <paramref name="slot"/>.<para/>
+            It is an error to call this if the slot does not contain a number value.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <returns>The 32bit float value in the slot.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotDouble(System.Int32)">
+            <summary>
+            Reads a 64bit float value from <paramref name="slot"/>.<para/>
+            It is an error to call this if the slot does not contain a number value.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <returns>The 64bit float value in the slot.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotString(System.Int32)">
+            <summary>
+            Reads a string value from <paramref name="slot"/>.<para/>
+            It is an error to call this if the slot does not contain a string value.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <returns>The string value in the slot.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotStringBytes(System.Int32)">
+            <summary>
+            Reads the bytes representing a string value from <paramref name="slot"/>.<para/>
+            It is an error to call this if the slot does not contain a string value.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <returns>The bytes representing the string value in the slot.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotType(System.Int32)">
+            <summary>
+            Gets the <see cref="T:WrenSharp.WrenType"/> of the value in <paramref name="slot"/>.
+            </summary>
+            <param name="slot">The slot index.</param>
+            <returns>The <see cref="T:WrenSharp.WrenType"/> of the value.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.Boolean@)">
+            <summary>
+            Attempts to read a boolean from <paramref name="slot"/>.
+            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Bool"/>.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="value">Stores the value in <paramref name="slot"/>.</param>
+            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Bool"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.Byte@)">
+            <summary>
+            Attempts to read an unsigned byte from <paramref name="slot"/>.
+            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="value">Stores the value in <paramref name="slot"/>.</param>
+            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.SByte@)">
+            <summary>
+            Attempts to read a signed byte from <paramref name="slot"/>.
+            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="value">Stores the value in <paramref name="slot"/>.</param>
+            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.Int16@)">
+            <summary>
+            Attempts to read a signed 16bit integer from <paramref name="slot"/>.
+            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="value">Stores the value in <paramref name="slot"/>.</param>
+            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.UInt16@)">
+            <summary>
+            Attempts to read an unsigned 16bit integer from <paramref name="slot"/>.
+            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="value">Stores the value in <paramref name="slot"/>.</param>
+            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.Int32@)">
+            <summary>
+            Attempts to read an signed 32bit integer from <paramref name="slot"/>.
+            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="value">Stores the value in <paramref name="slot"/>.</param>
+            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.UInt32@)">
+            <summary>
+            Attempts to read an unsigned 32bit integer from <paramref name="slot"/>.
+            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="value">Stores the value in <paramref name="slot"/>.</param>
+            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.Int64@)">
+            <summary>
+            Attempts to read an signed 64bit integer from <paramref name="slot"/>.
+            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="value">Stores the value in <paramref name="slot"/>.</param>
+            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.UInt64@)">
+            <summary>
+            Attempts to read an unsigned 64bit integer from <paramref name="slot"/>.
+            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="value">Stores the value in <paramref name="slot"/>.</param>
+            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.Single@)">
+            <summary>
+            Attempts to read an 32bit float from <paramref name="slot"/>.
+            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="value">Stores the value in <paramref name="slot"/>.</param>
+            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.Double@)">
+            <summary>
+            Attempts to read an 64bit float from <paramref name="slot"/>.
+            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="value">Stores the value in <paramref name="slot"/>.</param>
+            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.String@)">
+            <summary>
+            Attempts to read a string from <paramref name="slot"/>.
+            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.String"/>.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="value">Stores the value in <paramref name="slot"/>.</param>
+            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.ReadOnlySpan{System.Byte}@)">
+            <summary>
+            Attempts to read the bytes representing a string from <paramref name="slot"/>.
+            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.String"/>.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="value">Stores the value in <paramref name="slot"/>.</param>
+            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlot(System.Int32,System.Boolean)">
+            <summary>
+            Stores a boolean value in <paramref name="slot"/>.
+            </summary>
+            <param name="slot">The slot index to write to.</param>
+            <param name="value">The value to write.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlot(System.Int32,System.Double)">
+            <summary>
+            Stores a number value in <paramref name="slot"/>.
+            </summary>
+            <param name="slot">The slot index to write to.</param>
+            <param name="value">The value to write.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlot(System.Int32,System.String)">
+            <summary>
+            Stores a string value in <paramref name="slot"/>.
+            </summary>
+            <param name="slot">The slot index to write to.</param>
+            <param name="value">The value to write.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlot(System.Int32,System.ReadOnlySpan{System.Byte})">
+            <summary>
+            Stores a string value in <paramref name="slot"/>. This method accepts a span of raw bytes
+            representing the string.
+            </summary>
+            <param name="slot">The slot index to write to.</param>
+            <param name="stringBytes">The value to write.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlot(System.Int32,WrenSharp.WrenHandle)">
+            <summary>
+            Stores the value of a <see cref="T:WrenSharp.WrenHandle"/> in <paramref name="slot"/>.
+            </summary>
+            <param name="slot">The slot index to write to.</param>
+            <param name="value">The value to write.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+            <exception cref="T:WrenSharp.WrenInvalidHandleException">Thrown if <paramref name="value"/> is not valid.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlotUnsafe(System.Int32,WrenSharp.WrenHandle)">
+            <summary>
+            Stores the value of a <see cref="T:WrenSharp.WrenHandle"/> in <paramref name="slot"/>. This method does not check
+            the validity of <paramref name="value"/>. If <paramref name="value"/> is an invalid <see cref="T:WrenSharp.WrenHandle"/>,
+            the results of this operation are undefined.
+            </summary>
+            <param name="slot">The slot index to write to.</param>
+            <param name="value">The value to write.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlotNull(System.Int32)">
+            <summary>
+            Stores a null value in <paramref name="slot"/>.
+            </summary>
+            <param name="slot">The slot index to write to.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotForeign(System.Int32)">
+            <summary>
+            Gets a pointer to the foreign value stored in <paramref name="slot"/>.<para/>
+            It is an error to call this if the slot does not contain a foreign class type or instance.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <returns>A pointer to a foreign value.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotForeign``1(System.Int32)">
+            <summary>
+            Gets a ref to to the foreign value stored in <paramref name="slot"/>, cast to <typeparamref name="T"/>.<para/>
+            It is an error to call this if the slot does not contain a foreign class type or instance.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <returns>A ref to the foreign value of type <typeparamref name="T"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotForeignPtr``1(System.Int32)">
+            <summary>
+            Gets a pointer to to the foreign value stored in <paramref name="slot"/>, cast to <typeparamref name="T"/>.<para/>
+            It is an error to call this if the slot does not contain a foreign class type or instance.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <returns>A pointer to the foreign value of type <typeparamref name="T"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlotNewForeign(System.Int32,System.Int32,System.UInt64)">
+            <summary>
+            Creates a new instance of the foreign class stored in <paramref name="classSlot"/> with <paramref name="size"/>
+            bytes of raw storage and places the resulting object in <paramref name="slot"/>.<para />
+            
+            This does not invoke the foreign class's constructor on the new instance. If you need that to happen, call the
+            constructor from Wren, which will then call the allocator foreign method. In there, call this to create the object
+            and then the constructor will be invoked when the allocator returns.
+            </summary>
+            <param name="slot">The slot to place thew new instance in.</param>
+            <param name="classSlot">The slot containing the class to instance.</param>
+            <param name="size">The number of bytes required for the instance.</param>
+            <returns>A pointer to the new instance's data.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlotNewForeign``1(System.Int32,System.Int32,``0@)">
+            <summary>
+            Creates a new instance of the foreign class stored in <paramref name="classSlot"/> with enough size to store a value
+            of type <typeparamref name="T"/> and places the resulting object in <paramref name="slot"/>.<para />
+            
+            This does not invoke the foreign class's constructor on the new instance. If you need that to happen, call the
+            constructor from Wren, which will then call the allocator foreign method. In there, call this to create the object
+            and then the constructor will be invoked when the allocator returns.
+            </summary>
+            <typeparam name="T">The value type of the data to allocate for the instance.</typeparam>
+            <param name="slot">The slot to place thew new instance in.</param>
+            <param name="classSlot">The slot containing the class to instance.</param>
+            <param name="data">The data to initialize the new instance with.</param>
+            <returns>A ref to the new instance's data.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlotNewForeignPtr``1(System.Int32,System.Int32,``0@)">
+            <summary>
+            Creates a new instance of the foreign class stored in <paramref name="classSlot"/> with enough size to store a value
+            of type <typeparamref name="T"/> and places the resulting object in <paramref name="slot"/>.<para />
+            
+            This does not invoke the foreign class's constructor on the new instance. If you need that to happen, call the
+            constructor from Wren, which will then call the allocator foreign method. In there, call this to create the object
+            and then the constructor will be invoked when the allocator returns.
+            </summary>
+            <typeparam name="T">The value type of the data to allocate for the instance.</typeparam>
+            <param name="slot">The slot to place thew new instance in.</param>
+            <param name="classSlot">The slot containing the class to instance.</param>
+            <param name="data">The data to initialize the new instance with.</param>
+            <returns>The pointer to the new instance's data.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlotNewForeignPtr``1(System.Int32,System.Int32,System.ReadOnlySpan{``0}@)">
+            <summary>
+            Creates a new instance of the foreign class stored in <paramref name="classSlot"/> with enough size to store <paramref name="span"/>.
+            Copies the memory within <paramref name="span"/> to the resulting object and places it in <paramref name="slot"/>.<para />
+            
+            This does not invoke the foreign class's constructor on the new instance. If you need that to happen, call the
+            constructor from Wren, which will then call the allocator foreign method. In there, call this to create the object
+            and then the constructor will be invoked when the allocator returns.
+            </summary>
+            <typeparam name="T">The value type of the data to allocate for the instance.</typeparam>
+            <param name="slot">The slot to place thew new instance in.</param>
+            <param name="classSlot">The slot containing the class to instance.</param>
+            <param name="span">The span to copy into the new instance.</param>
+            <returns>The pointer to the new instance's data.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlotForeign(System.Int32,System.IntPtr@)">
+            <summary>
+            Attempts to retrieve a pointer to the foreign class instance data in <paramref name="slot"/>.
+            Returns true if <paramref name="slot"/> is less than the number of slots and the value it stores is of type <see cref="F:WrenSharp.WrenType.Foreign"/>.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="dataPtr">The location to store the pointer.</param>
+            <returns>True if the slot exists and the value stored is of type <see cref="F:WrenSharp.WrenType.Foreign"/>, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlotForeign``1(System.Int32,``0@)">
+            <summary>
+            Attempts to retrieve the value of the foreign class instance data in <paramref name="slot"/> of type <typeparamref name="T"/>.
+            Returns true if <paramref name="slot"/> is less than the number of slots and the value it stores is of type <see cref="F:WrenSharp.WrenType.Foreign"/>.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="value">The location to store the value.</param>
+            <returns>True if the slot exists and the value stored is of type <see cref="F:WrenSharp.WrenType.Foreign"/>, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlotForeignPtr``1(System.Int32,``0*@)">
+            <summary>
+            Attempts to retrieve a pointer to the of the foreign class instance data in <paramref name="slot"/> of type <typeparamref name="T"/>.
+            Returns true if <paramref name="slot"/> is less than the number of slots and the value it stores is of type <see cref="F:WrenSharp.WrenType.Foreign"/>.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="value">The location to store the value.</param>
+            <returns>True if the slot exists and the value stored is of type <see cref="F:WrenSharp.WrenType.Foreign"/>, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlotForeignSpan``1(System.Int32,System.Int32,System.Span{``0}@)">
+            <summary>
+            Attempts to retrieve the value of the foreign class instance data in <paramref name="slot"/> of type <see cref="T:System.Span`1"/>.
+            Returns true if <paramref name="slot"/> is less than the number of slots and the value it stores is of type <see cref="F:WrenSharp.WrenType.Foreign"/>.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="elementCount">The number of elements expected in type <typeparamref name="T"/>.</param>
+            <param name="span">The location to store the value.</param>
+            <returns>True if the slot exists and the value stored is of type <see cref="F:WrenSharp.WrenType.Foreign"/>, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotSharedData(System.Int32)">
+            <summary>
+            Gets the foreign object in <paramref name="slot"/>, interprets it as a <see cref="T:WrenSharp.WrenSharedDataHandle"/>
+            and returns the value the handle points to in the VM's shared data table.
+            </summary>
+            <param name="slot">The slot containing the shared data handle.</param>
+            <returns>The value the shared data handle points to.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotSharedData``1(System.Int32)">
+            <summary>
+            Gets the foreign object in <paramref name="slot"/>, interprets it as a <see cref="T:WrenSharp.WrenSharedDataHandle"/>
+            and returns the value the handle points to in the VM's shared data table.
+            </summary>
+            <typeparam name="T">The shared data value type.</typeparam>
+            <param name="slot">The slot containing the shared data handle.</param>
+            <returns>The value the shared data handle points to.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetSlotSharedDataHandle(System.Int32)">
+            <summary>
+            Gets the foreign object in <paramref name="slot"/>, interprets it as a <see cref="T:WrenSharp.WrenSharedDataHandle"/>
+            and returns the handle.
+            </summary>
+            <param name="slot">The slot containing the shared data handle.</param>
+            <returns>The shared data handle stored in <paramref name="slot"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlotSharedData(System.Int32,System.Object)">
+            <summary>
+            Gets the <see cref="T:WrenSharp.WrenSharedDataHandle"/> in <paramref name="slot"/>, and sets the value it points to
+            in the shared data table to <paramref name="value"/>.
+            </summary>
+            <param name="slot">The slot containing the handle.</param>
+            <param name="value">The value to set the shared data entry to.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlotSharedData(System.Int32,System.Object,WrenSharp.WrenSharedDataHandle@)">
+            <summary>
+            Gets the <see cref="T:WrenSharp.WrenSharedDataHandle"/> in <paramref name="slot"/>, and sets the value it points to
+            in the shared data table to <paramref name="value"/>.
+            </summary>
+            <param name="slot">The slot containing the handle.</param>
+            <param name="value">The value to set the shared data entry to.</param>
+            <param name="handle">The handle for <paramref name="value"/>.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlotNewSharedData(System.Int32,System.Int32,WrenSharp.WrenSharedDataHandle)">
+            <summary>
+            Creates a new instance of the foreign class stored in <paramref name="classSlot"/>, places <paramref name="handle"/>
+            in the instance's storage and places the instance in <paramref name="slot"/>.<para />
+            </summary>
+            <param name="slot">The slot containing the handle.</param>
+            <param name="classSlot">The slot containing the class to instance.</param>
+            <param name="handle">The <see cref="T:WrenSharp.WrenSharedDataHandle"/> to place in the instance's storage.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlotNewSharedData(System.Int32,System.Int32,System.Object)">
+            <summary>
+            Adds <paramref name="value"/> to the VM's <see cref="P:WrenSharp.WrenVM.SharedData"/> table, creates a new instance of the foreign
+            class stored in <paramref name="classSlot"/>, assigns the value's <see cref="T:WrenSharp.WrenSharedDataHandle"/>
+            in the instance's storage and places the instance in <paramref name="slot"/>.<para />
+            </summary>
+            <param name="slot">The slot containing the handle.</param>
+            <param name="classSlot">The slot containing the class to instance.</param>
+            <param name="value">The value to place in The VM's <see cref="P:WrenSharp.WrenVM.SharedData"/> table.</param>
+            <returns>The <see cref="T:WrenSharp.WrenSharedDataHandle"/> that was created for <paramref name="value"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlotNewSharedData(System.Int32,System.Int32,System.Object,WrenSharp.WrenSharedDataHandle@)">
+            <summary>
+            Adds <paramref name="value"/> to the VM's <see cref="P:WrenSharp.WrenVM.SharedData"/> table, creates a new instance of the foreign
+            class stored in <paramref name="classSlot"/>, assigns the value's <see cref="T:WrenSharp.WrenSharedDataHandle"/>
+            in the instance's storage and places the instance in <paramref name="slot"/>.<para />
+            </summary>
+            <param name="slot">The slot containing the handle.</param>
+            <param name="classSlot">The slot containing the class to instance.</param>
+            <param name="value">The value to place in The VM's <see cref="P:WrenSharp.WrenVM.SharedData"/> table.</param>
+            <param name="handle">The <see cref="T:WrenSharp.WrenSharedDataHandle"/> that was created for <paramref name="value"/>.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlotSharedData(System.Int32,System.Object@)">
+            <summary>
+            Attemps to retrieve the shared data value the foreign instance stored in <paramref name="slot"/> points to.
+            Returns true if <paramref name="slot"/> is less than the number of slots, the value it stores is of type <see cref="F:WrenSharp.WrenType.Foreign"/>
+            and the <see cref="T:WrenSharp.WrenSharedDataHandle"/> stored within points to a valid entry in the shared data table.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="value">Stores the value from the shared data table.</param>
+            <returns>True if the slot exists, the value stored is of type <see cref="F:WrenSharp.WrenType.Foreign"/> and its <see cref="T:WrenSharp.WrenSharedDataHandle"/>
+            pints to a valid entry, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlotSharedData``1(System.Int32,``0@)">
+            <summary>
+            Attemps to retrieve the shared data value the foreign instance stored in <paramref name="slot"/> points to, as type <typeparamref name="T"/>.
+            Returns true if <paramref name="slot"/> is less than the number of slots, the value it stores is of type <see cref="F:WrenSharp.WrenType.Foreign"/>
+            and the <see cref="T:WrenSharp.WrenSharedDataHandle"/> stored within points to a valid entry in the shared data table.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="value">Stores the value from the shared data table.</param>
+            <returns>True if the slot exists, the value stored is of type <see cref="F:WrenSharp.WrenType.Foreign"/> and its <see cref="T:WrenSharp.WrenSharedDataHandle"/>
+            pints to a valid entry, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetSlotSharedDataHandle(System.Int32,WrenSharp.WrenSharedDataHandle@)">
+            <summary>
+            Attemps to retrieve the <see cref="T:WrenSharp.WrenSharedDataHandle"/> stored by the foreign instance in <paramref name="slot"/>.
+            Returns true if <paramref name="slot"/> is less than the number of slots, the value it stores is of type <see cref="F:WrenSharp.WrenType.Foreign"/>
+            and the <see cref="T:WrenSharp.WrenSharedDataHandle"/> stored within points to a valid entry in the shared data table.
+            </summary>
+            <param name="slot">The slot index to read from.</param>
+            <param name="handle">Stores the <see cref="T:WrenSharp.WrenSharedDataHandle"/> held by the foreign instance.</param>
+            <returns>True if the slot exists, the value stored is of type <see cref="F:WrenSharp.WrenType.Foreign"/> and its <see cref="T:WrenSharp.WrenSharedDataHandle"/>
+            pints to a valid entry, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.ListGetCount(System.Int32)">
+            <summary>
+            Gets the number of elements in the list stored in <paramref name="listSlot"/>.
+            </summary>
+            <param name="listSlot">The slot index the list resides in.</param>
+            <returns>The number of elements in the list.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.ListGetElement(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Places the value of element <paramref name="elementIndex"/> in the list stored in <paramref name="listSlot"/>
+            into <paramref name="elementSlot"/>.<para/>
+            Use the <c>GetSlot()</c> family of methods to retrieve the value.
+            </summary>
+            <param name="listSlot">The slot index the list resides in.</param>
+            <param name="elementIndex">The index of the element.</param>
+            <param name="elementSlot">The slot index to store the value in.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.ListAddElement(System.Int32,System.Int32)">
+            <summary>
+            Adds the value stored in <paramref name="elementSlot"/> to the list stored in <paramref name="listSlot"/>.
+            </summary>
+            <param name="listSlot">The slot index the list resides in.</param>
+            <param name="elementSlot">The slot index to store the value in.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.ListInsertElement(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Inserts the value stored in <paramref name="elementSlot"/> into the list stored in <paramref name="listSlot"/>
+            at index <paramref name="elementIndex"/>.<para/>
+            As in Wren, negative indexes can be used to insert from the end. For example, to append an element, use
+            <c>-1</c> for <paramref name="elementIndex"/>.
+            </summary>
+            <param name="listSlot">The slot index the list resides in.</param>
+            <param name="elementIndex">The index of the element. Negative values can be used insert from the end of the list.</param>
+            <param name="elementSlot">The slot index to store the value in.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.ListSetElement(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Sets the value at <paramref name="elementIndex"/> in the list stored in <paramref name="listSlot"/> to the value
+            stored in <paramref name="elementSlot"/>.
+            </summary>
+            <param name="listSlot">The slot index the list resides in.</param>
+            <param name="elementIndex">The index of the element. Negative values can be used insert from the end of the list.</param>
+            <param name="elementSlot">The slot index to store the value in.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlotNewList(System.Int32)">
+            <summary>
+            Stores a new empty list in <paramref name="slot"/>.
+            </summary>
+            <param name="slot">The slot index to write to.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.MapContainsKey(System.Int32,System.Int32)">
+            <summary>
+            Returns true if the map stored in <paramref name="mapSlot"/> contains the key in <paramref name="keySlot"/>.
+            </summary>
+            <param name="mapSlot">The slot index the map resides in.</param>
+            <param name="keySlot">The slot index the key resides in.</param>
+            <returns>True if the key is found in the map.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.MapGetCount(System.Int32)">
+            <summary>
+            Returns the number of entries in the map stored in <paramref name="mapSlot"/>.
+            </summary>
+            <param name="mapSlot">The slot index the map resides in.</param>
+            <returns>The number of entries in the map.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.MapGetValue(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Places the value with the key in <paramref name="keySlot"/> within the map stored in <paramref name="mapSlot"/>
+            and places it into <paramref name="valueSlot"/>.
+            </summary>
+            <param name="mapSlot">The slot index the map resides in.</param>
+            <param name="keySlot">The slot index the key resides in.</param>
+            <param name="valueSlot">The slot index to place the value in.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.MapRemoveValue(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Removes the value of the key in <paramref name="keySlot"/> from the map stored in <paramref name="mapSlot"/>,
+            and places the value in <paramref name="removedValueSlot"/>.<para/>
+            If the key is not found in the map, <paramref name="removedValueSlot"/> is set to null.
+            </summary>
+            <param name="mapSlot">The slot index the map resides in.</param>
+            <param name="keySlot">The slot index the key resides in.</param>
+            <param name="removedValueSlot">The slot index to write the value that was removed.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.MapSetValue(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Stores the value in <paramref name="valueSlot"/> in the map stored in <paramref name="mapSlot"/>
+            with the key in <paramref name="keySlot"/>.
+            </summary>
+            <param name="mapSlot">The slot index the map resides in.</param>
+            <param name="keySlot">The slot index the key resides in.</param>
+            <param name="valueSlot">The slot index to value resides in.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetSlotNewMap(System.Int32)">
+            <summary>
+            Stores a new empty map in <paramref name="slot"/>.
+            </summary>
+            <param name="slot">The slot index to write to.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.ListClear(System.Int32)">
+            <summary>
+            Clears all elements from the list in <paramref name="listSlot"/>.
+            </summary>
+            <param name="listSlot">The slot index the list resides in.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.ListLoadAndClear(WrenSharp.WrenHandle,System.Int32)">
+            <summary>
+            Loads <paramref name="listHandle"/> into <paramref name="listSlot"/> and clears it to remove all values from the list.
+            </summary>
+            <param name="listHandle">The handle wrapping the list.</param>
+            <param name="listSlot">The slot to load the list into.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.ListRemoveElement(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Removes the value at index <paramref name="elementIndex"/> from the list stored in <paramref name="listSlot"/>
+            and places the removed value in <paramref name="removedValueSlot"/>.
+            </summary>
+            <param name="listSlot">The slot index the list resides in.</param>
+            <param name="elementIndex">The index of the element to remove.</param>
+            <param name="removedValueSlot">The slot index to store the removed value in.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.MapClear(System.Int32)">
+            <summary>
+            Clears all entries from the map in <paramref name="mapSlot"/>.
+            </summary>
+            <param name="mapSlot">The slot the map has been placed in.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.MapLoadAndClear(WrenSharp.WrenHandle,System.Int32)">
+            <summary>
+            Loads <paramref name="mapHandle"/> into <paramref name="mapSlot"/> and clears it to remove all entries from the map.
+            </summary>
+            <param name="mapHandle">The handle wrapping the map.</param>
+            <param name="mapSlot">The slot to load the map into.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetUserData">
+            <summary>
+            Returns a pointer to the user data associated with the VM.
+            </summary>
+            <returns>A pointer to the VM user data.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetUserData``1">
+            <summary>
+            Returns a ref to the user data associated with the VM, as <typeparamref name="T"/>.
+            </summary>
+            <returns>A ref to the VM user data as <typeparamref name="T"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetUserSharedData``1">
+            <summary>
+            Returns the shared data value assigned as the VM user data, as <typeparamref name="T"/>.
+            <see cref="M:WrenSharp.WrenVM.SetUserSharedData(System.Object)"/>.
+            </summary>
+            <returns>The value from the shared data table, as <typeparamref name="T"/>.</returns>
+            <seealso cref="M:WrenSharp.WrenVM.SetUserSharedData(System.Object)"/>
+            <seealso cref="M:WrenSharp.WrenVM.SetUserSharedData(WrenSharp.WrenSharedDataHandle)"/>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetUserSharedData">
+            <summary>
+            Returns the shared data value assigned as the VM user data.
+            <see cref="M:WrenSharp.WrenVM.SetUserSharedData(System.Object)"/>.
+            </summary>
+            <returns>A ref to the VM user data.</returns>
+            <seealso cref="M:WrenSharp.WrenVM.SetUserSharedData(System.Object)"/>
+            <seealso cref="M:WrenSharp.WrenVM.SetUserSharedData(WrenSharp.WrenSharedDataHandle)"/>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetUserSharedDataHandle">
+            <summary>
+            Gets the <see cref="T:WrenSharp.WrenSharedDataHandle"/> assigned as the VM's user data.
+            </summary>
+            <returns>A <see cref="T:WrenSharp.WrenSharedDataHandle"/>.</returns>
+            <seealso cref="M:WrenSharp.WrenVM.SetUserSharedData(System.Object)"/>
+            <seealso cref="M:WrenSharp.WrenVM.SetUserSharedData(WrenSharp.WrenSharedDataHandle)"/>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetUserData(System.IntPtr)">
+            <summary>
+            Sets the user data associated with the VM to a pointer. It is the user's responsibility to ensure
+            the pointer is valid.
+            </summary>
+            <param name="userData">A pointer to the user data value.</param>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetUserData``1(``0@)">
+            <summary>
+            Adds <paramref name="userData"/> to the <see cref="P:WrenSharp.WrenVM.SharedData"/> table, and sets the VM's user data
+            to a <see cref="T:WrenSharp.WrenSharedDataHandle"/>, pointing to <paramref name="userData"/>.
+            </summary>
+            <param name="userData">The value to set the VM's user data to.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/> instance.</returns>
+            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedData"/>
+            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedData``1"/>
+            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedDataHandle"/>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetUserSharedData(System.Object)">
+            <summary>
+            Adds <paramref name="userData"/> to the <see cref="P:WrenSharp.WrenVM.SharedData"/> table, and sets the VM's user data
+            to a <see cref="T:WrenSharp.WrenSharedDataHandle"/>, pointing to <paramref name="userData"/>.
+            </summary>
+            <param name="userData">The value to set the VM's user data to.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/> instance.</returns>
+            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedData"/>
+            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedData``1"/>
+            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedDataHandle"/>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetUserSharedData(WrenSharp.WrenSharedDataHandle)">
+            <summary>
+            Sets the VM's user data to <paramref name="handle"/>.
+            </summary>
+            <param name="handle">The handle to set the VM's user data to.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/> instance.</returns>
+            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedData"/>
+            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedData``1"/>
+            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedDataHandle"/>
+        </member>
+        <member name="M:WrenSharp.WrenVM.LoadVariable(System.String,System.String,System.Int32)">
+            <summary>
+            Stores the value of <paramref name="variableName"/> from resolved module <paramref name="module"/> into <paramref name="slot"/>.<para/>
+            This method ensures that enough slots are allocated to hold the current value of the variable.
+            </summary>
+            <param name="module">The module name the variable resides in.</param>
+            <param name="variableName">The name of the variable to load into <paramref name="slot"/>.</param>
+            <param name="slot">The slot index to load the variable into.</param>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryLoadVariable(System.String,System.String,System.Int32)">
+            <summary>
+            Attempts to store the value of <paramref name="variableName"/> from the resolved module <paramref name="module"/> into <paramref name="slot"/>.<para/>
+            Returns true if the variable exists and was able to be loaded. This method ensures that enough slots are allocated to hold the current
+            value of the variable.
+            </summary>
+            <param name="module">The module name the variable resides in.</param>
+            <param name="variableName">The name of the variable to load into <paramref name="slot"/>.</param>
+            <param name="slot">The slot index to load the variable into.</param>
+            <returns>True if the variable exists and was placed into <paramref name="slot"/>, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetVariable(System.String,System.String,System.Int32)">
+            <summary>
+            Stores the value of <paramref name="variableName"/> from resolved module <paramref name="module"/> into <paramref name="slot"/>.<para/>
+            This method does <b>not</b> ensure enough slots are available to hold the value of the variable. For a safer method of
+            retrieving the value of a variable, use <see cref="M:WrenSharp.WrenVM.LoadVariable(System.String,System.String,System.Int32)"/>.
+            </summary>
+            <param name="slot">The slot index to load the variable into.</param>
+            <param name="module">The module name the variable resides in.</param>
+            <param name="variableName">The name of the variable to load into <paramref name="slot"/>.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetVariable(System.String,System.String,System.Int32)">
+            <summary>
+            Attempts to store the value of <paramref name="variableName"/> from resolved module <paramref name="module"/> into <paramref name="slot"/>.<para/>
+            Returns true if the variable exists. This method does <b>not</b> ensure enough slots are available to hold the value of the variable.
+            For a safer method of retrieving the value of a variable, use <see cref="M:WrenSharp.WrenVM.TryLoadVariable(System.String,System.String,System.Int32)"/>.
+            </summary>
+            <param name="slot">The slot index to load the variable into.</param>
+            <param name="module">The module name the variable resides in.</param>
+            <param name="variableName">The name of the variable to load into <paramref name="slot"/>.</param>
+            <returns>True if the variable exists, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.HasVariable(System.String,System.String)">
+            <summary>
+            Returns true if <paramref name="variableName"/> exists within the resolved module <paramref name="module"/>.
+            </summary>
+            <param name="module">The module name to search in.</param>
+            <param name="variableName">The variable name to find.</param>
+            <returns>True if the variable is found in the module, otherwise false.</returns>
+        </member>
+        <member name="P:WrenSharp.WrenVM.VersionNumber">
+            <summary>
+            Returns the version number of the Wren library.
+            </summary>
+        </member>
+        <member name="F:WrenSharp.WrenVM.MaxCallParameters">
+            <summary>
+            The maximum number of parameters a method call can accept.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenVM.VMs">
+            <summary>
+            An enumeration of all <see cref="T:WrenSharp.WrenVM"/> instances.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetVM(System.IntPtr)">
+            <summary>
+            Gets the managed <see cref="T:WrenSharp.WrenVM"/> corresponding to a native Wren VM.
+            </summary>
+            <param name="ptr">The native Wren VM pointer.</param>
+            <returns>A <see cref="T:WrenSharp.WrenVM"/> instance or null if not found.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetVM``1(System.IntPtr)">
+            <summary>
+            Gets the managed <see cref="T:WrenSharp.WrenVM"/> wrapping the native VM at <paramref name="ptr"/>, cast as <typeparamref name="T"/>.
+            </summary>
+            <param name="ptr">The native Wren VM pointer.</param>
+            <returns>A <typeparamref name="T"/> instance.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetVM(System.IntPtr,WrenSharp.WrenVM@)">
+            <summary>
+            Attempts to get the managed <see cref="T:WrenSharp.WrenVM"/> wrapping the native VM at <paramref name="ptr"/>.
+            </summary>
+            <param name="ptr">The pointer to the native <see cref="T:WrenSharp.WrenVM"/>.</param>
+            <param name="vm">The <see cref="T:WrenSharp.WrenVM"/> instance.</param>
+            <returns>True if the VM exists, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetVM``1(System.IntPtr,``0@)">
+            <summary>
+            Attempts to get the managed <see cref="T:WrenSharp.WrenVM"/> wrapping the native VM at <paramref name="ptr"/>, cast as <typeparamref name="T"/>.
+            </summary>
+            <typeparam name="T">The expected type of the VM.</typeparam>
+            <param name="ptr">The pointer to the native <see cref="T:WrenSharp.WrenVM"/>.</param>
+            <param name="vm">The <see cref="T:WrenSharp.WrenVM"/> instance.</param>
+            <returns>True if the VM exists and is of type <typeparamref name="T"/>, otherwise false.</returns>
+        </member>
+        <member name="F:WrenSharp.WrenVM.m_Ptr">
+            <summary>
+            The native VM pointer.
+            </summary>
+        </member>
+        <member name="F:WrenSharp.WrenVM.Slots">
+            <summary>
+            Gets the Wren API slot interface for interfacing with API slots on the current Wren fiber.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenVM.IsDisposed">
+            <summary>
+            Indicates if the VM has been disposed, either by an explicit call to <see cref="M:System.IDisposable.Dispose"/>
+            or by the garbage collector when the instance is finalized.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenVM.IsInitialized">
+            <summary>
+            Indicates if the VM has been initialized.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenVM.IsValid">
+            <summary>
+            Indicates if the VM is initialized and in valid state. Returns true if 
+            <see cref="P:WrenSharp.WrenVM.IsInitialized"/> is true and <see cref="P:WrenSharp.WrenVM.IsDisposed"/> is false.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenVM.Errors">
+            <summary>
+            A list containing the morst recent errors generated by Wren. This list is only filled
+            if <see cref="P:WrenSharp.WrenVMConfiguration.LogErrors"/> is true. The error log is cleared before
+            any Wren source is interpreted or method called.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenVM.LogErrors">
+            <summary>
+            Determines if errors are logged and stored in the <see cref="P:WrenSharp.WrenVM.Errors"/> list when Wren
+            generates an error message during an interpret or call.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenVM.NativePointer">
+            <summary>
+            The pointer to the native WrenVM instance. This can be used to pass directly to the native interop
+            methods in <see cref="T:WrenSharp.Native.Wren"/>.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenVM.SharedData">
+            <summary>
+            The shared data table that can be used to store strong references to managed objects that can 
+            be referenced by Wren foreign objects.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenVM.HostData">
+            <summary>
+            Custom user data that you can attach to this VM instance.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenVM.#ctor">
+            <summary>
+            Base constructor for derived classes to perform their own initialization.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenVM.#ctor(WrenSharp.Native.WrenConfiguration@,WrenSharp.Memory.IAllocator)">
+            <summary>
+            Creates a new Wren VM to run Wren scripts. This constructor provides the ability to explicitly
+            set the native configuration passed into the Wren instance, allowing for full control over the VM.
+            </summary>
+            <param name="config">The <see cref="T:WrenSharp.Native.WrenConfiguration"/>.</param>
+            <param name="allocator">The <see cref="T:WrenSharp.Memory.IAllocator"/> to use when allocated unmanaged memory from C#. This is not used by the native Wren VM instance.</param>
+        </member>
+        <member name="M:WrenSharp.WrenVM.#ctor(WrenSharp.WrenVMInitializer,WrenSharp.Native.WrenConfiguration@,WrenSharp.Memory.IAllocator)">
+            <summary>
+            Creates a new Wren VM to run Wren scripts. This constructor provides the ability to explicitly
+            set the delete used to initialize the native Wren VM, as well as the native configuration passed into the Wren instance,
+            allowing for full control over the VM initializer.
+            </summary>
+            <param name="vmInitializer">The <see cref="T:WrenSharp.WrenVMInitializer"/> delegate to initialize the native Wren VM. Leave null to use the default initializer (<see cref="M:WrenSharp.Native.Wren.NewVM(WrenSharp.Native.WrenConfiguration@)"/>).</param>
+            <param name="config">The <see cref="T:WrenSharp.Native.WrenConfiguration"/>.</param>
+            <param name="allocator">The <see cref="T:WrenSharp.Memory.IAllocator"/> to use when allocated unmanaged memory from C#. This is not used by the native Wren VM instance.</param>
+        </member>
+        <member name="M:WrenSharp.WrenVM.Initialize(WrenSharp.WrenVMInitializer,WrenSharp.Native.WrenConfiguration@,WrenSharp.Memory.IAllocator)">
+            <summary>
+            Initializes the VM using the given configuration.
+            </summary>
+            <param name="vmInitializer">The initializer to use to create the native Wren VM. Leave null to use the defaultinitializer(<see cref="M:WrenSharp.Native.Wren.NewVM(WrenSharp.Native.WrenConfiguration@)"/>).</param>
+            <param name="config">The <see cref="T:WrenSharp.Native.WrenConfiguration"/> that is passed to native Wren.</param>
+            <param name="allocator">An optional memory allocator to use for unamanged buffers. If null, the
+            default allocator (<see cref="T:WrenSharp.Memory.HGlobalAllocator"/>) is used.</param>
+            <exception cref="T:System.InvalidOperationException">Thrown if the VM has already been initialized.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenVM.Interpret(System.String,WrenSharp.IWrenSource,System.Boolean)">
+            <summary>
+            Runs Wren source <paramref name="source"/> in a new fiber, in the context of module <paramref name="module"/>.
+            If the resolved module is not found, a new module will be created.
+            </summary>
+            <param name="module">The name of the resolved module to run the source within.</param>
+            <param name="source">The source to interpret.</param>
+            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
+            <returns>The result of the interpret operation.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.Interpret(System.String,System.String,System.Boolean)">
+            <summary>
+            Runs Wren source <paramref name="source"/> in a new fiber, in the context of module <paramref name="module"/>.
+            If the resolved module is not found, a new module will be created.
+            </summary>
+            <param name="module">The name of the resolved module to run the source within.</param>
+            <param name="source">The source to interpret.</param>
+            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
+            <returns>The result of the interpret operation.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.Interpret(System.String,System.String,System.Text.Encoding,System.Boolean)">
+            <summary>
+            Runs Wren source <paramref name="source"/> in a new fiber, in the context of module <paramref name="module"/>.
+            If the resolved module is not found, a new module will be created.
+            </summary>
+            <param name="module">The name of the resolved module to run the source within.</param>
+            <param name="source">The source to interpret.</param>
+            <param name="encoding">The encoding to use when converting the string to a native buffer.</param>
+            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
+            <returns>The result of the interpret operation.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.Interpret(System.String,System.Text.StringBuilder,System.Text.Encoding,System.Boolean)">
+            <summary>
+            Runs Wren source (the contents of <paramref name="source"/>) in a new fiber, in the context of module <paramref name="module"/>.
+            If the resolved module is not found, a new module will be created.
+            </summary>
+            <param name="module">The name of the resolved module to run the source within.</param>
+            <param name="source">The source to interpret.</param>
+            <param name="encoding">The encoding to use when converting the string to a native buffer. Defaults to UTF8 encoding if not specified.</param>
+            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
+            <returns>The result of the interpret operation.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.Interpret(System.String,System.Byte[],System.Boolean)">
+            <summary>
+            Runs Wren source (the contents of <paramref name="source"/>) in a new fiber, in the context of module <paramref name="module"/>.
+            If the resolved module is not found, a new module will be created.<para />
+            <paramref name="source"/> is expected to contain a null-terminated C-style string that is either ANSI or UTF8 encoded.<para />
+            For UTF8 encoding, is recommended that the string contain the UTF8 BOM (Byte Order Mark) at the beginning of the file, or Wren may fail
+            to parse the source string correctly.
+            </summary>
+            <param name="module">The name of the resolved module to run the source within.</param>
+            <param name="source">The raw bytes of Wren source to interpret.</param>
+            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
+            <returns>The result of the interpret operation.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.Interpret(System.String,System.IntPtr,System.Boolean)">
+            <summary>
+            Runs Wren source (the contents of <paramref name="source"/>) in a new fiber, in the context of module <paramref name="module"/>.
+            If the resolved module is not found, a new module will be created.<para />
+            <paramref name="source"/> should point to a null-terminated C-style string that is either ANSI or UTF8 encoded.<para />
+            For UTF8 encoding, is recommended that the string contain the UTF8 BOM (Byte Order Mark) at the beginning of the file, or Wren may fail
+            to parse the source string correctly.
+            </summary>
+            <param name="module">The name of the resolved module to run the source within.</param>
+            <param name="source">A pointer to the Wren source to interpret.</param>
+            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
+            <returns>The result of the interpret operation.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.AbortFiber(System.Int32)">
+            <summary>
+            Sets the current fiber to be aborted, and uses the value in <paramref name="errorSlot"/> as the runtime error. Usually
+            this would be a string that can be read in Wren via the <c>Fibre.error</c> instance field.
+            </summary>
+            <param name="errorSlot">The slot containing the error value.</param>
+            <seealso cref="M:WrenSharp.WrenVM.AbortFiber(System.Int32,System.String)"/>
+        </member>
+        <member name="M:WrenSharp.WrenVM.AbortFiber(System.Int32,System.String)">
+            <summary>
+            Places the string <paramref name="errorMessage"/> in <paramref name="errorSlot"/>, then aborts the current fibre with
+            <paramref name="errorSlot"/>.
+            </summary>
+            <param name="errorSlot">The slot to contain <paramref name="errorMessage"/>.</param>
+            <param name="errorMessage">The error message to set for the abort.</param>
+        </member>
+        <member name="M:WrenSharp.WrenVM.ClearErrorLog">
+            <summary>
+            Clears all stored <see cref="T:WrenSharp.WrenError"/> instances in <see cref="P:WrenSharp.WrenVM.Errors"/>.
+            </summary>
+            <seealso cref="P:WrenSharp.WrenVM.Errors"/>
+            <seealso cref="T:WrenSharp.WrenError"/>
+        </member>
+        <member name="M:WrenSharp.WrenVM.CollectGarbage">
+            <summary>
+            Runs the VM's garbage collector immediately, freeing any unused memory.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenVM.HasModule(System.String)">
+            <summary>
+            Indicates if the module <paramref name="module"/> has been imported and resolved.
+            </summary>
+            <param name="module">The name of the module.</param>
+            <returns>True if <paramref name="module"/> has been imported and resolved, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.Print(System.String)">
+            <summary>
+            Writes <paramref name="text"/>, followed by a newline, using the Wren writer function.
+            </summary>
+            <param name="text">The text to write.</param>
+        </member>
+        <member name="M:WrenSharp.WrenVM.Write(System.String)">
+            <summary>
+            Writes <paramref name="text"/> using the Wren writer function.
+            </summary>
+            <param name="text">The text to write.</param>
+        </member>
+        <member name="M:WrenSharp.WrenVM.Call(WrenSharp.WrenHandle,System.Boolean)">
+            <summary>
+            Calls a Wren value via a previously allocated handle.
+            </summary>
+            <param name="handle">The handle to call.</param>
+            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if the call is unsuccessful.</param>
+            <returns>The result of the call operation.</returns>
+            <exception cref="T:WrenSharp.WrenInterpretException">Thrown if the call is unsuccessful and <paramref name="throwOnFailure"/> is true.</exception>
+            <seealso cref="M:WrenSharp.WrenVM.CreateHandle(System.Int32)"/>
+            <seealso cref="M:WrenSharp.WrenVM.CreateHandle(System.String,System.String,System.Int32)"/>
+        </member>
+        <member name="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle,System.Boolean)">
+            <summary>
+            Calls a Wren method via a previously allocated handle.
+            </summary>
+            <param name="callHandle">The handle to call.</param>
+            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if the call is unsuccessful.</param>
+            <returns>The result of the call operation.</returns>
+            <exception cref="T:WrenSharp.WrenInterpretException">Thrown if the call is unsuccessful and <paramref name="throwOnFailure"/> is true.</exception>
+            <seealso cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)"/>
+            <seealso cref="M:WrenSharp.WrenVM.CreateCallHandle(System.String)"/>
+        </member>
+        <member name="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)">
+            <summary>
+            Creates a <see cref="T:WrenSharp.WrenCall"/> value that can be used to prepare and execute a call.
+            </summary>
+            <param name="receiverHandle">A handle to the receiver object.</param>
+            <param name="callHandle">A handle for the method to call.</param>
+            <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
+            to call back into Wren from the managed side without clobbering the Wren API stack.</param>
+            <returns>A <see cref="T:WrenSharp.WrenCall"/> value.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.CreateCall(System.String,System.String,WrenSharp.WrenCallHandle,System.Boolean)">
+            <summary>
+            Creates a <see cref="T:WrenSharp.WrenCall"/> value that can be used to prepare and execute a call to a static class method.
+            </summary>
+            <param name="module">The name of the module the class resides in.</param>
+            <param name="className">The name of the class to execute the call on.</param>
+            <param name="callHandle">A handle for the method to call.</param>
+            <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
+            to call back into Wren from the managed side without clobbering the Wren API stack.</param>
+            <returns>A <see cref="T:WrenSharp.WrenCall"/> value.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.CreateFunctionCall(WrenSharp.WrenHandle,System.Int32,System.Boolean)">
+            <summary>
+            Creates a <see cref="T:WrenSharp.WrenCall"/> for a Wren Fn object, that can be used to prepare and execute the call.
+            </summary>
+            <param name="functionHandle">A handle wrapping a Wren Fn object.</param>
+            <param name="argCount">The number of arguments the function expects.</param>
+            <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
+            to call back into Wren from the managed side without clobbering the Wren API stack.</param>
+            <returns>A <see cref="T:WrenSharp.WrenCall"/> value.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.CreateCallHandle(System.String)">
+            <summary>
+            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> that can be used with the <see cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle,System.Boolean)"/> and <see cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)"/> methods
+            to call a Wren method from C#.<para />
+            Call signatures must conform to standard Wren call signatures, for example:
+            <code>
+            methodName()      // Method, no arguments
+            methodName(_,_)   // Method, two arguments
+            propertyName      // Property getter (no arguments)
+            propertyName=(_)  // Property setter (one argument)
+            [_]               // Subscript getter, one argument
+            [_,_]=(_)         // Subscript setter, two arguments
+            -                 // Unary negation (no arguments)
+            +(_)              // Addition operator (one argument)
+            </code>
+            See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
+            </summary>
+            <param name="signature">The call signature.</param>
+            <returns></returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.CreateFunction(System.String,System.String,System.String,System.Int32,System.Boolean)">
+            <summary>
+            Interprets a Wren function by wrapping <paramref name="functionBody"/> in the Wren function syntax (<c>Fn.new {...}</c>)
+            and returns a handle to the newly created function object. This is useful for creating functions dynamically from managed code
+            that can then be called at a later time.<para/>
+            Use <see cref="M:WrenSharp.WrenVM.CreateFunctionCall(WrenSharp.WrenHandle,System.Int32,System.Boolean)"/> to call the function after it has been created.<para/>
+            See <see href="https://wren.io/functions.html"/> for more information on functions in Wren.
+            </summary>
+            <example>
+            <code>
+            var dynamicFn = vm.CreateFunction(
+                module: "main",
+                paramsSignature: "active, num",
+                functionBody: @"
+                    System.print(""arguments: active=%(active), num=%(num)"")
+                    return num * 2"
+                );
+            
+            // If the function did not compile, the handle will be invalid
+            if (dynamicFn.IsValid)
+            {
+                var call = vm.CreateFunctionCall(dynamicFn, 2);
+                call.SetArg(0, true); // arg: active
+                call.SetArg(1, 1234); // arg: num
+                call.Call(throwOnFailure: true, out double returnValue);
+                
+                Console.WriteLine(returnValue); // Output: 2468
+            }
+            </code>
+            </example>
+            <param name="module">The module to create the function in.</param>
+            <param name="paramsSignature">The function's parameter signature.</param>
+            <param name="functionBody">The function's body.</param>
+            <param name="slot">The slot index to load the function into and create the handle from.</param>
+            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
+            <returns>A handle to the newly created function.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.CreateHandle(System.Int32)">
+            <summary>
+            Creates a <see cref="T:WrenSharp.WrenHandle"/> that wraps the value in <paramref name="slot"/>.
+            </summary>
+            <param name="slot">The slot containing the value to wrap.</param>
+            <returns>A <see cref="T:WrenSharp.WrenHandle"/> value.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.CreateHandle(System.String,System.String,System.Int32)">
+            <summary>
+            Creates a handle to <paramref name="variableName"/> in resolved module <paramref name="module"/>.
+            The value of the variable is loaded into slot <paramref name="slot"/>, and the handle is created from the value in that slot.
+            </summary>
+            <param name="module">The module the variable resides in.</param>
+            <param name="variableName">The name of the variable.</param>
+            <param name="slot">The slot to place the value in and create the handle from.</param>
+            <returns>A <see cref="T:WrenSharp.WrenHandle"/> wrapping the value stored in <paramref name="variableName"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetFunctionCallHandle(System.Int32)">
+            <summary>
+            Returns a cached <see cref="T:WrenSharp.WrenCallHandle"/> for the Wren <c>Fn.call()</c> method signature with <paramref name="paramCount"/> parameters.
+            The maximum number of parameters is <see cref="F:WrenSharp.WrenVM.MaxCallParameters"/> (16 at the time of writing).
+            </summary>
+            <param name="paramCount">The number of parameters in the method signature.</param>
+            <returns>A <see cref="T:WrenSharp.WrenCallHandle"/>.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown if <paramref name="paramCount"/> is greater than <see cref="F:WrenSharp.WrenVM.MaxCallParameters"/>.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryCreateHandle(System.Int32,WrenSharp.WrenType,WrenSharp.WrenHandle@)">
+            <summary>
+            Attemps to create a <see cref="T:WrenSharp.WrenHandle"/> from the value in <paramref name="slot"/>.
+            Returns true if <paramref name="slot"/> is less than the nubmer of slots and holds a value of <paramref name="expectedType"/>.
+            </summary>
+            <param name="slot">The slot containing the value to wrap.</param>
+            <param name="expectedType">The expected type of the value in <paramref name="slot"/>.</param>
+            <param name="handle">Stores the created handle.</param>
+            <returns>True if the handle was created, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryCreateHandle(System.String,System.String,System.Int32,WrenSharp.WrenHandle@)">
+            <summary>
+            Attemps to create a <see cref="T:WrenSharp.WrenHandle"/> from the value in <paramref name="variableName"/> in resolved module <paramref name="module"/>.
+            The value of the variable is loaded into slot <paramref name="slot"/>, and the handle is created from the value in that slot.<para/>
+            Returns true if <paramref name="slot"/> is less than the number of slots and the variable exists.
+            </summary>
+            <param name="module">The module the variable resides in.</param>
+            <param name="variableName">The name of the variable.</param>
+            <param name="slot">The slot to place the value in, from which the handle will be created.</param>
+            <param name="handle">Stores the created handle.</param>
+            <returns>True if the handle was created, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryCreateHandle(System.String,System.String,WrenSharp.WrenHandle@)">
+            <summary>
+            Attemps to create a <see cref="T:WrenSharp.WrenHandle"/> from the value in <paramref name="variableName"/> in resolved module <paramref name="module"/>.
+            The value of the variable is loaded into slot 0, and the handle is created from the value in that slot.<para/>
+            Returns true if there is at least one slot and the variable exists.
+            </summary>
+            <param name="module">The module the variable resides in.</param>
+            <param name="variableName">The name of the variable.</param>
+            <param name="handle">Stores the created handle.</param>
+            <returns>True if the handle was created, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.ReleaseAllHandles">
+            <summary>
+            Releases all allocated handles.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenVM.ReleaseHandle(WrenSharp.WrenHandle@)">
+            <summary>
+            Releases a handle. Does nothing if the handle is not valid, or has already been released.
+            </summary>
+            <param name="handle">The handle to release.</param>
+            <exception cref="T:System.ArgumentException">Thrown if <paramref name="handle"/> is not owned by this <see cref="T:WrenSharp.WrenVM"/> instance.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenVM.ReleaseHandle(WrenSharp.WrenCallHandle@)">
+            <summary>
+            Releases a call handle. Does nothing if the handle is not valid, or has already been released.
+            </summary>
+            <param name="handle">The handle to release.</param>
+            <exception cref="T:System.ArgumentException">Thrown if <paramref name="handle"/> is not owned by this <see cref="T:WrenSharp.WrenVM"/> instance.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenVM.OnInterpretBegin">
+            <summary>
+            Provides a method for derived classes to hook the beginning of an interpret or method call.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenVM.OnInterpretEnd(WrenSharp.WrenInterpretResult)">
+            <summary>
+            Provides a method for derived classes to hook to the end of an interpret or method call.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenVM.LogError(WrenSharp.WrenErrorType,System.String,System.Int32,System.String)">
+            <summary>
+            Logs a Wren error to <see cref="P:WrenSharp.WrenVM.Errors"/>, if <see cref="P:WrenSharp.WrenVM.LogErrors"/> is <c>true</c>.
+            If <see cref="P:WrenSharp.WrenVM.LogErrors"/> is <c>false</c>, this method does nothing.
+            </summary>
+            <param name="errorType">The <see cref="T:WrenSharp.WrenErrorType"/>.</param>
+            <param name="module">The name of the module the error occured in.</param>
+            <param name="lineNumber">The line number of the source the error occured in.</param>
+            <param name="message">The error message.</param>
+        </member>
+        <member name="M:WrenSharp.WrenVM.Dispose">
+            <summary>
+            Disposes of the VM and releases all allocated resources.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenVM.DisposeManagedState">
+            <summary>
+            Invoked when the VM is being disposed. Override this method to dispose of any managed state.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenVM.DisposeUnmanagedState">
+            <summary>
+            Invoked when the VM is being disposed. Override this method to dispose of any unmanaged resources.
+            </summary>
         </member>
         <member name="T:WrenSharp.WrenError">
             <summary>
@@ -2032,1296 +3382,6 @@
             </summary>
             <param name="value">The value to test.</param>
             <returns>True if <paramref name="value"/> has no fractional component and fits with the range of a <see cref="T:System.Int64"/>.</returns>
-        </member>
-        <member name="T:WrenSharp.WrenVM">
-            <summary>
-            A managed instance of a Wren virtual machine. This class wraps the native VM and provides a clean, convenient API
-            for working with the VM in a managed environment.
-            </summary>
-        </member>
-        <member name="M:WrenSharp.WrenVM.EnsureSlotCount(System.Int32)">
-            <summary>
-            Ensures that the foreign method stack has at least <paramref name="slotCount"/> available for use, growing the stack if needed.<para />
-            Does not shrink the stack if it has more than enough slots.<para />
-            It is an error to call this from a Wren foriegn finalizer.
-            </summary>
-            <param name="slotCount">The number of slots to ensure are allocated.</param>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotCount">
-            <summary>
-            Returns the number of slots available to the current foreign method.
-            </summary>
-            <returns>The number of slots available to the current foreign method.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotBool(System.Int32)">
-            <summary>
-            Reads a boolean value from <paramref name="slot"/>.<para/>
-            It is an error to call this if the slot does not contain a boolean value.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <returns>The boolean value in the slot.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotByte(System.Int32)">
-            <summary>
-            Reads a byte value from <paramref name="slot"/>.<para/>
-            It is an error to call this if the slot does not contain a number value.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <returns>The byte value in the slot.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotSByte(System.Int32)">
-            <summary>
-            Reads a sbyte value from <paramref name="slot"/>.<para/>
-            It is an error to call this if the slot does not contain a number value.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <returns>The sbyte value in the slot.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotInt16(System.Int32)">
-            <summary>
-            Reads a signed 16bit integer value from <paramref name="slot"/>.<para/>
-            It is an error to call this if the slot does not contain a number value.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <returns>The signed 16bit integer value in the slot.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotUInt16(System.Int32)">
-            <summary>
-            Reads an unsigned 16bit integer value from <paramref name="slot"/>.<para/>
-            It is an error to call this if the slot does not contain a number value.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <returns>The unsigned 16bit integer value in the slot.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotInt32(System.Int32)">
-            <summary>
-            Reads a signed 32bit integer value from <paramref name="slot"/>.<para/>
-            It is an error to call this if the slot does not contain a number value.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <returns>The signed 32bit integer value in the slot.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotUInt32(System.Int32)">
-            <summary>
-            Reads an unsigned 32bit integer value from <paramref name="slot"/>.<para/>
-            It is an error to call this if the slot does not contain a number value.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <returns>The unsigned 32bit integer value in the slot.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotInt64(System.Int32)">
-            <summary>
-            Reads a signed 64bit integer value from <paramref name="slot"/>.<para/>
-            It is an error to call this if the slot does not contain a number value.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <returns>The signed 64bit integer value in the slot.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotUInt64(System.Int32)">
-            <summary>
-            Reads a unsigned 64bit integer value from <paramref name="slot"/>.<para/>
-            It is an error to call this if the slot does not contain a number value.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <returns>The unsigned 64bit integer value in the slot.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotFloat(System.Int32)">
-            <summary>
-            Reads a 32bit float value from <paramref name="slot"/>.<para/>
-            It is an error to call this if the slot does not contain a number value.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <returns>The 32bit float value in the slot.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotDouble(System.Int32)">
-            <summary>
-            Reads a 64bit float value from <paramref name="slot"/>.<para/>
-            It is an error to call this if the slot does not contain a number value.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <returns>The 64bit float value in the slot.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotString(System.Int32)">
-            <summary>
-            Reads a string value from <paramref name="slot"/>.<para/>
-            It is an error to call this if the slot does not contain a string value.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <returns>The string value in the slot.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotStringBytes(System.Int32)">
-            <summary>
-            Reads the bytes representing a string value from <paramref name="slot"/>.<para/>
-            It is an error to call this if the slot does not contain a string value.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <returns>The bytes representing the string value in the slot.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotType(System.Int32)">
-            <summary>
-            Gets the <see cref="T:WrenSharp.WrenType"/> of the value in <paramref name="slot"/>.
-            </summary>
-            <param name="slot">The slot index.</param>
-            <returns>The <see cref="T:WrenSharp.WrenType"/> of the value.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.Boolean@)">
-            <summary>
-            Attempts to read a boolean from <paramref name="slot"/>.
-            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Bool"/>.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="value">Stores the value in <paramref name="slot"/>.</param>
-            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Bool"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.Byte@)">
-            <summary>
-            Attempts to read an unsigned byte from <paramref name="slot"/>.
-            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="value">Stores the value in <paramref name="slot"/>.</param>
-            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.SByte@)">
-            <summary>
-            Attempts to read a signed byte from <paramref name="slot"/>.
-            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="value">Stores the value in <paramref name="slot"/>.</param>
-            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.Int16@)">
-            <summary>
-            Attempts to read a signed 16bit integer from <paramref name="slot"/>.
-            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="value">Stores the value in <paramref name="slot"/>.</param>
-            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.UInt16@)">
-            <summary>
-            Attempts to read an unsigned 16bit integer from <paramref name="slot"/>.
-            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="value">Stores the value in <paramref name="slot"/>.</param>
-            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.Int32@)">
-            <summary>
-            Attempts to read an signed 32bit integer from <paramref name="slot"/>.
-            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="value">Stores the value in <paramref name="slot"/>.</param>
-            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.UInt32@)">
-            <summary>
-            Attempts to read an unsigned 32bit integer from <paramref name="slot"/>.
-            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="value">Stores the value in <paramref name="slot"/>.</param>
-            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.Int64@)">
-            <summary>
-            Attempts to read an signed 64bit integer from <paramref name="slot"/>.
-            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="value">Stores the value in <paramref name="slot"/>.</param>
-            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.UInt64@)">
-            <summary>
-            Attempts to read an unsigned 64bit integer from <paramref name="slot"/>.
-            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="value">Stores the value in <paramref name="slot"/>.</param>
-            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.Single@)">
-            <summary>
-            Attempts to read an 32bit float from <paramref name="slot"/>.
-            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="value">Stores the value in <paramref name="slot"/>.</param>
-            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.Double@)">
-            <summary>
-            Attempts to read an 64bit float from <paramref name="slot"/>.
-            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.Number"/>.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="value">Stores the value in <paramref name="slot"/>.</param>
-            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.String@)">
-            <summary>
-            Attempts to read a string from <paramref name="slot"/>.
-            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.String"/>.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="value">Stores the value in <paramref name="slot"/>.</param>
-            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlot(System.Int32,System.ReadOnlySpan{System.Byte}@)">
-            <summary>
-            Attempts to read the bytes representing a string from <paramref name="slot"/>.
-            Returns true if the <paramref name="slot"/> is less than the number of slots and stores a <see cref="F:WrenSharp.WrenType.String"/>.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="value">Stores the value in <paramref name="slot"/>.</param>
-            <returns>True if <paramref name="slot"/> exists holds a value of type <see cref="F:WrenSharp.WrenType.Number"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetSlot(System.Int32,System.Boolean)">
-            <summary>
-            Stores a boolean value in <paramref name="slot"/>.
-            </summary>
-            <param name="slot">The slot index to write to.</param>
-            <param name="value">The value to write.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetSlot(System.Int32,System.Double)">
-            <summary>
-            Stores a number value in <paramref name="slot"/>.
-            </summary>
-            <param name="slot">The slot index to write to.</param>
-            <param name="value">The value to write.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetSlot(System.Int32,System.String)">
-            <summary>
-            Stores a string value in <paramref name="slot"/>.
-            </summary>
-            <param name="slot">The slot index to write to.</param>
-            <param name="value">The value to write.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetSlot(System.Int32,System.ReadOnlySpan{System.Byte})">
-            <summary>
-            Stores a string value in <paramref name="slot"/>. This method accepts a span of raw bytes
-            representing the string.
-            </summary>
-            <param name="slot">The slot index to write to.</param>
-            <param name="stringBytes">The value to write.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetSlot(System.Int32,WrenSharp.WrenHandle)">
-            <summary>
-            Stores the value of a <see cref="T:WrenSharp.WrenHandle"/> in <paramref name="slot"/>.
-            </summary>
-            <param name="slot">The slot index to write to.</param>
-            <param name="value">The value to write.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-            <exception cref="T:WrenSharp.WrenInvalidHandleException">Thrown if <paramref name="value"/> is not valid.</exception>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetSlotUnsafe(System.Int32,WrenSharp.WrenHandle)">
-            <summary>
-            Stores the value of a <see cref="T:WrenSharp.WrenHandle"/> in <paramref name="slot"/>. This method does not check
-            the validity of <paramref name="value"/>. If <paramref name="value"/> is an invalid <see cref="T:WrenSharp.WrenHandle"/>,
-            the results of this operation are undefined.
-            </summary>
-            <param name="slot">The slot index to write to.</param>
-            <param name="value">The value to write.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetSlotNull(System.Int32)">
-            <summary>
-            Stores a null value in <paramref name="slot"/>.
-            </summary>
-            <param name="slot">The slot index to write to.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotForeign(System.Int32)">
-            <summary>
-            Gets a pointer to the foreign value stored in <paramref name="slot"/>.<para/>
-            It is an error to call this if the slot does not contain a foreign class type or instance.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <returns>A pointer to a foreign value.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotForeign``1(System.Int32)">
-            <summary>
-            Gets a ref to to the foreign value stored in <paramref name="slot"/>, cast to <typeparamref name="T"/>.<para/>
-            It is an error to call this if the slot does not contain a foreign class type or instance.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <returns>A ref to the foreign value of type <typeparamref name="T"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotForeignPtr``1(System.Int32)">
-            <summary>
-            Gets a pointer to to the foreign value stored in <paramref name="slot"/>, cast to <typeparamref name="T"/>.<para/>
-            It is an error to call this if the slot does not contain a foreign class type or instance.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <returns>A pointer to the foreign value of type <typeparamref name="T"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetSlotNewForeign(System.Int32,System.Int32,System.UInt64)">
-            <summary>
-            Creates a new instance of the foreign class stored in <paramref name="classSlot"/> with <paramref name="size"/>
-            bytes of raw storage and places the resulting object in <paramref name="slot"/>.<para />
-            
-            This does not invoke the foreign class's constructor on the new instance. If you need that to happen, call the
-            constructor from Wren, which will then call the allocator foreign method. In there, call this to create the object
-            and then the constructor will be invoked when the allocator returns.
-            </summary>
-            <param name="slot">The slot to place thew new instance in.</param>
-            <param name="classSlot">The slot containing the class to instance.</param>
-            <param name="size">The number of bytes required for the instance.</param>
-            <returns>A pointer to the new instance's data.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetSlotNewForeign``1(System.Int32,System.Int32,``0@)">
-            <summary>
-            Creates a new instance of the foreign class stored in <paramref name="classSlot"/> with enough size to store a value
-            of type <typeparamref name="T"/> and places the resulting object in <paramref name="slot"/>.<para />
-            
-            This does not invoke the foreign class's constructor on the new instance. If you need that to happen, call the
-            constructor from Wren, which will then call the allocator foreign method. In there, call this to create the object
-            and then the constructor will be invoked when the allocator returns.
-            </summary>
-            <typeparam name="T">The value type of the data to allocate for the instance.</typeparam>
-            <param name="slot">The slot to place thew new instance in.</param>
-            <param name="classSlot">The slot containing the class to instance.</param>
-            <param name="data">The data to initialize the new instance with.</param>
-            <returns>A ref to the new instance's data.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetSlotNewForeignPtr``1(System.Int32,System.Int32,``0@)">
-            <summary>
-            Creates a new instance of the foreign class stored in <paramref name="classSlot"/> with enough size to store a value
-            of type <typeparamref name="T"/> and places the resulting object in <paramref name="slot"/>.<para />
-            
-            This does not invoke the foreign class's constructor on the new instance. If you need that to happen, call the
-            constructor from Wren, which will then call the allocator foreign method. In there, call this to create the object
-            and then the constructor will be invoked when the allocator returns.
-            </summary>
-            <typeparam name="T">The value type of the data to allocate for the instance.</typeparam>
-            <param name="slot">The slot to place thew new instance in.</param>
-            <param name="classSlot">The slot containing the class to instance.</param>
-            <param name="data">The data to initialize the new instance with.</param>
-            <returns>The pointer to the new instance's data.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetSlotNewForeignPtr``1(System.Int32,System.Int32,System.ReadOnlySpan{``0}@)">
-            <summary>
-            Creates a new instance of the foreign class stored in <paramref name="classSlot"/> with enough size to store <paramref name="span"/>.
-            Copies the memory within <paramref name="span"/> to the resulting object and places it in <paramref name="slot"/>.<para />
-            
-            This does not invoke the foreign class's constructor on the new instance. If you need that to happen, call the
-            constructor from Wren, which will then call the allocator foreign method. In there, call this to create the object
-            and then the constructor will be invoked when the allocator returns.
-            </summary>
-            <typeparam name="T">The value type of the data to allocate for the instance.</typeparam>
-            <param name="slot">The slot to place thew new instance in.</param>
-            <param name="classSlot">The slot containing the class to instance.</param>
-            <param name="span">The span to copy into the new instance.</param>
-            <returns>The pointer to the new instance's data.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlotForeign(System.Int32,System.IntPtr@)">
-            <summary>
-            Attempts to retrieve a pointer to the foreign class instance data in <paramref name="slot"/>.
-            Returns true if <paramref name="slot"/> is less than the number of slots and the value it stores is of type <see cref="F:WrenSharp.WrenType.Foreign"/>.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="dataPtr">The location to store the pointer.</param>
-            <returns>True if the slot exists and the value stored is of type <see cref="F:WrenSharp.WrenType.Foreign"/>, otherwise false.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlotForeign``1(System.Int32,``0@)">
-            <summary>
-            Attempts to retrieve the value of the foreign class instance data in <paramref name="slot"/> of type <typeparamref name="T"/>.
-            Returns true if <paramref name="slot"/> is less than the number of slots and the value it stores is of type <see cref="F:WrenSharp.WrenType.Foreign"/>.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="value">The location to store the value.</param>
-            <returns>True if the slot exists and the value stored is of type <see cref="F:WrenSharp.WrenType.Foreign"/>, otherwise false.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlotForeignPtr``1(System.Int32,``0*@)">
-            <summary>
-            Attempts to retrieve a pointer to the of the foreign class instance data in <paramref name="slot"/> of type <typeparamref name="T"/>.
-            Returns true if <paramref name="slot"/> is less than the number of slots and the value it stores is of type <see cref="F:WrenSharp.WrenType.Foreign"/>.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="value">The location to store the value.</param>
-            <returns>True if the slot exists and the value stored is of type <see cref="F:WrenSharp.WrenType.Foreign"/>, otherwise false.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlotForeignSpan``1(System.Int32,System.Int32,System.Span{``0}@)">
-            <summary>
-            Attempts to retrieve the value of the foreign class instance data in <paramref name="slot"/> of type <see cref="T:System.Span`1"/>.
-            Returns true if <paramref name="slot"/> is less than the number of slots and the value it stores is of type <see cref="F:WrenSharp.WrenType.Foreign"/>.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="elementCount">The number of elements expected in type <typeparamref name="T"/>.</param>
-            <param name="span">The location to store the value.</param>
-            <returns>True if the slot exists and the value stored is of type <see cref="F:WrenSharp.WrenType.Foreign"/>, otherwise false.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotSharedData(System.Int32)">
-            <summary>
-            Gets the foreign object in <paramref name="slot"/>, interprets it as a <see cref="T:WrenSharp.WrenSharedDataHandle"/>
-            and returns the value the handle points to in the VM's shared data table.
-            </summary>
-            <param name="slot">The slot containing the shared data handle.</param>
-            <returns>The value the shared data handle points to.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotSharedData``1(System.Int32)">
-            <summary>
-            Gets the foreign object in <paramref name="slot"/>, interprets it as a <see cref="T:WrenSharp.WrenSharedDataHandle"/>
-            and returns the value the handle points to in the VM's shared data table.
-            </summary>
-            <typeparam name="T">The shared data value type.</typeparam>
-            <param name="slot">The slot containing the shared data handle.</param>
-            <returns>The value the shared data handle points to.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetSlotSharedDataHandle(System.Int32)">
-            <summary>
-            Gets the foreign object in <paramref name="slot"/>, interprets it as a <see cref="T:WrenSharp.WrenSharedDataHandle"/>
-            and returns the handle.
-            </summary>
-            <param name="slot">The slot containing the shared data handle.</param>
-            <returns>The shared data handle stored in <paramref name="slot"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetSlotSharedData(System.Int32,System.Object)">
-            <summary>
-            Gets the <see cref="T:WrenSharp.WrenSharedDataHandle"/> in <paramref name="slot"/>, and sets the value it points to
-            in the shared data table to <paramref name="value"/>.
-            </summary>
-            <param name="slot">The slot containing the handle.</param>
-            <param name="value">The value to set the shared data entry to.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetSlotSharedData(System.Int32,System.Object,WrenSharp.WrenSharedDataHandle@)">
-            <summary>
-            Gets the <see cref="T:WrenSharp.WrenSharedDataHandle"/> in <paramref name="slot"/>, and sets the value it points to
-            in the shared data table to <paramref name="value"/>.
-            </summary>
-            <param name="slot">The slot containing the handle.</param>
-            <param name="value">The value to set the shared data entry to.</param>
-            <param name="handle">The handle for <paramref name="value"/>.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetSlotNewSharedData(System.Int32,System.Int32,WrenSharp.WrenSharedDataHandle)">
-            <summary>
-            Creates a new instance of the foreign class stored in <paramref name="classSlot"/>, places <paramref name="handle"/>
-            in the instance's storage and places the instance in <paramref name="slot"/>.<para />
-            </summary>
-            <param name="slot">The slot containing the handle.</param>
-            <param name="classSlot">The slot containing the class to instance.</param>
-            <param name="handle">The <see cref="T:WrenSharp.WrenSharedDataHandle"/> to place in the instance's storage.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetSlotNewSharedData(System.Int32,System.Int32,System.Object)">
-            <summary>
-            Adds <paramref name="value"/> to the VM's <see cref="P:WrenSharp.WrenVM.SharedData"/> table, creates a new instance of the foreign
-            class stored in <paramref name="classSlot"/>, assigns the value's <see cref="T:WrenSharp.WrenSharedDataHandle"/>
-            in the instance's storage and places the instance in <paramref name="slot"/>.<para />
-            </summary>
-            <param name="slot">The slot containing the handle.</param>
-            <param name="classSlot">The slot containing the class to instance.</param>
-            <param name="value">The value to place in The VM's <see cref="P:WrenSharp.WrenVM.SharedData"/> table.</param>
-            <returns>The <see cref="T:WrenSharp.WrenSharedDataHandle"/> that was created for <paramref name="value"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetSlotNewSharedData(System.Int32,System.Int32,System.Object,WrenSharp.WrenSharedDataHandle@)">
-            <summary>
-            Adds <paramref name="value"/> to the VM's <see cref="P:WrenSharp.WrenVM.SharedData"/> table, creates a new instance of the foreign
-            class stored in <paramref name="classSlot"/>, assigns the value's <see cref="T:WrenSharp.WrenSharedDataHandle"/>
-            in the instance's storage and places the instance in <paramref name="slot"/>.<para />
-            </summary>
-            <param name="slot">The slot containing the handle.</param>
-            <param name="classSlot">The slot containing the class to instance.</param>
-            <param name="value">The value to place in The VM's <see cref="P:WrenSharp.WrenVM.SharedData"/> table.</param>
-            <param name="handle">The <see cref="T:WrenSharp.WrenSharedDataHandle"/> that was created for <paramref name="value"/>.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlotSharedData(System.Int32,System.Object@)">
-            <summary>
-            Attemps to retrieve the shared data value the foreign instance stored in <paramref name="slot"/> points to.
-            Returns true if <paramref name="slot"/> is less than the number of slots, the value it stores is of type <see cref="F:WrenSharp.WrenType.Foreign"/>
-            and the <see cref="T:WrenSharp.WrenSharedDataHandle"/> stored within points to a valid entry in the shared data table.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="value">Stores the value from the shared data table.</param>
-            <returns>True if the slot exists, the value stored is of type <see cref="F:WrenSharp.WrenType.Foreign"/> and its <see cref="T:WrenSharp.WrenSharedDataHandle"/>
-            pints to a valid entry, otherwise false.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlotSharedData``1(System.Int32,``0@)">
-            <summary>
-            Attemps to retrieve the shared data value the foreign instance stored in <paramref name="slot"/> points to, as type <typeparamref name="T"/>.
-            Returns true if <paramref name="slot"/> is less than the number of slots, the value it stores is of type <see cref="F:WrenSharp.WrenType.Foreign"/>
-            and the <see cref="T:WrenSharp.WrenSharedDataHandle"/> stored within points to a valid entry in the shared data table.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="value">Stores the value from the shared data table.</param>
-            <returns>True if the slot exists, the value stored is of type <see cref="F:WrenSharp.WrenType.Foreign"/> and its <see cref="T:WrenSharp.WrenSharedDataHandle"/>
-            pints to a valid entry, otherwise false.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetSlotSharedDataHandle(System.Int32,WrenSharp.WrenSharedDataHandle@)">
-            <summary>
-            Attemps to retrieve the <see cref="T:WrenSharp.WrenSharedDataHandle"/> stored by the foreign instance in <paramref name="slot"/>.
-            Returns true if <paramref name="slot"/> is less than the number of slots, the value it stores is of type <see cref="F:WrenSharp.WrenType.Foreign"/>
-            and the <see cref="T:WrenSharp.WrenSharedDataHandle"/> stored within points to a valid entry in the shared data table.
-            </summary>
-            <param name="slot">The slot index to read from.</param>
-            <param name="handle">Stores the <see cref="T:WrenSharp.WrenSharedDataHandle"/> held by the foreign instance.</param>
-            <returns>True if the slot exists, the value stored is of type <see cref="F:WrenSharp.WrenType.Foreign"/> and its <see cref="T:WrenSharp.WrenSharedDataHandle"/>
-            pints to a valid entry, otherwise false.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.ListClear(System.Int32)">
-            <summary>
-            If the value in <paramref name="listSlot"/> is of type <see cref="F:WrenSharp.WrenType.List"/>, calls the clear() method
-            to remove all values in the list. If the value is not a list, this method does nothing.<para/>
-            
-            Note that this method invokes a Wren call which will clear the API stack and the value in slot
-            0 will become null. See <see cref="M:WrenSharp.WrenVM.ListLoadAndClear(WrenSharp.WrenHandle,System.Int32)"/> for an alternative implementation that
-            avoids this problem.
-            </summary>
-            <param name="listSlot">The slot the list has been placed in.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.ListLoadAndClear(WrenSharp.WrenHandle,System.Int32)">
-            <summary>
-            Loads <paramref name="listHandle"/> into <paramref name="listSlot"/>, calls the clear() method to remove all values
-            in the list, and places <paramref name="listHandle"/> back into <paramref name="listSlot"/>. If the handle is invalid,
-            this method does nothing.
-            </summary>
-            <param name="listHandle">The handle wrapping the list.</param>
-            <param name="listSlot">The slot to load the list into.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.ListGetCount(System.Int32)">
-            <summary>
-            Gets the number of elements in the list stored in <paramref name="listSlot"/>.
-            </summary>
-            <param name="listSlot">The slot index the list resides in.</param>
-            <returns>The number of elements in the list.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.ListGetElement(System.Int32,System.Int32,System.Int32)">
-            <summary>
-            Places the value of element <paramref name="elementIndex"/> in the list stored in <paramref name="listSlot"/>
-            into <paramref name="elementSlot"/>.<para/>
-            Use the <c>GetSlot()</c> family of methods to retrieve the value.
-            </summary>
-            <param name="listSlot">The slot index the list resides in.</param>
-            <param name="elementIndex">The index of the element.</param>
-            <param name="elementSlot">The slot index to store the value in.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.ListAddElement(System.Int32,System.Int32)">
-            <summary>
-            Adds the value stored in <paramref name="elementSlot"/> to the list stored in <paramref name="listSlot"/>.
-            </summary>
-            <param name="listSlot">The slot index the list resides in.</param>
-            <param name="elementSlot">The slot index to store the value in.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.ListInsertElement(System.Int32,System.Int32,System.Int32)">
-            <summary>
-            Inserts the value stored in <paramref name="elementSlot"/> into the list stored in <paramref name="listSlot"/>
-            at index <paramref name="elementIndex"/>.<para/>
-            As in Wren, negative indexes can be used to insert from the end. For example, to append an element, use
-            <c>-1</c> for <paramref name="elementIndex"/>.
-            </summary>
-            <param name="listSlot">The slot index the list resides in.</param>
-            <param name="elementIndex">The index of the element. Negative values can be used insert from the end of the list.</param>
-            <param name="elementSlot">The slot index to store the value in.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.ListSetElement(System.Int32,System.Int32,System.Int32)">
-            <summary>
-            Sets the value at <paramref name="elementIndex"/> in the list stored in <paramref name="listSlot"/> to the value
-            stored in <paramref name="elementSlot"/>.
-            </summary>
-            <param name="listSlot">The slot index the list resides in.</param>
-            <param name="elementIndex">The index of the element. Negative values can be used insert from the end of the list.</param>
-            <param name="elementSlot">The slot index to store the value in.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetSlotNewList(System.Int32)">
-            <summary>
-            Stores a new empty list in <paramref name="slot"/>.
-            </summary>
-            <param name="slot">The slot index to write to.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.MapClear(System.Int32)">
-            <summary>
-            If the value in <paramref name="mapSlot"/> is of type <see cref="F:WrenSharp.WrenType.Map"/>, calls the clear() method
-            to remove all values in the map. If the value is not a map, this method does nothing.<para/>
-            
-            Note that this method invokes a Wren call which will clear the API stack and the value in <paramref name="mapSlot"/>
-            will become null. See <see cref="M:WrenSharp.WrenVM.MapLoadAndClear(WrenSharp.WrenHandle,System.Int32)"/> for an alternative implementation that
-            avoids this problem.
-            </summary>
-            <param name="mapSlot">The slot the map has been placed in.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.MapLoadAndClear(WrenSharp.WrenHandle,System.Int32)">
-            <summary>
-            Loads <paramref name="mapHandle"/> into slot <paramref name="mapSlot"/>, calls the clear() method to remove all values
-            in the map, and places <paramref name="mapHandle"/> back into slot <paramref name="mapSlot"/>. If the handle is invalid,
-            this method does nothing.
-            </summary>
-            <param name="mapHandle">The handle wrapping the map.</param>
-            <param name="mapSlot">The slot to load the map into.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.MapContainsKey(System.Int32,System.Int32)">
-            <summary>
-            Returns true if the map stored in <paramref name="mapSlot"/> contains the key in <paramref name="keySlot"/>.
-            </summary>
-            <param name="mapSlot">The slot index the map resides in.</param>
-            <param name="keySlot">The slot index the key resides in.</param>
-            <returns>True if the key is found in the map.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.MapGetCount(System.Int32)">
-            <summary>
-            Returns the number of entries in the map stored in <paramref name="mapSlot"/>.
-            </summary>
-            <param name="mapSlot">The slot index the map resides in.</param>
-            <returns>The number of entries in the map.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.MapGetValue(System.Int32,System.Int32,System.Int32)">
-            <summary>
-            Places the value with the key in <paramref name="keySlot"/> within the map stored in <paramref name="mapSlot"/>
-            and places it into <paramref name="valueSlot"/>.
-            </summary>
-            <param name="mapSlot">The slot index the map resides in.</param>
-            <param name="keySlot">The slot index the key resides in.</param>
-            <param name="valueSlot">The slot index to place the value in.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.MapRemoveValue(System.Int32,System.Int32,System.Int32)">
-            <summary>
-            Removes the value of the key in <paramref name="keySlot"/> from the map stored in <paramref name="mapSlot"/>,
-            and places the value in <paramref name="removedValueSlot"/>.<para/>
-            If the key is not found in the map, <paramref name="removedValueSlot"/> is set to null.
-            </summary>
-            <param name="mapSlot">The slot index the map resides in.</param>
-            <param name="keySlot">The slot index the key resides in.</param>
-            <param name="removedValueSlot">The slot index to write the value that was removed.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.MapSetValue(System.Int32,System.Int32,System.Int32)">
-            <summary>
-            Stores the value in <paramref name="valueSlot"/> in the map stored in <paramref name="mapSlot"/>
-            with the key in <paramref name="keySlot"/>.
-            </summary>
-            <param name="mapSlot">The slot index the map resides in.</param>
-            <param name="keySlot">The slot index the key resides in.</param>
-            <param name="valueSlot">The slot index to value resides in.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetSlotNewMap(System.Int32)">
-            <summary>
-            Stores a new empty map in <paramref name="slot"/>.
-            </summary>
-            <param name="slot">The slot index to write to.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetUserData">
-            <summary>
-            Returns a pointer to the user data associated with the VM.
-            </summary>
-            <returns>A pointer to the VM user data.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetUserData``1">
-            <summary>
-            Returns a ref to the user data associated with the VM, as <typeparamref name="T"/>.
-            </summary>
-            <returns>A ref to the VM user data as <typeparamref name="T"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetUserSharedData``1">
-            <summary>
-            Returns the shared data value assigned as the VM user data, as <typeparamref name="T"/>.
-            <see cref="M:WrenSharp.WrenVM.SetUserSharedData(System.Object)"/>.
-            </summary>
-            <returns>The value from the shared data table, as <typeparamref name="T"/>.</returns>
-            <seealso cref="M:WrenSharp.WrenVM.SetUserSharedData(System.Object)"/>
-            <seealso cref="M:WrenSharp.WrenVM.SetUserSharedData(WrenSharp.WrenSharedDataHandle)"/>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetUserSharedData">
-            <summary>
-            Returns the shared data value assigned as the VM user data.
-            <see cref="M:WrenSharp.WrenVM.SetUserSharedData(System.Object)"/>.
-            </summary>
-            <returns>A ref to the VM user data.</returns>
-            <seealso cref="M:WrenSharp.WrenVM.SetUserSharedData(System.Object)"/>
-            <seealso cref="M:WrenSharp.WrenVM.SetUserSharedData(WrenSharp.WrenSharedDataHandle)"/>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetUserSharedDataHandle">
-            <summary>
-            Gets the <see cref="T:WrenSharp.WrenSharedDataHandle"/> assigned as the VM's user data.
-            </summary>
-            <returns>A <see cref="T:WrenSharp.WrenSharedDataHandle"/>.</returns>
-            <seealso cref="M:WrenSharp.WrenVM.SetUserSharedData(System.Object)"/>
-            <seealso cref="M:WrenSharp.WrenVM.SetUserSharedData(WrenSharp.WrenSharedDataHandle)"/>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetUserData(System.IntPtr)">
-            <summary>
-            Sets the user data associated with the VM to a pointer. It is the user's responsibility to ensure
-            the pointer is valid.
-            </summary>
-            <param name="userData">A pointer to the user data value.</param>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetUserData``1(``0@)">
-            <summary>
-            Adds <paramref name="userData"/> to the <see cref="P:WrenSharp.WrenVM.SharedData"/> table, and sets the VM's user data
-            to a <see cref="T:WrenSharp.WrenSharedDataHandle"/>, pointing to <paramref name="userData"/>.
-            </summary>
-            <param name="userData">The value to set the VM's user data to.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/> instance.</returns>
-            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedData"/>
-            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedData``1"/>
-            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedDataHandle"/>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetUserSharedData(System.Object)">
-            <summary>
-            Adds <paramref name="userData"/> to the <see cref="P:WrenSharp.WrenVM.SharedData"/> table, and sets the VM's user data
-            to a <see cref="T:WrenSharp.WrenSharedDataHandle"/>, pointing to <paramref name="userData"/>.
-            </summary>
-            <param name="userData">The value to set the VM's user data to.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/> instance.</returns>
-            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedData"/>
-            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedData``1"/>
-            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedDataHandle"/>
-        </member>
-        <member name="M:WrenSharp.WrenVM.SetUserSharedData(WrenSharp.WrenSharedDataHandle)">
-            <summary>
-            Sets the VM's user data to <paramref name="handle"/>.
-            </summary>
-            <param name="handle">The handle to set the VM's user data to.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/> instance.</returns>
-            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedData"/>
-            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedData``1"/>
-            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedDataHandle"/>
-        </member>
-        <member name="M:WrenSharp.WrenVM.LoadVariable(System.String,System.String,System.Int32)">
-            <summary>
-            Stores the value of <paramref name="variableName"/> from resolved module <paramref name="module"/> into <paramref name="slot"/>.<para/>
-            This method ensures that enough slots are allocated to hold the current value of the variable.
-            </summary>
-            <param name="module">The module name the variable resides in.</param>
-            <param name="variableName">The name of the variable to load into <paramref name="slot"/>.</param>
-            <param name="slot">The slot index to load the variable into.</param>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryLoadVariable(System.String,System.String,System.Int32)">
-            <summary>
-            Attempts to store the value of <paramref name="variableName"/> from the resolved module <paramref name="module"/> into <paramref name="slot"/>.<para/>
-            Returns true if the variable exists and was able to be loaded. This method ensures that enough slots are allocated to hold the current
-            value of the variable.
-            </summary>
-            <param name="module">The module name the variable resides in.</param>
-            <param name="variableName">The name of the variable to load into <paramref name="slot"/>.</param>
-            <param name="slot">The slot index to load the variable into.</param>
-            <returns>True if the variable exists and was placed into <paramref name="slot"/>, otherwise false.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetVariable(System.String,System.String,System.Int32)">
-            <summary>
-            Stores the value of <paramref name="variableName"/> from resolved module <paramref name="module"/> into <paramref name="slot"/>.<para/>
-            This method does <b>not</b> ensure enough slots are available to hold the value of the variable. For a safer method of
-            retrieving the value of a variable, use <see cref="M:WrenSharp.WrenVM.LoadVariable(System.String,System.String,System.Int32)"/>.
-            </summary>
-            <param name="slot">The slot index to load the variable into.</param>
-            <param name="module">The module name the variable resides in.</param>
-            <param name="variableName">The name of the variable to load into <paramref name="slot"/>.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetVariable(System.String,System.String,System.Int32)">
-            <summary>
-            Attempts to store the value of <paramref name="variableName"/> from resolved module <paramref name="module"/> into <paramref name="slot"/>.<para/>
-            Returns true if the variable exists. This method does <b>not</b> ensure enough slots are available to hold the value of the variable.
-            For a safer method of retrieving the value of a variable, use <see cref="M:WrenSharp.WrenVM.TryLoadVariable(System.String,System.String,System.Int32)"/>.
-            </summary>
-            <param name="slot">The slot index to load the variable into.</param>
-            <param name="module">The module name the variable resides in.</param>
-            <param name="variableName">The name of the variable to load into <paramref name="slot"/>.</param>
-            <returns>True if the variable exists, otherwise false.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.HasVariable(System.String,System.String)">
-            <summary>
-            Returns true if <paramref name="variableName"/> exists within the resolved module <paramref name="module"/>.
-            </summary>
-            <param name="module">The module name to search in.</param>
-            <param name="variableName">The variable name to find.</param>
-            <returns>True if the variable is found in the module, otherwise false.</returns>
-        </member>
-        <member name="P:WrenSharp.WrenVM.VersionNumber">
-            <summary>
-            Returns the version number of the Wren library.
-            </summary>
-        </member>
-        <member name="F:WrenSharp.WrenVM.MaxCallParameters">
-            <summary>
-            The maximum number of parameters a method call can accept.
-            </summary>
-        </member>
-        <member name="P:WrenSharp.WrenVM.VMs">
-            <summary>
-            An enumeration of all <see cref="T:WrenSharp.WrenVM"/> instances.
-            </summary>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetVM(System.IntPtr)">
-            <summary>
-            Gets the managed <see cref="T:WrenSharp.WrenVM"/> corresponding to a native Wren VM.
-            </summary>
-            <param name="ptr">The native Wren VM pointer.</param>
-            <returns>A <see cref="T:WrenSharp.WrenVM"/> instance or null if not found.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetVM``1(System.IntPtr)">
-            <summary>
-            Gets the managed <see cref="T:WrenSharp.WrenVM"/> wrapping the native VM at <paramref name="ptr"/>, cast as <typeparamref name="T"/>.
-            </summary>
-            <param name="ptr">The native Wren VM pointer.</param>
-            <returns>A <typeparamref name="T"/> instance.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetVM(System.IntPtr,WrenSharp.WrenVM@)">
-            <summary>
-            Attempts to get the managed <see cref="T:WrenSharp.WrenVM"/> wrapping the native VM at <paramref name="ptr"/>.
-            </summary>
-            <param name="ptr">The pointer to the native <see cref="T:WrenSharp.WrenVM"/>.</param>
-            <param name="vm">The <see cref="T:WrenSharp.WrenVM"/> instance.</param>
-            <returns>True if the VM exists, otherwise false.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryGetVM``1(System.IntPtr,``0@)">
-            <summary>
-            Attempts to get the managed <see cref="T:WrenSharp.WrenVM"/> wrapping the native VM at <paramref name="ptr"/>, cast as <typeparamref name="T"/>.
-            </summary>
-            <typeparam name="T">The expected type of the VM.</typeparam>
-            <param name="ptr">The pointer to the native <see cref="T:WrenSharp.WrenVM"/>.</param>
-            <param name="vm">The <see cref="T:WrenSharp.WrenVM"/> instance.</param>
-            <returns>True if the VM exists and is of type <typeparamref name="T"/>, otherwise false.</returns>
-        </member>
-        <member name="F:WrenSharp.WrenVM.m_Ptr">
-            <summary>
-            The native VM pointer.
-            </summary>
-        </member>
-        <member name="F:WrenSharp.WrenVM.Slots">
-            <summary>
-            Gets the Wren API slot interface for interfacing with API slots on the current Wren fiber.
-            </summary>
-        </member>
-        <member name="P:WrenSharp.WrenVM.IsDisposed">
-            <summary>
-            Indicates if the VM has been disposed, either by an explicit call to <see cref="M:System.IDisposable.Dispose"/>
-            or by the garbage collector when the instance is finalized.
-            </summary>
-        </member>
-        <member name="P:WrenSharp.WrenVM.IsInitialized">
-            <summary>
-            Indicates if the VM has been initialized.
-            </summary>
-        </member>
-        <member name="P:WrenSharp.WrenVM.IsValid">
-            <summary>
-            Indicates if the VM is initialized and in valid state. Returns true if 
-            <see cref="P:WrenSharp.WrenVM.IsInitialized"/> is true and <see cref="P:WrenSharp.WrenVM.IsDisposed"/> is false.
-            </summary>
-        </member>
-        <member name="P:WrenSharp.WrenVM.Errors">
-            <summary>
-            A list containing the morst recent errors generated by Wren. This list is only filled
-            if <see cref="P:WrenSharp.WrenVMConfiguration.LogErrors"/> is true. The error log is cleared before
-            any Wren source is interpreted or method called.
-            </summary>
-        </member>
-        <member name="P:WrenSharp.WrenVM.LogErrors">
-            <summary>
-            Determines if errors are logged and stored in the <see cref="P:WrenSharp.WrenVM.Errors"/> list when Wren
-            generates an error message during an interpret or call.
-            </summary>
-        </member>
-        <member name="P:WrenSharp.WrenVM.NativePointer">
-            <summary>
-            The pointer to the native WrenVM instance. This can be used to pass directly to the native interop
-            methods in <see cref="T:WrenSharp.Native.Wren"/>.
-            </summary>
-        </member>
-        <member name="P:WrenSharp.WrenVM.SharedData">
-            <summary>
-            The shared data table that can be used to store strong references to managed objects that can 
-            be referenced by Wren foreign objects.
-            </summary>
-        </member>
-        <member name="P:WrenSharp.WrenVM.HostData">
-            <summary>
-            Custom user data that you can attach to this VM instance.
-            </summary>
-        </member>
-        <member name="M:WrenSharp.WrenVM.#ctor">
-            <summary>
-            Base constructor for derived classes to perform their own initialization.
-            </summary>
-        </member>
-        <member name="M:WrenSharp.WrenVM.#ctor(WrenSharp.Native.WrenConfiguration@,WrenSharp.Memory.IAllocator)">
-            <summary>
-            Creates a new Wren VM to run Wren scripts. This constructor provides the ability to explicitly
-            set the native configuration passed into the Wren instance, allowing for full control over the VM.
-            </summary>
-            <param name="config">The <see cref="T:WrenSharp.Native.WrenConfiguration"/>.</param>
-            <param name="allocator">The <see cref="T:WrenSharp.Memory.IAllocator"/> to use when allocated unmanaged memory from C#. This is not used by the native Wren VM instance.</param>
-        </member>
-        <member name="M:WrenSharp.WrenVM.#ctor(WrenSharp.WrenVMInitializer,WrenSharp.Native.WrenConfiguration@,WrenSharp.Memory.IAllocator)">
-            <summary>
-            Creates a new Wren VM to run Wren scripts. This constructor provides the ability to explicitly
-            set the delete used to initialize the native Wren VM, as well as the native configuration passed into the Wren instance,
-            allowing for full control over the VM initializer.
-            </summary>
-            <param name="vmInitializer">The <see cref="T:WrenSharp.WrenVMInitializer"/> delegate to initialize the native Wren VM. Leave null to use the default initializer (<see cref="M:WrenSharp.Native.Wren.NewVM(WrenSharp.Native.WrenConfiguration@)"/>).</param>
-            <param name="config">The <see cref="T:WrenSharp.Native.WrenConfiguration"/>.</param>
-            <param name="allocator">The <see cref="T:WrenSharp.Memory.IAllocator"/> to use when allocated unmanaged memory from C#. This is not used by the native Wren VM instance.</param>
-        </member>
-        <member name="M:WrenSharp.WrenVM.Initialize(WrenSharp.WrenVMInitializer,WrenSharp.Native.WrenConfiguration@,WrenSharp.Memory.IAllocator)">
-            <summary>
-            Initializes the VM using the given configuration.
-            </summary>
-            <param name="vmInitializer">The initializer to use to create the native Wren VM. Leave null to use the defaultinitializer(<see cref="M:WrenSharp.Native.Wren.NewVM(WrenSharp.Native.WrenConfiguration@)"/>).</param>
-            <param name="config">The <see cref="T:WrenSharp.Native.WrenConfiguration"/> that is passed to native Wren.</param>
-            <param name="allocator">An optional memory allocator to use for unamanged buffers. If null, the
-            default allocator (<see cref="T:WrenSharp.Memory.HGlobalAllocator"/>) is used.</param>
-            <exception cref="T:System.InvalidOperationException">Thrown if the VM has already been initialized.</exception>
-        </member>
-        <member name="M:WrenSharp.WrenVM.Interpret(System.String,WrenSharp.IWrenSource,System.Boolean)">
-            <summary>
-            Runs Wren source <paramref name="source"/> in a new fiber, in the context of module <paramref name="module"/>.
-            If the resolved module is not found, a new module will be created.
-            </summary>
-            <param name="module">The name of the resolved module to run the source within.</param>
-            <param name="source">The source to interpret.</param>
-            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
-            <returns>The result of the interpret operation.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.Interpret(System.String,System.String,System.Boolean)">
-            <summary>
-            Runs Wren source <paramref name="source"/> in a new fiber, in the context of module <paramref name="module"/>.
-            If the resolved module is not found, a new module will be created.
-            </summary>
-            <param name="module">The name of the resolved module to run the source within.</param>
-            <param name="source">The source to interpret.</param>
-            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
-            <returns>The result of the interpret operation.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.Interpret(System.String,System.String,System.Text.Encoding,System.Boolean)">
-            <summary>
-            Runs Wren source <paramref name="source"/> in a new fiber, in the context of module <paramref name="module"/>.
-            If the resolved module is not found, a new module will be created.
-            </summary>
-            <param name="module">The name of the resolved module to run the source within.</param>
-            <param name="source">The source to interpret.</param>
-            <param name="encoding">The encoding to use when converting the string to a native buffer.</param>
-            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
-            <returns>The result of the interpret operation.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.Interpret(System.String,System.Text.StringBuilder,System.Text.Encoding,System.Boolean)">
-            <summary>
-            Runs Wren source (the contents of <paramref name="source"/>) in a new fiber, in the context of module <paramref name="module"/>.
-            If the resolved module is not found, a new module will be created.
-            </summary>
-            <param name="module">The name of the resolved module to run the source within.</param>
-            <param name="source">The source to interpret.</param>
-            <param name="encoding">The encoding to use when converting the string to a native buffer. Defaults to UTF8 encoding if not specified.</param>
-            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
-            <returns>The result of the interpret operation.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.Interpret(System.String,System.Byte[],System.Boolean)">
-            <summary>
-            Runs Wren source (the contents of <paramref name="source"/>) in a new fiber, in the context of module <paramref name="module"/>.
-            If the resolved module is not found, a new module will be created.<para />
-            <paramref name="source"/> is expected to contain a null-terminated C-style string that is either ANSI or UTF8 encoded.<para />
-            For UTF8 encoding, is recommended that the string contain the UTF8 BOM (Byte Order Mark) at the beginning of the file, or Wren may fail
-            to parse the source string correctly.
-            </summary>
-            <param name="module">The name of the resolved module to run the source within.</param>
-            <param name="source">The raw bytes of Wren source to interpret.</param>
-            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
-            <returns>The result of the interpret operation.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.Interpret(System.String,System.IntPtr,System.Boolean)">
-            <summary>
-            Runs Wren source (the contents of <paramref name="source"/>) in a new fiber, in the context of module <paramref name="module"/>.
-            If the resolved module is not found, a new module will be created.<para />
-            <paramref name="source"/> should point to a null-terminated C-style string that is either ANSI or UTF8 encoded.<para />
-            For UTF8 encoding, is recommended that the string contain the UTF8 BOM (Byte Order Mark) at the beginning of the file, or Wren may fail
-            to parse the source string correctly.
-            </summary>
-            <param name="module">The name of the resolved module to run the source within.</param>
-            <param name="source">A pointer to the Wren source to interpret.</param>
-            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
-            <returns>The result of the interpret operation.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.AbortFiber(System.Int32)">
-            <summary>
-            Sets the current fiber to be aborted, and uses the value in <paramref name="errorSlot"/> as the runtime error. Usually
-            this would be a string that can be read in Wren via the <c>Fibre.error</c> instance field.
-            </summary>
-            <param name="errorSlot">The slot containing the error value.</param>
-            <seealso cref="M:WrenSharp.WrenVM.AbortFiber(System.Int32,System.String)"/>
-        </member>
-        <member name="M:WrenSharp.WrenVM.AbortFiber(System.Int32,System.String)">
-            <summary>
-            Places the string <paramref name="errorMessage"/> in <paramref name="errorSlot"/>, then aborts the current fibre with
-            <paramref name="errorSlot"/>.
-            </summary>
-            <param name="errorSlot">The slot to contain <paramref name="errorMessage"/>.</param>
-            <param name="errorMessage">The error message to set for the abort.</param>
-        </member>
-        <member name="M:WrenSharp.WrenVM.ClearErrorLog">
-            <summary>
-            Clears all stored <see cref="T:WrenSharp.WrenError"/> instances in <see cref="P:WrenSharp.WrenVM.Errors"/>.
-            </summary>
-            <seealso cref="P:WrenSharp.WrenVM.Errors"/>
-            <seealso cref="T:WrenSharp.WrenError"/>
-        </member>
-        <member name="M:WrenSharp.WrenVM.CollectGarbage">
-            <summary>
-            Runs the VM's garbage collector immediately, freeing any unused memory.
-            </summary>
-        </member>
-        <member name="M:WrenSharp.WrenVM.HasModule(System.String)">
-            <summary>
-            Indicates if the module <paramref name="module"/> has been imported and resolved.
-            </summary>
-            <param name="module">The name of the module.</param>
-            <returns>True if <paramref name="module"/> has been imported and resolved, otherwise false.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.Print(System.String)">
-            <summary>
-            Writes <paramref name="text"/>, followed by a newline, using the Wren writer function.
-            </summary>
-            <param name="text">The text to write.</param>
-        </member>
-        <member name="M:WrenSharp.WrenVM.Write(System.String)">
-            <summary>
-            Writes <paramref name="text"/> using the Wren writer function.
-            </summary>
-            <param name="text">The text to write.</param>
-        </member>
-        <member name="M:WrenSharp.WrenVM.Call(WrenSharp.WrenHandle,System.Boolean)">
-            <summary>
-            Calls a Wren value via a previously allocated handle.
-            </summary>
-            <param name="handle">The handle to call.</param>
-            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if the call is unsuccessful.</param>
-            <returns>The result of the call operation.</returns>
-            <exception cref="T:WrenSharp.WrenInterpretException">Thrown if the call is unsuccessful and <paramref name="throwOnFailure"/> is true.</exception>
-            <seealso cref="M:WrenSharp.WrenVM.CreateHandle(System.Int32)"/>
-            <seealso cref="M:WrenSharp.WrenVM.CreateHandle(System.String,System.String,System.Int32)"/>
-        </member>
-        <member name="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle,System.Boolean)">
-            <summary>
-            Calls a Wren method via a previously allocated handle.
-            </summary>
-            <param name="callHandle">The handle to call.</param>
-            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if the call is unsuccessful.</param>
-            <returns>The result of the call operation.</returns>
-            <exception cref="T:WrenSharp.WrenInterpretException">Thrown if the call is unsuccessful and <paramref name="throwOnFailure"/> is true.</exception>
-            <seealso cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)"/>
-            <seealso cref="M:WrenSharp.WrenVM.CreateCallHandle(System.String)"/>
-        </member>
-        <member name="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)">
-            <summary>
-            Creates a <see cref="T:WrenSharp.WrenCall"/> value that can be used to prepare and execute a call.
-            </summary>
-            <param name="receiverHandle">A handle to the receiver object.</param>
-            <param name="callHandle">A handle for the method to call.</param>
-            <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
-            to call back into Wren from the managed side without clobbering the Wren API stack.</param>
-            <returns>A <see cref="T:WrenSharp.WrenCall"/> value.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.CreateCall(System.String,System.String,WrenSharp.WrenCallHandle,System.Boolean)">
-            <summary>
-            Creates a <see cref="T:WrenSharp.WrenCall"/> value that can be used to prepare and execute a call to a static class method.
-            </summary>
-            <param name="module">The name of the module the class resides in.</param>
-            <param name="className">The name of the class to execute the call on.</param>
-            <param name="callHandle">A handle for the method to call.</param>
-            <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
-            to call back into Wren from the managed side without clobbering the Wren API stack.</param>
-            <returns>A <see cref="T:WrenSharp.WrenCall"/> value.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.CreateFunctionCall(WrenSharp.WrenHandle,System.Int32,System.Boolean)">
-            <summary>
-            Creates a <see cref="T:WrenSharp.WrenCall"/> for a Wren Fn object, that can be used to prepare and execute the call.
-            </summary>
-            <param name="functionHandle">A handle wrapping a Wren Fn object.</param>
-            <param name="argCount">The number of arguments the function expects.</param>
-            <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
-            to call back into Wren from the managed side without clobbering the Wren API stack.</param>
-            <returns>A <see cref="T:WrenSharp.WrenCall"/> value.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.CreateCallHandle(System.String)">
-            <summary>
-            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> that can be used with the <see cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle,System.Boolean)"/> and <see cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)"/> methods
-            to call a Wren method from C#.<para />
-            Call signatures must conform to standard Wren call signatures, for example:
-            <code>
-            methodName()      // Method, no arguments
-            methodName(_,_)   // Method, two arguments
-            propertyName      // Property getter (no arguments)
-            propertyName=(_)  // Property setter (one argument)
-            [_]               // Subscript getter, one argument
-            [_,_]=(_)         // Subscript setter, two arguments
-            -                 // Unary negation (no arguments)
-            +(_)              // Addition operator (one argument)
-            </code>
-            See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
-            </summary>
-            <param name="signature">The call signature.</param>
-            <returns></returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.CreateFunction(System.String,System.String,System.String,System.Int32,System.Boolean)">
-            <summary>
-            Interprets a Wren function by wrapping <paramref name="functionBody"/> in the Wren function syntax (<c>Fn.new {...}</c>)
-            and returns a handle to the newly created function object. This is useful for creating functions dynamically from managed code
-            that can then be called at a later time.<para/>
-            Use <see cref="M:WrenSharp.WrenVM.CreateFunctionCall(WrenSharp.WrenHandle,System.Int32,System.Boolean)"/> to call the function after it has been created.<para/>
-            See <see href="https://wren.io/functions.html"/> for more information on functions in Wren.
-            </summary>
-            <example>
-            <code>
-            var dynamicFn = vm.CreateFunction(
-                module: "main",
-                paramsSignature: "active, num",
-                functionBody: @"
-                    System.print(""arguments: active=%(active), num=%(num)"")
-                    return num * 2"
-                );
-            
-            // If the function did not compile, the handle will be invalid
-            if (dynamicFn.IsValid)
-            {
-                var call = vm.CreateFunctionCall(dynamicFn, 2);
-                call.SetArg(0, true); // arg: active
-                call.SetArg(1, 1234); // arg: num
-                call.Call(throwOnFailure: true, out double returnValue);
-                
-                Console.WriteLine(returnValue); // Output: 2468
-            }
-            </code>
-            </example>
-            <param name="module">The module to create the function in.</param>
-            <param name="paramsSignature">The function's parameter signature.</param>
-            <param name="functionBody">The function's body.</param>
-            <param name="slot">The slot index to load the function into and create the handle from.</param>
-            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
-            <returns>A handle to the newly created function.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.CreateHandle(System.Int32)">
-            <summary>
-            Creates a <see cref="T:WrenSharp.WrenHandle"/> that wraps the value in <paramref name="slot"/>.
-            </summary>
-            <param name="slot">The slot containing the value to wrap.</param>
-            <returns>A <see cref="T:WrenSharp.WrenHandle"/> value.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.CreateHandle(System.String,System.String,System.Int32)">
-            <summary>
-            Creates a handle to <paramref name="variableName"/> in resolved module <paramref name="module"/>.
-            The value of the variable is loaded into slot <paramref name="slot"/>, and the handle is created from the value in that slot.
-            </summary>
-            <param name="module">The module the variable resides in.</param>
-            <param name="variableName">The name of the variable.</param>
-            <param name="slot">The slot to place the value in and create the handle from.</param>
-            <returns>A <see cref="T:WrenSharp.WrenHandle"/> wrapping the value stored in <paramref name="variableName"/>.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.GetFunctionCallHandle(System.Int32)">
-            <summary>
-            Returns a cached <see cref="T:WrenSharp.WrenCallHandle"/> for the Wren <c>Fn.call()</c> method signature with <paramref name="paramCount"/> parameters.
-            The maximum number of parameters is <see cref="F:WrenSharp.WrenVM.MaxCallParameters"/> (16 at the time of writing).
-            </summary>
-            <param name="paramCount">The number of parameters in the method signature.</param>
-            <returns>A <see cref="T:WrenSharp.WrenCallHandle"/>.</returns>
-            <exception cref="T:System.ArgumentOutOfRangeException">Thrown if <paramref name="paramCount"/> is greater than <see cref="F:WrenSharp.WrenVM.MaxCallParameters"/>.</exception>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryCreateHandle(System.Int32,WrenSharp.WrenType,WrenSharp.WrenHandle@)">
-            <summary>
-            Attemps to create a <see cref="T:WrenSharp.WrenHandle"/> from the value in <paramref name="slot"/>.
-            Returns true if <paramref name="slot"/> is less than the nubmer of slots and holds a value of <paramref name="expectedType"/>.
-            </summary>
-            <param name="slot">The slot containing the value to wrap.</param>
-            <param name="expectedType">The expected type of the value in <paramref name="slot"/>.</param>
-            <param name="handle">Stores the created handle.</param>
-            <returns>True if the handle was created, otherwise false.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryCreateHandle(System.String,System.String,System.Int32,WrenSharp.WrenHandle@)">
-            <summary>
-            Attemps to create a <see cref="T:WrenSharp.WrenHandle"/> from the value in <paramref name="variableName"/> in resolved module <paramref name="module"/>.
-            The value of the variable is loaded into slot <paramref name="slot"/>, and the handle is created from the value in that slot.<para/>
-            Returns true if <paramref name="slot"/> is less than the number of slots and the variable exists.
-            </summary>
-            <param name="module">The module the variable resides in.</param>
-            <param name="variableName">The name of the variable.</param>
-            <param name="slot">The slot to place the value in, from which the handle will be created.</param>
-            <param name="handle">Stores the created handle.</param>
-            <returns>True if the handle was created, otherwise false.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.TryCreateHandle(System.String,System.String,WrenSharp.WrenHandle@)">
-            <summary>
-            Attemps to create a <see cref="T:WrenSharp.WrenHandle"/> from the value in <paramref name="variableName"/> in resolved module <paramref name="module"/>.
-            The value of the variable is loaded into slot 0, and the handle is created from the value in that slot.<para/>
-            Returns true if there is at least one slot and the variable exists.
-            </summary>
-            <param name="module">The module the variable resides in.</param>
-            <param name="variableName">The name of the variable.</param>
-            <param name="handle">Stores the created handle.</param>
-            <returns>True if the handle was created, otherwise false.</returns>
-        </member>
-        <member name="M:WrenSharp.WrenVM.ReleaseAllHandles">
-            <summary>
-            Releases all allocated handles.
-            </summary>
-        </member>
-        <member name="M:WrenSharp.WrenVM.ReleaseHandle(WrenSharp.WrenHandle@)">
-            <summary>
-            Releases a handle. Does nothing if the handle is not valid, or has already been released.
-            </summary>
-            <param name="handle">The handle to release.</param>
-            <exception cref="T:System.ArgumentException">Thrown if <paramref name="handle"/> is not owned by this <see cref="T:WrenSharp.WrenVM"/> instance.</exception>
-        </member>
-        <member name="M:WrenSharp.WrenVM.ReleaseHandle(WrenSharp.WrenCallHandle@)">
-            <summary>
-            Releases a call handle. Does nothing if the handle is not valid, or has already been released.
-            </summary>
-            <param name="handle">The handle to release.</param>
-            <exception cref="T:System.ArgumentException">Thrown if <paramref name="handle"/> is not owned by this <see cref="T:WrenSharp.WrenVM"/> instance.</exception>
-        </member>
-        <member name="M:WrenSharp.WrenVM.OnInterpretBegin">
-            <summary>
-            Provides a method for derived classes to hook the beginning of an interpret or method call.
-            </summary>
-        </member>
-        <member name="M:WrenSharp.WrenVM.OnInterpretEnd(WrenSharp.WrenInterpretResult)">
-            <summary>
-            Provides a method for derived classes to hook to the end of an interpret or method call.
-            </summary>
-        </member>
-        <member name="M:WrenSharp.WrenVM.LogError(WrenSharp.WrenErrorType,System.String,System.Int32,System.String)">
-            <summary>
-            Logs a Wren error to <see cref="P:WrenSharp.WrenVM.Errors"/>, if <see cref="P:WrenSharp.WrenVM.LogErrors"/> is <c>true</c>.
-            If <see cref="P:WrenSharp.WrenVM.LogErrors"/> is <c>false</c>, this method does nothing.
-            </summary>
-            <param name="errorType">The <see cref="T:WrenSharp.WrenErrorType"/>.</param>
-            <param name="module">The name of the module the error occured in.</param>
-            <param name="lineNumber">The line number of the source the error occured in.</param>
-            <param name="message">The error message.</param>
-        </member>
-        <member name="M:WrenSharp.WrenVM.Dispose">
-            <summary>
-            Disposes of the VM and releases all allocated resources.
-            </summary>
-        </member>
-        <member name="M:WrenSharp.WrenVM.DisposeManagedState">
-            <summary>
-            Invoked when the VM is being disposed. Override this method to dispose of any managed state.
-            </summary>
-        </member>
-        <member name="M:WrenSharp.WrenVM.DisposeUnmanagedState">
-            <summary>
-            Invoked when the VM is being disposed. Override this method to dispose of any unmanaged resources.
-            </summary>
         </member>
         <member name="T:WrenSharp.WrenVMInitializer">
             <summary>

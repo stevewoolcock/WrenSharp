@@ -105,7 +105,7 @@ namespace WrenSharp.Unsafe
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    internal unsafe readonly partial struct WrenInternalMethod
+    internal unsafe partial struct WrenInternalMethod
     {
         [FieldOffset(0)]
         private readonly IntPtr m_Primitive;
