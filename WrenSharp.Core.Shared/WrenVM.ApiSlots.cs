@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using WrenSharp.Native;
 
@@ -602,7 +601,6 @@ namespace WrenSharp
         /// <param name="classSlot">The slot containing the class to instance.</param>
         /// <param name="span">The span to copy into the new instance.</param>
         /// <returns>The pointer to the new instance's data.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T* SetSlotNewForeignPtr<T>(int slot, int classSlot, in ReadOnlySpan<T> span) where T : unmanaged
         {
             int len = span.Length * sizeof(T);
@@ -873,6 +871,7 @@ namespace WrenSharp
 
         #region Lists
 
+#if !WRENSHARP_EXT
         /// <summary>
         /// If the value in <paramref name="listSlot"/> is of type <see cref="WrenType.List"/>, calls the clear() method
         /// to remove all values in the list. If the value is not a list, this method does nothing.<para/>
@@ -910,9 +909,9 @@ namespace WrenSharp
             // This wayoperations on the list can continue without having to remember
             // to restore the list handle into the slot.
             Wren.SetSlotHandle(m_Ptr, listSlot, listHandle.m_Ptr);
-
             return this;
         }
+#endif
 
         /// <summary>
         /// Gets the number of elements in the list stored in <paramref name="listSlot"/>.
@@ -998,6 +997,7 @@ namespace WrenSharp
 
         #region Maps
 
+#if !WRENSHARP_EXT
         /// <summary>
         /// If the value in <paramref name="mapSlot"/> is of type <see cref="WrenType.Map"/>, calls the clear() method
         /// to remove all values in the map. If the value is not a map, this method does nothing.<para/>
@@ -1011,13 +1011,30 @@ namespace WrenSharp
         public WrenVM MapClear(int mapSlot = 0)
         {
             EnsureType(Wren.GetSlotType(m_Ptr, mapSlot), WrenType.Map);
-            CallClearMethod();
+
+            if (mapSlot == 0)
+            {
+                CallClearMethod();
+            }
+            else
+            {
+                var restoreHandle = Wren.GetSlotHandle(m_Ptr, 0);
+                var mapHandle = Wren.GetSlotHandle(m_Ptr, mapSlot);
+
+                Wren.SetSlotHandle(m_Ptr, 0, mapHandle);
+                CallClearMethod();
+                Wren.SetSlotHandle(m_Ptr, 0, restoreHandle);
+
+                Wren.ReleaseHandle(m_Ptr, restoreHandle);
+                Wren.ReleaseHandle(m_Ptr, mapHandle);
+            }
+
             return this;
         }
 
         /// <summary>
-        /// Loads <paramref name="mapHandle"/> into slot 0, calls the clear() method to remove all values
-        /// in the map, and places <paramref name="mapHandle"/> back into slot 0. If the handle is invalid,
+        /// Loads <paramref name="mapHandle"/> into slot <paramref name="mapSlot"/>, calls the clear() method to remove all values
+        /// in the map, and places <paramref name="mapHandle"/> back into slot <paramref name="mapSlot"/>. If the handle is invalid,
         /// this method does nothing.
         /// </summary>
         /// <param name="mapHandle">The handle wrapping the map.</param>
@@ -1027,16 +1044,29 @@ namespace WrenSharp
         {
             EnsureValidHandle(in mapHandle);
 
-            Wren.SetSlotHandle(m_Ptr, mapSlot, mapHandle.m_Ptr);
-            CallClearMethod();
+            if (mapSlot == 0)
+            {
+                Wren.SetSlotHandle(m_Ptr, 0, mapHandle.m_Ptr);
+                CallClearMethod();
+            }
+            else
+            {
+                var restoreHandle = Wren.GetSlotHandle(m_Ptr, 0);
 
-            // As a Wren call was invoked, the API stack is reset afterwards. Place
-            // the handle back into the original slot to make the API friendlier. This way
-            // operations on the map can continue without having to remember to restore the handle.
-            Wren.SetSlotHandle(m_Ptr, mapSlot, mapHandle.m_Ptr);
+                Wren.SetSlotHandle(m_Ptr, 0, mapHandle.m_Ptr);
+                CallClearMethod();
+                Wren.SetSlotHandle(m_Ptr, 0, restoreHandle);
+                Wren.ReleaseHandle(m_Ptr, restoreHandle);
+
+                // As a Wren call was invoked, the API stack is reset afterwards. Place
+                // the handle back into the original slot to make the API friendlier. This way
+                // operations on the map can continue without having to remember to restore the handle.
+                Wren.SetSlotHandle(m_Ptr, mapSlot, mapHandle.m_Ptr);
+            }
 
             return this;
         }
+#endif
 
         /// <summary>
         /// Returns true if the map stored in <paramref name="mapSlot"/> contains the key in <paramref name="keySlot"/>.
@@ -1114,5 +1144,80 @@ namespace WrenSharp
         }
 
         #endregion
+
+#if WRENSHARP_EXT
+        /// <summary>
+        /// Clears all elements from the list in <paramref name="listSlot"/>.
+        /// </summary>
+        /// <param name="listSlot">The slot index the list resides in.</param>
+        /// <returns>A reference to this <see cref="WrenVM"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public WrenVM ListClear(int listSlot)
+        {
+            Wren.ListClear(m_Ptr, listSlot);
+            return this;
+        }
+
+        /// <summary>
+        /// Loads <paramref name="listHandle"/> into <paramref name="listSlot"/> and clears it to remove all values from the list.
+        /// </summary>
+        /// <param name="listHandle">The handle wrapping the list.</param>
+        /// <param name="listSlot">The slot to load the list into.</param>
+        /// <returns>A reference to this <see cref="WrenVM"/>.</returns>
+        public WrenVM ListLoadAndClear(WrenHandle listHandle, int listSlot = 0)
+        {
+            EnsureValidHandle(in listHandle);
+            Wren.SetSlotHandle(m_Ptr, listSlot, listHandle.m_Ptr);
+            Wren.ListClear(m_Ptr, listSlot);
+            return this;
+        }
+
+        /// <summary>
+        /// Removes the value at index <paramref name="elementIndex"/> from the list stored in <paramref name="listSlot"/>
+        /// and places the removed value in <paramref name="removedValueSlot"/>.
+        /// </summary>
+        /// <param name="listSlot">The slot index the list resides in.</param>
+        /// <param name="elementIndex">The index of the element to remove.</param>
+        /// <param name="removedValueSlot">The slot index to store the removed value in.</param>
+        /// <returns>A reference to this <see cref="WrenVM"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public WrenVM ListRemoveElement(int listSlot, int elementIndex, int removedValueSlot)
+        {
+            Wren.ListRemove(m_Ptr, listSlot, elementIndex, removedValueSlot);
+            return this;
+        }
+
+        /// <summary>
+        /// Clears all entries from the map in <paramref name="mapSlot"/>.
+        /// </summary>
+        /// <param name="mapSlot">The slot the map has been placed in.</param>
+        /// <returns>A reference to this <see cref="WrenVM"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public WrenVM MapClear(int mapSlot = 0)
+        {
+            Wren.MapClear(m_Ptr, mapSlot);
+            return this;
+        }
+
+        /// <summary>
+        /// Loads <paramref name="mapHandle"/> into <paramref name="mapSlot"/> and clears it to remove all entries from the map.
+        /// </summary>
+        /// <param name="mapHandle">The handle wrapping the map.</param>
+        /// <param name="mapSlot">The slot to load the map into.</param>
+        /// <returns>A reference to this <see cref="WrenVM"/>.</returns>
+        public WrenVM MapLoadAndClear(WrenHandle mapHandle, int mapSlot = 0)
+        {
+            EnsureValidHandle(in mapHandle);
+            Wren.SetSlotHandle(m_Ptr, mapSlot, mapHandle.m_Ptr);
+            Wren.MapClear(m_Ptr, mapSlot);
+            return this;
+        }
+
+        public WrenVM SetSlot(int slot, Unsafe.WrenValue value)
+        {
+            Wren.SetSlot(m_Ptr, slot, value);
+            return this;
+        }
+#endif
     }
 }

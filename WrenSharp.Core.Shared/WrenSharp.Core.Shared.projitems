@@ -31,6 +31,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)WrenCall.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenCallHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Sources\WrenFileSource.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenList.Ext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenMap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenSlot.Ext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenSlots.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenVM.Ext.cs" />
+    <Compile Include="..\WrenSharp.Core.Shared\WrenSlot.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenVMConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenError.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenExceptions.cs" />

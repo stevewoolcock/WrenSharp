@@ -321,8 +321,8 @@ namespace WrenSharp.Unity
 
             return new WrenForeignMethodData()
             {
-                symbol = symbol,
-                fn = _wrenForeignMethodFn,
+                Symbol = symbol,
+                Function = _wrenForeignMethodFn,
             };
         }
 

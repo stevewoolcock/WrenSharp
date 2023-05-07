@@ -1,0 +1,79 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".cs" #>
+using WrenSharp.Native;
+using System;
+
+namespace WrenSharp
+{
+	public partial struct WrenList
+	{
+        #region Contains
+
+<#
+string[] typeNames = new string[] { "string", "double", "bool", "WrenHandle" };
+string[] typeTitleCase = new string[] { "String", "Double", "Bool", "Handle" };
+
+for (int i = 0; i < typeNames.Length; i++)
+{
+        string type = typeNames[i];
+#>
+		public bool Contains(<#=type#> value)
+		{
+            m_Vm.SetSlot(m_ElementSlot, value);
+            return Wren.GetListIndexOf(m_Vm.m_Ptr, m_ListSlot, m_ElementSlot) >= 0;
+		}
+
+<#
+}
+#>
+        #endregion
+
+        #region Get
+
+<#
+for (int i = 0; i < typeNames.Length; i++)
+{
+    string valueType = typeNames[i];
+    if (valueType == "WrenHandle")
+        continue;
+
+#>
+		public <#=valueType#> Get<#=typeTitleCase[i]#>(int index, int? elementSlot = default)
+		{
+            int slot = elementSlot.GetValueOrDefault(m_ElementSlot);
+            Wren.GetListElement(m_Vm.m_Ptr, m_ListSlot, index, slot);
+            return m_Vm.GetSlot<#=typeTitleCase[i]#>(slot);
+		}
+
+<#
+}
+#>
+        #endregion
+        
+        #region Add / Insert
+
+<#
+for (int i = 0; i < typeNames.Length; i++)
+{
+    string valueType = typeNames[i];
+#>
+		public void Add(<#=valueType#> value, int? elementSlot = default)
+		{
+            int slot = elementSlot.GetValueOrDefault(m_ElementSlot);
+            m_Vm.SetSlot(slot, value);
+            Wren.InsertInList(m_Vm.m_Ptr, m_ListSlot, -1, slot);
+		}
+        
+		public void Insert(int index, <#=valueType#> value, int? elementSlot = default)
+		{
+            int slot = elementSlot.GetValueOrDefault(m_ElementSlot);
+            m_Vm.SetSlot(slot, value);
+            Wren.InsertInList(m_Vm.m_Ptr, m_ListSlot, index, slot);
+		}
+
+<#
+}
+#>
+        #endregion
+	}
+}

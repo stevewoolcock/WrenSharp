@@ -8,6 +8,15 @@ using WrenSharp.Memory;
 namespace WrenSharp
 {
     /// <summary>
+    /// A delegate used to initialize a new Wren VM. This can be used to override the default
+    /// behaviour when creating a new native Wren VM. Implemetnations should return  <see cref="IntPtr.Zero"/>
+    /// if the  VM fails to initialize.
+    /// </summary>
+    /// <param name="configuration">The <see cref="WrenConfiguration"/> to pass to the native Wren VM initializer.</param>
+    /// <returns>A pointer to the native Wren VM.</returns>
+    public delegate IntPtr WrenVMInitializer(ref WrenConfiguration configuration);
+
+    /// <summary>
     /// A delegate executed for a Wren foreign method call.
     /// </summary>
     /// <param name="call">The method call API.</param>
@@ -23,6 +32,7 @@ namespace WrenSharp
     /// <param name="newSize">The minimum size of the new memory block to reallocate.</param>
     /// <returns>A pointer to the newly allocated memory block.</returns>
     public delegate IntPtr WrenReallocate(WrenVM vm, IntPtr memory, ulong newSize);
+
 
     /// <summary>
     /// A managed instance of a Wren virtual machine. This class wraps the native VM and provides a clean, convenient API
@@ -45,6 +55,11 @@ namespace WrenSharp
         public const int MaxCallParameters = 16;
 
         /// <summary>
+        /// An enumeration of all <see cref="WrenVM"/> instances.
+        /// </summary>
+        public IEnumerable<WrenVM> VMs => _vmsByPtr.Values;
+
+        /// <summary>
         /// Gets the managed <see cref="WrenVM"/> corresponding to a native Wren VM.
         /// </summary>
         /// <param name="ptr">The native Wren VM pointer.</param>
@@ -56,14 +71,48 @@ namespace WrenSharp
         }
 
         /// <summary>
-        /// Gets the managed <see cref="WrenVM"/> corresponding to a native Wren VM, cast as <typeparamref name="T"/>.
+        /// Gets the managed <see cref="WrenVM"/> wrapping the native VM at <paramref name="ptr"/>, cast as <typeparamref name="T"/>.
         /// </summary>
         /// <param name="ptr">The native Wren VM pointer.</param>
-        /// <returns>A <typeparamref name="T"/> instance, or null if not found or the VM instance is not of type <typeparamref name="T"/>.</returns>
+        /// <returns>A <typeparamref name="T"/> instance.</returns>
         public static T GetVM<T>(IntPtr ptr) where T : WrenVM
         {
             _vmsByPtr.TryGetValue(ptr, out WrenVM vm);
-            return vm as T;
+            return (T)vm;
+        }
+
+        /// <summary>
+        /// Attempts to get the managed <see cref="WrenVM"/> wrapping the native VM at <paramref name="ptr"/>.
+        /// </summary>
+        /// <param name="ptr">The pointer to the native <see cref="WrenVM"/>.</param>
+        /// <param name="vm">The <see cref="WrenVM"/> instance.</param>
+        /// <returns>True if the VM exists, otherwise false.</returns>
+        public static bool TryGetVM(IntPtr ptr, out WrenVM vm)
+        {
+            if (_vmsByPtr.TryGetValue(ptr, out vm) && vm != null)
+                return true;
+
+            vm = default;
+            return false;
+        }
+
+        /// <summary>
+        /// Attempts to get the managed <see cref="WrenVM"/> wrapping the native VM at <paramref name="ptr"/>, cast as <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The expected type of the VM.</typeparam>
+        /// <param name="ptr">The pointer to the native <see cref="WrenVM"/>.</param>
+        /// <param name="vm">The <see cref="WrenVM"/> instance.</param>
+        /// <returns>True if the VM exists and is of type <typeparamref name="T"/>, otherwise false.</returns>
+        public static bool TryGetVM<T>(IntPtr ptr, out T vm) where T : WrenVM
+        {
+            if (_vmsByPtr.TryGetValue(ptr, out WrenVM untypedVm) && untypedVm is T typedVm)
+            {
+                vm = typedVm;
+                return true;
+            }
+
+            vm = default;
+            return false;
         }
 
         #endregion
@@ -101,20 +150,32 @@ namespace WrenSharp
         private IntPtr m_UserDataBuffer = IntPtr.Zero;
         private int m_UserDataBufferSize = 0;
 
+        private bool m_Initialized;
         private bool m_Disposed;
 
         #region Properties
 
         /// <summary>
-        /// Indicates if the VM has been initialized.
+        /// Gets the Wren API slot interface for interfacing with API slots on the current Wren fiber.
         /// </summary>
-        public bool IsInitialized { get; private set; }
+        public readonly WrenSlots Slots;
 
         /// <summary>
-        /// The pointer to the native WrenVM instance. This can be used to pass directly to the native interop
-        /// methods in <see cref="Wren"/>.
+        /// Indicates if the VM has been disposed, either by an explicit call to <see cref="IDisposable.Dispose"/>
+        /// or by the garbage collector when the instance is finalized.
         /// </summary>
-        public IntPtr NativePointer => m_Ptr;
+        public bool IsDisposed => m_Disposed;
+
+        /// <summary>
+        /// Indicates if the VM has been initialized.
+        /// </summary>
+        public bool IsInitialized => m_Initialized;
+
+        /// <summary>
+        /// Indicates if the VM is initialized and in valid state. Returns true if 
+        /// <see cref="IsInitialized"/> is true and <see cref="IsDisposed"/> is false.
+        /// </summary>
+        public bool IsValid => m_Initialized && !m_Disposed;
 
         /// <summary>
         /// A list containing the morst recent errors generated by Wren. This list is only filled
@@ -130,6 +191,12 @@ namespace WrenSharp
         public bool LogErrors { get; set; } = true;
 
         /// <summary>
+        /// The pointer to the native WrenVM instance. This can be used to pass directly to the native interop
+        /// methods in <see cref="Wren"/>.
+        /// </summary>
+        public IntPtr NativePointer => m_Ptr;
+
+        /// <summary>
         /// The shared data table that can be used to store strong references to managed objects that can 
         /// be referenced by Wren foreign objects.
         /// </summary>
@@ -140,65 +207,57 @@ namespace WrenSharp
         /// </summary>
         public object HostData { get; set; }
 
-        /// <summary>
-        /// Indicates if the VM has been disposed, either by an explicit call to <see cref="IDisposable.Dispose"/>
-        /// or by the garbage collector when the instance is finalized.
-        /// </summary>
-        public bool IsDisposed => m_Disposed;
-
-        /// <summary>
-        /// Gets the number of bytes known to be allocated for alive objects in the VM.
-        /// </summary>
-        public ulong BytesAllocated => Wren.BytesAllocated(m_Ptr);
-
-        /// <summary>
-        /// Gets or sets the enabled state of the Wren garbage collected. Use <see cref="CollectGarbage"/>
-        /// to trigger manual garbage collections.
-        /// </summary>
-        public bool GCEnabled
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Wren.GetGCEnabled(m_Ptr);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => Wren.SetGCEnabled(m_Ptr, value);
-        }
-
         #endregion
+
+        /// <summary>
+        /// Base constructor for derived classes to perform their own initialization.
+        /// </summary>
+        protected WrenVM()
+        {
+            m_Allocator = null!;
+            Slots = new WrenSlots(this);
+        }
 
         /// <summary>
         /// Creates a new Wren VM to run Wren scripts. This constructor provides the ability to explicitly
         /// set the native configuration passed into the Wren instance, allowing for full control over the VM.
         /// </summary>
         /// <param name="config">The <see cref="WrenConfiguration"/>.</param>
-        /// <param name="allocator"></param>
-        public WrenVM(ref WrenConfiguration config, IAllocator allocator = default)
+        /// <param name="allocator">The <see cref="IAllocator"/> to use when allocated unmanaged memory from C#. This is not used by the native Wren VM instance.</param>
+        public WrenVM(ref WrenConfiguration config, IAllocator allocator = default) : this()
         {
-            Initialize(ref config, allocator);
+            Initialize(null, ref config, allocator);
         }
 
         /// <summary>
-        /// Base constructor for derived classes to perform their own initialization.
+        /// Creates a new Wren VM to run Wren scripts. This constructor provides the ability to explicitly
+        /// set the delete used to initialize the native Wren VM, as well as the native configuration passed into the Wren instance,
+        /// allowing for full control over the VM initializer.
         /// </summary>
-        protected WrenVM() { }
+        /// <param name="vmInitializer">The <see cref="WrenVMInitializer"/> delegate to initialize the native Wren VM. Leave null to use the default initializer (<see cref="Wren.NewVM(ref WrenConfiguration)"/>).</param>
+        /// <param name="config">The <see cref="WrenConfiguration"/>.</param>
+        /// <param name="allocator">The <see cref="IAllocator"/> to use when allocated unmanaged memory from C#. This is not used by the native Wren VM instance.</param>
+        public WrenVM(WrenVMInitializer vmInitializer, ref WrenConfiguration config, IAllocator allocator = default) : this()
+        {
+            Initialize(vmInitializer, ref config, allocator);
+        }
 
         /// <summary>
         /// Initializes the VM using the given configuration.
         /// </summary>
+        /// <param name="vmInitializer">The initializer to use to create the native Wren VM. Leave null to use the defaultinitializer(<see cref="Wren.NewVM(ref WrenConfiguration)"/>).</param>
         /// <param name="config">The <see cref="WrenConfiguration"/> that is passed to native Wren.</param>
         /// <param name="allocator">An optional memory allocator to use for unamanged buffers. If null, the
         /// default allocator (<see cref="HGlobalAllocator"/>) is used.</param>
         /// <exception cref="InvalidOperationException">Thrown if the VM has already been initialized.</exception>
-        protected void Initialize(ref WrenConfiguration config, IAllocator allocator = default)
+        protected void Initialize(WrenVMInitializer vmInitializer, ref WrenConfiguration config, IAllocator allocator)
         {
-            if (IsInitialized)
+            if (m_Initialized)
                 throw new InvalidOperationException("A WrenVM instance can only be initialized once.");
 
             m_Config = config;
             m_Allocator = allocator ?? HGlobalAllocator.Default;
-
-            m_Ptr = Wren.NewVM(ref m_Config);
-
+            m_Ptr = vmInitializer == null ? Wren.NewVM(ref m_Config) : vmInitializer(ref m_Config);
             if (m_Ptr == IntPtr.Zero)
             {
                 throw new WrenInitializationException(this, "Failed to intiailize WrenVM");
@@ -209,7 +268,7 @@ namespace WrenSharp
                 _vmsByPtr[m_Ptr] = this;
             }
 
-            IsInitialized = true;
+            m_Initialized = true;
         }
 
         #region Interpret
@@ -240,7 +299,7 @@ namespace WrenSharp
             InterpretBegin();
 
             // NOTE: Allowing p/invoke with ANSI charset to marshal the string is faster than the custom
-            // encoding method that is used in the explicit encoding and StringBuilder overloads, so we
+            // encoding method that is used in the explicit encoding/StringBuilder overloads, so we
             // use that here.
             var result = Wren.Interpret(m_Ptr, module, source);
 
@@ -379,10 +438,6 @@ namespace WrenSharp
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void CollectGarbage() => Wren.CollectGarbage(m_Ptr);
-
-        public void SetGCEnabled(bool gcEnabled) => Wren.SetGCEnabled(m_Ptr, gcEnabled);
-
-        public bool GetGCEnabled() => Wren.GetGCEnabled(m_Ptr);
 
         /// <summary>
         /// Indicates if the module <paramref name="module"/> has been imported and resolved.
@@ -778,7 +833,7 @@ namespace WrenSharp
             {
                 m_CallHandle_Clear = CreateCallHandle("clear()");
             }
-
+            
             Wren.Call(m_Ptr, m_CallHandle_Clear.m_Ptr);
         }
 
@@ -872,6 +927,9 @@ namespace WrenSharp
             Dispose(disposing: false);
         }
 
+        /// <summary>
+        /// Disposes of the VM and releases all allocated resources.
+        /// </summary>
         public void Dispose()
         {
             Dispose(disposing: true);

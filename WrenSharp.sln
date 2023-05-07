@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WrenSharp.Lib.Unity", "Wren
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "WrenSharp.Core.Shared", "WrenSharp.Core.Shared\WrenSharp.Core.Shared.shproj", "{5A618BD1-02DF-4A0B-9076-6FB43A7BCD26}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WrenSharp.Core.Templates", "WrenSharp.Core.Templates\WrenSharp.Core.Templates.csproj", "{A7DE3A47-2A2B-4FE8-9E9C-28A2461B1ACC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,12 @@ Global
 		{231904AC-B496-4E0E-89B3-5DDC47F9DF20}.Release|Any CPU.Build.0 = Release|Any CPU
 		{231904AC-B496-4E0E-89B3-5DDC47F9DF20}.Unity_Internal|Any CPU.ActiveCfg = Unity_Internal|Any CPU
 		{231904AC-B496-4E0E-89B3-5DDC47F9DF20}.Unity_Internal|Any CPU.Build.0 = Unity_Internal|Any CPU
+		{A7DE3A47-2A2B-4FE8-9E9C-28A2461B1ACC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7DE3A47-2A2B-4FE8-9E9C-28A2461B1ACC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7DE3A47-2A2B-4FE8-9E9C-28A2461B1ACC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7DE3A47-2A2B-4FE8-9E9C-28A2461B1ACC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7DE3A47-2A2B-4FE8-9E9C-28A2461B1ACC}.Unity_Internal|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7DE3A47-2A2B-4FE8-9E9C-28A2461B1ACC}.Unity_Internal|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -68,6 +76,7 @@ Global
 		WrenSharp.Lib.Shared\WrenSharp.Lib.Shared.projitems*{18977aba-f8c7-4a53-a95b-9c181286f462}*SharedItemsImports = 13
 		WrenSharp.Lib.Shared\WrenSharp.Lib.Shared.projitems*{231904ac-b496-4e0e-89b3-5ddc47f9df20}*SharedItemsImports = 5
 		WrenSharp.Core.Shared\WrenSharp.Core.Shared.projitems*{5a618bd1-02df-4a0b-9076-6fb43a7bcd26}*SharedItemsImports = 13
+		WrenSharp.Core.Shared\WrenSharp.Core.Shared.projitems*{a7de3a47-2a2b-4fe8-9e9c-28a2461b1acc}*SharedItemsImports = 5
 		WrenSharp.Core.Shared\WrenSharp.Core.Shared.projitems*{c9c05b81-02c7-4ca1-921a-e1ad96aa8c74}*SharedItemsImports = 5
 		WrenSharp.Core.Shared\WrenSharp.Core.Shared.projitems*{cdf4acef-53f6-4aa8-a56c-77d81b3d0467}*SharedItemsImports = 5
 		WrenSharp.Lib.Shared\WrenSharp.Lib.Shared.projitems*{d1d44d8d-e74a-483b-af58-99d33099ef43}*SharedItemsImports = 5

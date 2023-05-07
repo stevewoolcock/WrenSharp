@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WrenSharp.Lib.NetStandard\WrenSharp.Lib.NetStandard.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="WrenList.tt">
+      <LastGenOutput>WrenList.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+    <None Update="WrenMap.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>WrenMap.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="WrenList.cs">
+      <DependentUpon>WrenList.tt</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="WrenMap.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>WrenMap.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <Import Project="..\WrenSharp.Core.Shared\WrenSharp.Core.Shared.projitems" Label="Shared" />
+
+</Project>

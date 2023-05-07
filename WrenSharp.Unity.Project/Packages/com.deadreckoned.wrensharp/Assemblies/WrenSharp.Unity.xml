@@ -227,10 +227,18 @@
             </para>
             </summary>
         </member>
+        <member name="P:WrenSharp.WrenVMConfiguration.Initializer">
+            <summary>
+            The <see cref="T:WrenSharp.WrenVMInitializer"/> delegate to use to initialize the native Wren VM. Leave this value null
+            to use the default initializer (<see cref="M:WrenSharp.Native.Wren.NewVM(WrenSharp.Native.WrenConfiguration@)"/>. Supplying a custom
+            initializer allows for greater control over the routine used to create the VM (for example, using a native plugin
+            to initialize the VM with a custom native reallocator function).
+            </summary>
+        </member>
         <member name="P:WrenSharp.WrenVMConfiguration.Allocator">
             <summary>
             The allocator to use for unmanaged memory. Some WrenSharp features use unmanaged memory for performance reasons.
-            If null, the default allocator <see cref="P:WrenSharp.Memory.HGlobalAllocator.Default"/> is used.
+            The native Wren VM does not use this. If null, the default allocator (<see cref="P:WrenSharp.Memory.HGlobalAllocator.Default"/>) is used.
             </summary>
         </member>
         <member name="P:WrenSharp.WrenVMConfiguration.ErrorOutput">
@@ -309,6 +317,95 @@
             Creates a shallow copy of this <see cref="T:WrenSharp.WrenVMConfiguration"/>.
             </summary>
             <returns>A new <see cref="T:WrenSharp.WrenVMConfiguration"/> that is a shallow copy of this configuration.</returns>
+        </member>
+        <member name="P:WrenSharp.WrenList.Count">
+            <summary>
+            Gets the count of elements in the list.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenList.ListSlot">
+            <summary>
+            The slot the list resides in.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenList.DefaultElementSlot">
+            <summary>
+            The default slot to use for storing element values if an override is not supplied.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenList.VM">
+            <summary>
+            The <see cref="T:WrenSharp.WrenVM"/> that the list belongs to.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenList.Add(System.Nullable{System.Int32})">
+            <summary>
+            Appends the value in slot[<paramref name="elementSlot"/>] to the end of the list.
+            If <paramref name="elementSlot"/> is not supplied, <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>, is used.
+            </summary>
+            <param name="elementSlot">The slot containing the value to append. Defaults to <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>.</param>
+        </member>
+        <member name="M:WrenSharp.WrenList.Insert(System.Int32,System.Nullable{System.Int32})">
+            <summary>
+            Inserts the value stored in slot[<paramref name="elementSlot"/>] into the list at <paramref name="index"/>.
+            If <paramref name="elementSlot"/> is not supplied, the default value, <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>, is used.
+            </summary>
+            <param name="index">The index to insert the value at.</param>
+            <param name="elementSlot">The slot containing the value to insert. Defaults to <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>.</param>
+        </member>
+        <member name="M:WrenSharp.WrenList.Remove(System.Int32,System.Nullable{System.Int32})">
+            <summary>
+            Removes the value stored in <paramref name="index"/> from the list and places the removed value in slot[<paramref name="removedValueSlot"/>].
+            If <paramref name="removedValueSlot"/> is not supplied, the default value, <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>, is used.
+            </summary>
+            <param name="index">The index to insert the value at.</param>
+            <param name="removedValueSlot">The slot to place the removed value in. Defaults to <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>.</param>
+        </member>
+        <member name="P:WrenSharp.WrenMap.MapSlot">
+            <summary>
+            The slot the map resides in.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenMap.DefaultKeySlot">
+            <summary>
+            The default slot the Wren API will read keys from if an override is not supplied.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenMap.DefaultValueSlot">
+            <summary>
+            The default slot the Wren API will read or write values to if an override is not supplied.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenMap.Count">
+            <summary>
+            The count of entries in the map.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenMap.VM">
+            <summary>
+            The <see cref="T:WrenSharp.WrenVM"/> the map resides within.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenMap.#ctor(WrenSharp.WrenVM,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Initializes a <see cref="T:WrenSharp.WrenMap"/> and ensures there are enough Wren API slots allocated to read and write to the map.
+            </summary>
+            <param name="vm">The <see cref="T:WrenSharp.WrenVM"/> the map resides in.</param>
+            <param name="mapSlot">The API slot the map resides in.</param>
+            <param name="keySlot">The API slot to store keys in. If null, uses <paramref name="mapSlot"/><c> + 1</c>.</param>
+            <param name="valueSlot">The API slot to read and write from. If null, uses <paramref name="keySlot"/><c> + 1</c>.</param>
+            <exception cref="T:WrenSharp.WrenTypeException">Thrown if the value in <paramref name="mapSlot"/> is not a <see cref="F:WrenSharp.WrenType.Map"/>.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenMap.Clear">
+            <summary>
+            Clears all values in the map by invoking its clear() method.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenMap.ContainsKeyNull">
+            <summary>
+            Indicates if the map contains a "null" key.
+            </summary>
+            <returns>True if the map contains a "null" key, otherwise false.</returns>
         </member>
         <member name="T:WrenSharp.IWrenErrorOutput">
             <summary>
@@ -879,6 +976,232 @@
             Releases the in-memory buffer containing the contents of the file, if the file has previously
             been loaded. Otherwise, calling this method does nothing.
             </summary>
+        </member>
+        <member name="T:WrenSharp.WrenSlots">
+            <summary>
+            Exposes an API for manipulating Wren API slots.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlots.Count">
+            <summary>
+            Returns the number of allocated API slots for the current Wren fiber.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlots.Item(System.Int32)">
+            <summary>
+            Gets a <see cref="T:WrenSharp.WrenSlot"/> value for slot[<paramref name="index"/>].
+            </summary>
+            <param name="index">The index of the slot.</param>
+            <returns>A <see cref="T:WrenSharp.WrenSlot"/> value.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown if <paramref name="index"/>is less than zero or greater or equal to <see cref="P:WrenSharp.WrenSlots.Count"/>.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenSlots.Copy(System.Int32,System.Int32)">
+            <summary>
+            Copies the value in slot[<paramref name="slotFrom"/>] to slot[<paramref name="slotTo"/>].
+            If <paramref name="slotFrom"/> is equal to <paramref name="slotTo"/>, this method does nothing.
+            This method does not ensure that <paramref name="slotFrom"/> or <paramref name="slotTo"/> are valid
+            before attempting the copy.
+            </summary>
+            <param name="slotFrom">The slot containing the value to copy.</param>
+            <param name="slotTo">The slot to copy the value into.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenSlots"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenSlots.EnsureCapacity(System.Int32)">
+            <summary>
+            Ensures the current Wren fiber has at least <paramref name="capacity"/> API slots available.
+            </summary>
+            <param name="capacity">The capacity of API slots to ensure.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenSlots"/>.</returns>
+        </member>
+        <member name="T:WrenSharp.WrenSlot">
+            <summary>
+            A wrapper for a Wren API slot.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlot.Index">
+            <summary>
+            Gets the slot index.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlot.Type">
+            <summary>
+            Gets the type of value currently stored in the slot.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlot.Bool">
+            <summary>
+            Gets or sets a boolean value in the slot.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlot.Byte">
+            <summary>
+            Gets or sets a byte value in the slot.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlot.Int16">
+            <summary>
+            Gets or sets a <see cref="T:System.Int16"/> value in the slot.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlot.Int32">
+            <summary>
+            Gets or sets a <see cref="T:System.Int32"/> value in the slot.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlot.Int64">
+            <summary>
+            Gets or sets a <see cref="T:System.Int64"/> value in the slot.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlot.UInt16">
+            <summary>
+            Gets or sets a <see cref="T:System.UInt16"/> value in the slot.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlot.UInt32">
+            <summary>
+            Gets or sets a <see cref="T:System.UInt32"/> value in the slot.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlot.UInt64">
+            <summary>
+            Gets or sets a <see cref="T:System.UInt64"/> value in the slot.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlot.Float">
+            <summary>
+            Gets or sets a float value in the slot.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlot.Double">
+            <summary>
+            Gets or sets a double value in the slot.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlot.String">
+            <summary>
+            Gets or sets a string value in the slot.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlot.IsNull">
+            <summary>
+            Indicates if the slot contains a null value.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenSlot.IsInteger">
+            <summary>
+            Indicates if the value in the slot is a valid integer value.
+            </summary>
+            <seealso cref="M:WrenSharp.WrenUtils.IsInteger(System.Double)"/>
+        </member>
+        <member name="P:WrenSharp.WrenSlot.IsValid">
+            <summary>
+            Indicates if this value represents a valid Wren API slot. Returns true if the VM is initialized
+            and the slot index is less than the total number of currently allocated slots.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenSlot.Equals(WrenSharp.WrenSlot)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenSlot.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenSlot.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenSlot.CopyTo(System.Int32)">
+            <summary>
+            Copies the value in this slot to <paramref name="slot"/>. If <paramref name="slot"/> is equal to <see cref="P:WrenSharp.WrenSlot.Index"/>,
+            this method does nothing.
+            </summary>
+            <param name="slot">The slot to copy the value into.</param>
+        </member>
+        <member name="M:WrenSharp.WrenSlot.CreateHandle">
+            <summary>
+            Creates a <see cref="T:WrenSharp.WrenHandle"/> wrapping the value in the slot.
+            </summary>
+            <returns>A <see cref="T:WrenSharp.WrenHandle"/> value.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenSlot.IsType(WrenSharp.WrenType)">
+            <summary>
+            Returns true if <paramref name="type"/> is equal to <see cref="P:WrenSharp.WrenSlot.Type"/>.
+            </summary>
+            <param name="type">The type to compare the value in the slot against.</param>
+            <returns>True if <paramref name="type"/> is equal to <see cref="P:WrenSharp.WrenSlot.Type"/>, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenSlot.EnsureTypeOrThrow(WrenSharp.WrenType)">
+            <summary>
+            Ensures the <see cref="T:WrenSharp.WrenType"/> of the value in the slot is equal to <paramref name="type"/> and throws
+            a <see cref="T:WrenSharp.WrenTypeException"/> if they are not equal.
+            </summary>
+            <param name="type">The type compare the value in the slot against.</param>
+            <exception cref="T:WrenSharp.WrenTypeException">Thrown if <paramref name="type"/> is not equal to <see cref="P:WrenSharp.WrenSlot.Type"/>.</exception>
+        </member>
+        <member name="M:WrenSharp.WrenSlot.EnsureTypeOrAbort(WrenSharp.WrenType,System.Int32)">
+            <summary>
+            Ensures the <see cref="T:WrenSharp.WrenType"/> of the value in the slot is equal to <paramref name="type"/> and aborts
+            the fiber if they are not equal. The resulting error message is placed in slot <paramref name="errorSlot"/>.
+            </summary>
+            <param name="type">The type compare the value in the slot against.</param>
+            <param name="errorSlot">The slot to place the error message in.</param>
+            <returns>True if <paramref name="type"/> is equal to <see cref="P:WrenSharp.WrenSlot.Type"/>, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenSlot.GetList(System.Nullable{System.Int32})">
+            <summary>
+            Gets a new <see cref="T:WrenSharp.WrenList"/> wrapper for the Wren list stored in the slot.
+            </summary>
+            <param name="defaultElementSlot">The default element slot for the returned <see cref="T:WrenSharp.WrenList"/>.</param>
+            <returns>A <see cref="T:WrenSharp.WrenList"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenSlot.GetMap(System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Gets a new <see cref="T:WrenSharp.WrenMap"/> wrapper for the Wren map stored in the slot.
+            </summary>
+            <param name="defaultKeySlot">The default key slot for the returned <see cref="T:WrenSharp.WrenMap"/>.</param>
+            <param name="defaultValueSlot">The default value slot for the returned <see cref="T:WrenSharp.WrenMap"/>.</param>
+            <returns>A <see cref="T:WrenSharp.WrenMap"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenSlot.Set(System.Boolean)">
+            <summary>
+            Sets the value in this slot to <paramref name="value"/>.
+            </summary>
+            <param name="value">The value to set.</param>
+        </member>
+        <member name="M:WrenSharp.WrenSlot.Set(System.Double)">
+            <summary>
+            Sets the value in this slot to <paramref name="value"/>.
+            </summary>
+            <param name="value">The value to set.</param>
+        </member>
+        <member name="M:WrenSharp.WrenSlot.Set(System.String)">
+            <summary>
+            Sets the value in this slot to <paramref name="value"/>.
+            </summary>
+            <param name="value">The value to set.</param>
+        </member>
+        <member name="M:WrenSharp.WrenSlot.SetNull">
+            <summary>
+            Sets the value in this slot to null.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenSlot.SetNewList(System.Nullable{System.Int32})">
+            <summary>
+            Creates a new WrenList in this slot. Returns a <see cref="T:WrenSharp.WrenList"/> wrapper with its default element slot
+            set to <paramref name="defaultElementSlot"/>. If <paramref name="defaultElementSlot"/> is null, the default <see cref="T:WrenSharp.WrenList"/>
+            behaviour is used to select a default element slot. (list slot + 1).
+            </summary>
+            <param name="defaultElementSlot">The default element slot of the returned <see cref="T:WrenSharp.WrenList"/>.</param>
+            <returns>A <see cref="T:WrenSharp.WrenList"/> wrapper for the newly created list.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenSlot.SetNewMap(System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Creates a new WrenMap in this slot. Returns a <see cref="T:WrenSharp.WrenMap"/> wrapper with its default key and value slots
+            set to <paramref name="defaultKeySlot"/> and <paramref name="defaultValueSlot"/>, respectively. If a slot parameter is null,
+            the default <see cref="T:WrenSharp.WrenMap"/> behaviour is used to select a value for the the slot (mapSlot + 1 for key slot, and mapSlot + 2 for value slot).
+            </summary>
+            <param name="defaultKeySlot">The default key slot of the returned <see cref="T:WrenSharp.WrenMap"/>.</param>
+            <param name="defaultValueSlot">The default value slot of the returned <see cref="T:WrenSharp.WrenMap"/>.</param>
+            <returns>A <see cref="T:WrenSharp.WrenMap"/> wrapper for the newly created map.</returns>
         </member>
         <member name="T:WrenSharp.WrenError">
             <summary>
@@ -2338,8 +2661,8 @@
         </member>
         <member name="M:WrenSharp.WrenVM.MapLoadAndClear(WrenSharp.WrenHandle,System.Int32)">
             <summary>
-            Loads <paramref name="mapHandle"/> into slot 0, calls the clear() method to remove all values
-            in the map, and places <paramref name="mapHandle"/> back into slot 0. If the handle is invalid,
+            Loads <paramref name="mapHandle"/> into slot <paramref name="mapSlot"/>, calls the clear() method to remove all values
+            in the map, and places <paramref name="mapHandle"/> back into slot <paramref name="mapSlot"/>. If the handle is invalid,
             this method does nothing.
             </summary>
             <param name="mapHandle">The handle wrapping the map.</param>
@@ -2536,6 +2859,11 @@
             The maximum number of parameters a method call can accept.
             </summary>
         </member>
+        <member name="P:WrenSharp.WrenVM.VMs">
+            <summary>
+            An enumeration of all <see cref="T:WrenSharp.WrenVM"/> instances.
+            </summary>
+        </member>
         <member name="M:WrenSharp.WrenVM.GetVM(System.IntPtr)">
             <summary>
             Gets the managed <see cref="T:WrenSharp.WrenVM"/> corresponding to a native Wren VM.
@@ -2545,14 +2873,42 @@
         </member>
         <member name="M:WrenSharp.WrenVM.GetVM``1(System.IntPtr)">
             <summary>
-            Gets the managed <see cref="T:WrenSharp.WrenVM"/> corresponding to a native Wren VM, cast as <typeparamref name="T"/>.
+            Gets the managed <see cref="T:WrenSharp.WrenVM"/> wrapping the native VM at <paramref name="ptr"/>, cast as <typeparamref name="T"/>.
             </summary>
             <param name="ptr">The native Wren VM pointer.</param>
-            <returns>A <typeparamref name="T"/> instance, or null if not found or the VM instance is not of type <typeparamref name="T"/>.</returns>
+            <returns>A <typeparamref name="T"/> instance.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetVM(System.IntPtr,WrenSharp.WrenVM@)">
+            <summary>
+            Attempts to get the managed <see cref="T:WrenSharp.WrenVM"/> wrapping the native VM at <paramref name="ptr"/>.
+            </summary>
+            <param name="ptr">The pointer to the native <see cref="T:WrenSharp.WrenVM"/>.</param>
+            <param name="vm">The <see cref="T:WrenSharp.WrenVM"/> instance.</param>
+            <returns>True if the VM exists, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.TryGetVM``1(System.IntPtr,``0@)">
+            <summary>
+            Attempts to get the managed <see cref="T:WrenSharp.WrenVM"/> wrapping the native VM at <paramref name="ptr"/>, cast as <typeparamref name="T"/>.
+            </summary>
+            <typeparam name="T">The expected type of the VM.</typeparam>
+            <param name="ptr">The pointer to the native <see cref="T:WrenSharp.WrenVM"/>.</param>
+            <param name="vm">The <see cref="T:WrenSharp.WrenVM"/> instance.</param>
+            <returns>True if the VM exists and is of type <typeparamref name="T"/>, otherwise false.</returns>
         </member>
         <member name="F:WrenSharp.WrenVM.m_Ptr">
             <summary>
             The native VM pointer.
+            </summary>
+        </member>
+        <member name="F:WrenSharp.WrenVM.Slots">
+            <summary>
+            Gets the Wren API slot interface for interfacing with API slots on the current Wren fiber.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenVM.IsDisposed">
+            <summary>
+            Indicates if the VM has been disposed, either by an explicit call to <see cref="M:System.IDisposable.Dispose"/>
+            or by the garbage collector when the instance is finalized.
             </summary>
         </member>
         <member name="P:WrenSharp.WrenVM.IsInitialized">
@@ -2560,10 +2916,10 @@
             Indicates if the VM has been initialized.
             </summary>
         </member>
-        <member name="P:WrenSharp.WrenVM.NativePointer">
+        <member name="P:WrenSharp.WrenVM.IsValid">
             <summary>
-            The pointer to the native WrenVM instance. This can be used to pass directly to the native interop
-            methods in <see cref="T:WrenSharp.Native.Wren"/>.
+            Indicates if the VM is initialized and in valid state. Returns true if 
+            <see cref="P:WrenSharp.WrenVM.IsInitialized"/> is true and <see cref="P:WrenSharp.WrenVM.IsDisposed"/> is false.
             </summary>
         </member>
         <member name="P:WrenSharp.WrenVM.Errors">
@@ -2579,6 +2935,12 @@
             generates an error message during an interpret or call.
             </summary>
         </member>
+        <member name="P:WrenSharp.WrenVM.NativePointer">
+            <summary>
+            The pointer to the native WrenVM instance. This can be used to pass directly to the native interop
+            methods in <see cref="T:WrenSharp.Native.Wren"/>.
+            </summary>
+        </member>
         <member name="P:WrenSharp.WrenVM.SharedData">
             <summary>
             The shared data table that can be used to store strong references to managed objects that can 
@@ -2590,21 +2952,9 @@
             Custom user data that you can attach to this VM instance.
             </summary>
         </member>
-        <member name="P:WrenSharp.WrenVM.IsDisposed">
+        <member name="M:WrenSharp.WrenVM.#ctor">
             <summary>
-            Indicates if the VM has been disposed, either by an explicit call to <see cref="M:System.IDisposable.Dispose"/>
-            or by the garbage collector when the instance is finalized.
-            </summary>
-        </member>
-        <member name="P:WrenSharp.WrenVM.BytesAllocated">
-            <summary>
-            Gets the number of bytes known to be allocated for alive objects in the VM.
-            </summary>
-        </member>
-        <member name="P:WrenSharp.WrenVM.GCEnabled">
-            <summary>
-            Gets or sets the enabled state of the Wren garbage collected. Use <see cref="M:WrenSharp.WrenVM.CollectGarbage"/>
-            to trigger manual garbage collections.
+            Base constructor for derived classes to perform their own initialization.
             </summary>
         </member>
         <member name="M:WrenSharp.WrenVM.#ctor(WrenSharp.Native.WrenConfiguration@,WrenSharp.Memory.IAllocator)">
@@ -2613,17 +2963,23 @@
             set the native configuration passed into the Wren instance, allowing for full control over the VM.
             </summary>
             <param name="config">The <see cref="T:WrenSharp.Native.WrenConfiguration"/>.</param>
-            <param name="allocator"></param>
+            <param name="allocator">The <see cref="T:WrenSharp.Memory.IAllocator"/> to use when allocated unmanaged memory from C#. This is not used by the native Wren VM instance.</param>
         </member>
-        <member name="M:WrenSharp.WrenVM.#ctor">
+        <member name="M:WrenSharp.WrenVM.#ctor(WrenSharp.WrenVMInitializer,WrenSharp.Native.WrenConfiguration@,WrenSharp.Memory.IAllocator)">
             <summary>
-            Base constructor for derived classes to perform their own initialization.
+            Creates a new Wren VM to run Wren scripts. This constructor provides the ability to explicitly
+            set the delete used to initialize the native Wren VM, as well as the native configuration passed into the Wren instance,
+            allowing for full control over the VM initializer.
             </summary>
+            <param name="vmInitializer">The <see cref="T:WrenSharp.WrenVMInitializer"/> delegate to initialize the native Wren VM. Leave null to use the default initializer (<see cref="M:WrenSharp.Native.Wren.NewVM(WrenSharp.Native.WrenConfiguration@)"/>).</param>
+            <param name="config">The <see cref="T:WrenSharp.Native.WrenConfiguration"/>.</param>
+            <param name="allocator">The <see cref="T:WrenSharp.Memory.IAllocator"/> to use when allocated unmanaged memory from C#. This is not used by the native Wren VM instance.</param>
         </member>
-        <member name="M:WrenSharp.WrenVM.Initialize(WrenSharp.Native.WrenConfiguration@,WrenSharp.Memory.IAllocator)">
+        <member name="M:WrenSharp.WrenVM.Initialize(WrenSharp.WrenVMInitializer,WrenSharp.Native.WrenConfiguration@,WrenSharp.Memory.IAllocator)">
             <summary>
             Initializes the VM using the given configuration.
             </summary>
+            <param name="vmInitializer">The initializer to use to create the native Wren VM. Leave null to use the defaultinitializer(<see cref="M:WrenSharp.Native.Wren.NewVM(WrenSharp.Native.WrenConfiguration@)"/>).</param>
             <param name="config">The <see cref="T:WrenSharp.Native.WrenConfiguration"/> that is passed to native Wren.</param>
             <param name="allocator">An optional memory allocator to use for unamanged buffers. If null, the
             default allocator (<see cref="T:WrenSharp.Memory.HGlobalAllocator"/>) is used.</param>
@@ -2952,6 +3308,11 @@
             <param name="lineNumber">The line number of the source the error occured in.</param>
             <param name="message">The error message.</param>
         </member>
+        <member name="M:WrenSharp.WrenVM.Dispose">
+            <summary>
+            Disposes of the VM and releases all allocated resources.
+            </summary>
+        </member>
         <member name="M:WrenSharp.WrenVM.DisposeManagedState">
             <summary>
             Invoked when the VM is being disposed. Override this method to dispose of any managed state.
@@ -2961,6 +3322,15 @@
             <summary>
             Invoked when the VM is being disposed. Override this method to dispose of any unmanaged resources.
             </summary>
+        </member>
+        <member name="T:WrenSharp.WrenVMInitializer">
+            <summary>
+            A delegate used to initialize a new Wren VM. This can be used to override the default
+            behaviour when creating a new native Wren VM. Implemetnations should return  <see cref="F:System.IntPtr.Zero"/>
+            if the  VM fails to initialize.
+            </summary>
+            <param name="configuration">The <see cref="T:WrenSharp.Native.WrenConfiguration"/> to pass to the native Wren VM initializer.</param>
+            <returns>A pointer to the native Wren VM.</returns>
         </member>
         <member name="T:WrenSharp.WrenForeignMethod">
             <summary>

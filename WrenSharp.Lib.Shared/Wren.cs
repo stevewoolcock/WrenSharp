@@ -141,20 +141,43 @@ namespace WrenSharp.Native
         [DllImport(NativeLibrary, EntryPoint = "wrenSetUserData", CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetUserData(IntPtr vm, IntPtr userData);
 
-        [DllImport(NativeLibrary, EntryPoint = "wrenCreateFiber", CallingConvention = CallingConvention.Cdecl)]
+#if WRENSHARP_EXT
+        [DllImport(NativeLibrary, EntryPoint = "ext_wrenGetListIndexOf", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int GetListIndexOf(IntPtr vm, int listSlot, int valueSlot);
+
+        [DllImport(NativeLibrary, EntryPoint = "ext_wrenListClear", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void ListClear(IntPtr vm, int listSlot);
+
+        [DllImport(NativeLibrary, EntryPoint = "ext_wrenListRemove", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void ListRemove(IntPtr vm, int listSlot, int index, int removedValueSlot);
+
+        [DllImport(NativeLibrary, EntryPoint = "ext_wrenMapClear", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void MapClear(IntPtr vm, int mapSlot);
+
+        [DllImport(NativeLibrary, EntryPoint = "ext_wrenCreateFiber", CallingConvention = CallingConvention.Cdecl)]
         public static extern WrenFiberResume CreateFiber(IntPtr vm);
 
-        [DllImport(NativeLibrary, EntryPoint = "wrenResumeFiber", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NativeLibrary, EntryPoint = "ext_wrenResumeFiber", CallingConvention = CallingConvention.Cdecl)]
         public static extern void ResumeFiber(IntPtr vm, WrenFiberResume resume);
 
-        [DllImport(NativeLibrary, EntryPoint = "wrenSetGCEnabled", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NativeLibrary, EntryPoint = "ext_wrenSetGCEnabled", CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetGCEnabled(IntPtr vm, [MarshalAs(UnmanagedType.I1)] bool value);
 
-        [DllImport(NativeLibrary, EntryPoint = "wrenGetGCEnabled", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NativeLibrary, EntryPoint = "ext_wrenGetGCEnabled", CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
         public static extern bool GetGCEnabled(IntPtr vm);
 
-        [DllImport(NativeLibrary, EntryPoint = "wrenBytesAllocated", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NativeLibrary, EntryPoint = "ext_wrenBytesAllocated", CallingConvention = CallingConvention.Cdecl)]
         public static extern ulong BytesAllocated(IntPtr vm);
+
+        [DllImport(NativeLibrary, EntryPoint = "ext_wrenGetSlotPtr", CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe Unsafe.WrenValue* GetSlotPtr(IntPtr vm, int slot);
+
+        [DllImport(NativeLibrary, EntryPoint = "ext_wrenSetSlotValue", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetSlot(IntPtr vm, int slot, Unsafe.WrenValue value);
+
+        [DllImport(NativeLibrary, EntryPoint = "ext_wrenGetSlotForeignSize", CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong GetSlotForeignSize(IntPtr vm, int slot);
+#endif
     }
 }

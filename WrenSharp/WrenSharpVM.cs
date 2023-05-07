@@ -40,7 +40,7 @@ namespace WrenSharp
             CopyManagedConfigToNativeConfig(config, ref wrenCfg);
 
             // Initialize the VM with the 
-            Initialize(ref wrenCfg, config.Allocator);
+            Initialize(config.Initializer, ref wrenCfg, config.Allocator);
         }
 
         private void CopyManagedConfigToNativeConfig(WrenVMConfiguration config, ref WrenConfiguration nativeConfig)

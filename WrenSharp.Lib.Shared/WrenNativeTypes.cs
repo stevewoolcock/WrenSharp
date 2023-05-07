@@ -124,6 +124,7 @@ namespace WrenSharp.Native
         public IntPtr UserData;
     }
 
+#if WRENSHARP_EXT
     [StructLayout(LayoutKind.Sequential, Size = 16)]
     public readonly struct WrenFiberResume
     {
@@ -135,4 +136,5 @@ namespace WrenSharp.Native
         /// </summary>
         public bool IsValid => m_Fiber != IntPtr.Zero;
     }
+#endif
 }

@@ -30,9 +30,14 @@ namespace WrenSharp.Native
     /// function pointers for a Wren foreign class instantiation.<para/>
     /// <b>C type:</b> <c>struct WrenForeignClassMethods</c>
     /// </summary>
-    [StructLayout(LayoutKind.Sequential, Size = 32)]
+    [StructLayout(LayoutKind.Sequential, Size = WrenForeignClassMethods.Size)]
     public struct WrenForeignClassMethods
     {
+        /// <summary>
+        /// The size of the struct type, in bytes.
+        /// </summary>
+        public const int Size = 32;
+
         // This struct is passed directly into Wren native functions,
         // so the layout must match the native C WrenConfiguration type.
 
@@ -48,18 +53,23 @@ namespace WrenSharp.Native
     /// in a Wren class.<para/>
     /// <b>C type:</b> <c>struct WrenFindForeignMethodResult</c>
     /// </summary>
-    [StructLayout(LayoutKind.Sequential, Size = 16)]
+    [StructLayout(LayoutKind.Sequential, Size = WrenForeignMethodData.Size)]
     public unsafe struct WrenForeignMethodData
     {
         /// <summary>
+        /// The size of the struct type, in bytes.
+        /// </summary>
+        public const int Size = 16;
+
+        /// <summary>
         /// A <see cref="WrenForeignMethodData"/> representing a method that could not be found.
         /// </summary>
-        public static WrenForeignMethodData NotFound => new WrenForeignMethodData() { fn = null, symbol = 0 };
+        public static WrenForeignMethodData NotFound => new WrenForeignMethodData() { Function = null, Symbol = 0 };
 
         // This struct is passed directly into Wren native functions,
         // so the layout must match the native C WrenConfiguration type.
 
-        public WrenNativeFn.ForeignMethod fn;
-        public ushort symbol;
+        public WrenNativeFn.ForeignMethod Function;
+        public ushort Symbol;
     }
 }

@@ -18,16 +18,12 @@ namespace WrenSharp.Unity
         private static readonly ProfilerMarker _profilerMarkerInterpet = new ProfilerMarker(ProfilerCategory.Scripts, "Wren Interpret");
         private static readonly UnityWrenDebugOutput _defaultUnityOutput = new UnityWrenDebugOutput();
 
-#pragma warning disable IDE0051 // Remove unused private members
-
         // Support disabled domain reloads in the Unity editor
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void OnSubsystemRegistration()
         {
             _defaultUnityOutput?.Clear();
         }
-
-#pragma warning restore IDE0051 // Remove unused private members
 
         #endregion
 
@@ -76,7 +72,7 @@ namespace WrenSharp.Unity
             CopyManagedConfigToNativeConfig(config, ref nativeConfig);
 
             // Initialize the VM with the configuration
-            Initialize(ref nativeConfig, config.Allocator);
+            Initialize(config.Initializer, ref nativeConfig, config.Allocator);
         }
 
         private void CopyManagedConfigToNativeConfig(WrenVMConfiguration config, ref WrenConfiguration nativeConfig)

@@ -9,8 +9,16 @@ namespace WrenSharp
     public partial class WrenVMConfiguration
     {
         /// <summary>
+        /// The <see cref="WrenVMInitializer"/> delegate to use to initialize the native Wren VM. Leave this value null
+        /// to use the default initializer (<see cref="Native.Wren.NewVM(ref Native.WrenConfiguration)"/>. Supplying a custom
+        /// initializer allows for greater control over the routine used to create the VM (for example, using a native plugin
+        /// to initialize the VM with a custom native reallocator function).
+        /// </summary>
+        public WrenVMInitializer Initializer { get; set; }
+
+        /// <summary>
         /// The allocator to use for unmanaged memory. Some WrenSharp features use unmanaged memory for performance reasons.
-        /// If null, the default allocator <see cref="HGlobalAllocator.Default"/> is used.
+        /// The native Wren VM does not use this. If null, the default allocator (<see cref="HGlobalAllocator.Default"/>) is used.
         /// </summary>
         public IAllocator Allocator { get; set; }
 

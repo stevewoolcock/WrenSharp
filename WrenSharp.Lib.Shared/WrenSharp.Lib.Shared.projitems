@@ -9,10 +9,20 @@
     <Import_RootNamespace>WrenSharp.Internal</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Unsafe\UnsafeUtils.cs" />
+    <Compile Include="..\WrenSharp.Lib.Shared\Unsafe\WrenNativeList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Unsafe\WrenForeign.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Unsafe\WrenObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Unsafe\WrenClass.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Unsafe\WrenInstance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Unsafe\WrenInternalTypes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Unsafe\WrenString.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Wren.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenErrorType.cs" />
+    <Compile Include="..\WrenSharp.Lib.Shared\Unsafe\WrenObjectType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenInterpretResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenNativeTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Unsafe\WrenValue.cs" />
   </ItemGroup>
 </Project>

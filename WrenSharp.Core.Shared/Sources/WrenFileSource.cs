@@ -48,7 +48,7 @@ namespace WrenSharp
                 m_BufferSize = (int)fileStream.Length;
                 m_Buffer = (byte*)m_Allocator.Allocate(m_BufferSize);
 
-                using var memStream = new UnmanagedMemoryStream(m_Buffer, m_BufferSize, m_BufferSize, FileAccess.Write);
+                using var memStream = new UnmanagedMemoryStream(m_Buffer, 0, m_BufferSize, FileAccess.Write);
                 fileStream.CopyTo(memStream);
             }
 

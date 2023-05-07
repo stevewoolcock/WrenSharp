@@ -26,19 +26,13 @@ namespace WrenSharp.Memory
         /// </summary>
         /// <param name="size">The minimum number of bytes to allocate.</param>
         /// <returns>An <see cref="IntPtr"/> to the allocated block of memory.</returns>
-        public IntPtr Allocate(int size)
-        {
-            return Marshal.AllocHGlobal(size);
-        }
+        public IntPtr Allocate(int size) => Marshal.AllocHGlobal(size);
 
         /// <summary>
         /// Frees a previously allocated block of memory.
         /// This method wraps <see cref="Marshal.FreeHGlobal(IntPtr)"/>.
         /// </summary>
         /// <param name="ptr">A pointer to the block of memory to free.</param>
-        public void Free(IntPtr ptr)
-        {
-            Marshal.FreeHGlobal(ptr);
-        }
+        public void Free(IntPtr ptr) => Marshal.FreeHGlobal(ptr);
     }
 }
