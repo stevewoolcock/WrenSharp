@@ -48,17 +48,6 @@
             Prefix used to print messages from Wren as errors to the Unity log and console.
             </summary>
         </member>
-        <member name="M:WrenSharp.Unity.UnityWrenDebugOutput.Clear">
-            <summary>
-            Clear the write buffer.
-            </summary>
-        </member>
-        <member name="M:WrenSharp.Unity.UnityWrenDebugOutput.Flush">
-            <summary>
-            Flush the write buffer. Sends the contents to <see cref="M:UnityEngine.Debug.Log(System.Object)"/>, then clears
-            the contents of the buffer.
-            </summary>
-        </member>
         <member name="T:WrenSharp.Unity.UnityWrenVM">
             <summary>
             A WrenVM configured for use with the Unity game engine.

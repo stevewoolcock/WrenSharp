@@ -478,9 +478,7 @@ namespace WrenSharp
         {
             EnsureValidHandle(handle);
             InterpretBegin();
-            
-            var result = Wren.Call(m_Ptr, handle.m_Ptr);
-
+            WrenInterpretResult result = Wren.Call(m_Ptr, handle.m_Ptr);
             InterpretEnd(result, throwOnFailure);
             return result;
         }
@@ -837,12 +835,14 @@ namespace WrenSharp
             Wren.Call(m_Ptr, m_CallHandle_Clear.m_Ptr);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void InterpretBegin()
         {
             m_Errors.Clear();
             OnInterpretBegin();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void InterpretEnd(WrenInterpretResult result, bool throwOnFailure)
         {
             OnInterpretEnd(result);

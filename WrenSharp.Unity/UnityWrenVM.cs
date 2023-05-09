@@ -22,7 +22,7 @@ namespace WrenSharp.Unity
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void OnSubsystemRegistration()
         {
-            _defaultUnityOutput?.Clear();
+            //
         }
 
         #endregion
@@ -169,7 +169,6 @@ namespace WrenSharp.Unity
         /// </summary>
         protected override void OnInterpretBegin()
         {
-            m_UnityDebugOutput?.Clear();
             _profilerMarkerInterpet.Begin();
         }
 
@@ -180,7 +179,6 @@ namespace WrenSharp.Unity
         protected override void OnInterpretEnd(WrenInterpretResult result)
         {
             _profilerMarkerInterpet.End();
-            m_UnityDebugOutput?.Flush();
         }
 
         #endregion

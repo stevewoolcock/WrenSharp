@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System;
+using System.Runtime.CompilerServices;
+using System.Text;
 using UnityEngine;
 
 namespace WrenSharp.Unity
@@ -18,70 +20,33 @@ namespace WrenSharp.Unity
         /// </summary>
         public const string ErrorPrefix = "!error:";
 
-        private readonly StringBuilder m_WriteBuffer = new StringBuilder(256);
-        private LogType m_CurrentType = LogType.Log;
-
-        /// <summary>
-        /// Clear the write buffer.
-        /// </summary>
-        public void Clear()
-        {
-            m_CurrentType = LogType.Log;
-            m_WriteBuffer.Clear();
-        }
-
-        /// <summary>
-        /// Flush the write buffer. Sends the contents to <see cref="UnityEngine.Debug.Log(object)"/>, then clears
-        /// the contents of the buffer.
-        /// </summary>
-        public void Flush()
-        {
-            if (m_WriteBuffer.Length <= 0)
-                return;
-            
-            // Trim final newline, as Debug.Log will add one
-            // Buffer could be empty after that, so check and bail out if so
-            if (m_WriteBuffer[m_WriteBuffer.Length - 1] == '\n')
-            {
-                if (--m_WriteBuffer.Length <= 0)
-                    return;
-            }
-
-            Debug.unityLogger.Log(m_CurrentType, m_WriteBuffer.ToString());
-            m_WriteBuffer.Clear();
-        }
-
-        private void Write(string text)
-        {
-            if (m_CurrentType != LogType.Error && text.StartsWith(ErrorPrefix, System.StringComparison.OrdinalIgnoreCase))
-            {
-                Flush();
-                m_CurrentType = LogType.Error;
-                m_WriteBuffer.Append(text, ErrorPrefix.Length, text.Length - ErrorPrefix.Length);
-            }
-            else if (m_CurrentType != LogType.Warning && text.StartsWith(WarnPrefix, System.StringComparison.OrdinalIgnoreCase))
-            {
-                Flush();
-                m_CurrentType = LogType.Warning;
-                m_WriteBuffer.Append(text, WarnPrefix.Length, text.Length - WarnPrefix.Length);
-            }
-            else
-            {
-                if (m_CurrentType != LogType.Log)
-                {
-                    Flush();
-                }
-
-                m_CurrentType = LogType.Log;
-                m_WriteBuffer.Append(text);
-            }
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void Write(LogType type, string message) => Debug.unityLogger.Log(type, message);
 
         #region WrenSharp Interfaces
 
         void IWrenWriteOutput.OutputWrite(WrenVM vm, string text)
         {
-            Write(text);
+            static ReadOnlySpan<char> Parse(string text, out LogType logType)
+            {
+                if (text.StartsWith(ErrorPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    logType = LogType.Error;
+                    return text.AsSpan(ErrorPrefix.Length);
+                }
+
+                if (text.StartsWith(WarnPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    logType = LogType.Warning;
+                    return text.AsSpan(WarnPrefix.Length);
+                }
+
+                logType = LogType.Log;
+                return text;
+            }
+
+            var message = Parse(text, out LogType logType);
+            Write(logType, message.ToString());
         }
 
         void IWrenErrorOutput.OutputError(WrenVM vm, WrenErrorType errorType, string moduleName, int lineNumber, string message)
@@ -89,15 +54,15 @@ namespace WrenSharp.Unity
             switch (errorType)
             {
                 case WrenErrorType.Compile:
-                    Write($"{ErrorPrefix}Wren compile error in {moduleName}:{lineNumber} : {message}");
+                    Write(LogType.Error, $"Wren compile error in {moduleName}:{lineNumber} : {message}");
                     break;
 
                 case WrenErrorType.StackTrace:
-                    Write($"{ErrorPrefix}at {message} in {moduleName}:{lineNumber}");
+                    Write(LogType.Error, $"at {message} in {moduleName}:{lineNumber}");
                     break;
 
                 case WrenErrorType.Runtime:
-                    Write(string.IsNullOrEmpty(moduleName)
+                    Write(LogType.Error, string.IsNullOrEmpty(moduleName)
                         ? $"{ErrorPrefix}Wren error: {message}"
                         : $"{ErrorPrefix}Wren error in {moduleName}: {message}");
                     break;
