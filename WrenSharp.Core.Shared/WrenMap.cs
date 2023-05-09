@@ -79,9 +79,19 @@ namespace WrenSharp
             return Wren.GetMapContainsKey(m_Vm.m_Ptr, m_MapSlot, m_DefaultKeySlot) != 0;
         }
 
+        /// <summary>
+        /// Indicates if the map contains an entry with a key represented by the value in <paramref name="keySlot"/>.
+        /// </summary>
+        /// <param name="keySlot">The slot to read the value to compare from.</param>
+        /// <returns>True if the key is found, otherwise false.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ContainsKey(int keySlot) => Wren.GetMapContainsKey(m_Vm.m_Ptr, m_MapSlot, keySlot) != 0;
 
+        /// <summary>
+        /// Sets a key/value pair in the map using the values in <paramref name="keySlot"/> and <paramref name="valueSlot"/>.
+        /// </summary>
+        /// <param name="keySlot">The slot containing the key.</param>
+        /// <param name="valueSlot">The slot containing the value.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetValue(int keySlot, int valueSlot) => Wren.SetMapValue(m_Vm.m_Ptr, m_MapSlot, keySlot, valueSlot);
 
@@ -98,14 +108,5 @@ namespace WrenSharp
             Wren.RemoveMapValue(m_Vm.m_Ptr, m_MapSlot, keySlot, valueSlot);
             return new WrenSlot(m_Vm, valueSlot);
         }
-
-#if WRENSHARP_EXT
-        public unsafe Unsafe.WrenValue GetValueUnsafe(int keySlot, int? valueSlot = default)
-        {
-            int slot = valueSlot.GetValueOrDefault(m_DefaultValueSlot);
-            Wren.GetMapValue(m_Vm.m_Ptr, m_MapSlot, keySlot, slot);
-            return *Wren.GetSlotPtr(m_Vm.m_Ptr, slot);
-        }
-#endif
     }
 }

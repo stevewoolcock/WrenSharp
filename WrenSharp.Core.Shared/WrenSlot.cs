@@ -320,6 +320,13 @@ namespace WrenSharp
         public void Set(string value) => Wren.SetSlotString(m_Vm.m_Ptr, m_Index, value);
 
         /// <summary>
+        /// Sets the value in this slot to <paramref name="value"/>.
+        /// </summary>
+        /// <param name="value">The value to set.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Set(WrenHandle value) => Wren.SetSlotHandle(m_Vm.m_Ptr, m_Index, value.m_Ptr);
+
+        /// <summary>
         /// Sets the value in this slot to null.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

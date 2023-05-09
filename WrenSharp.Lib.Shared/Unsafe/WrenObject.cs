@@ -41,9 +41,15 @@ namespace WrenSharp.Unsafe
 
         public WrenForeign AsForeign() => IsType(WrenObjectType.Foreign) ? new WrenForeign((WrenInternalObjForeign*)m_Ptr) : default;
 
+        public T AsForeign<T>() where T : unmanaged => IsType(WrenObjectType.Foreign) ? *(T*)((WrenInternalObjForeign*)m_Ptr)->Data : default;
+
+        public T* AsForeignPtr<T>() where T : unmanaged => IsType(WrenObjectType.Foreign) ? (T*)((WrenInternalObjForeign*)m_Ptr)->Data : default;
+
         public WrenString AsString() => IsType(WrenObjectType.String) ? new WrenString((WrenInternalObjString*)m_Ptr) : default;
 
         public WrenNativeList AsList() => IsType(WrenObjectType.List) ? new WrenNativeList((WrenInternalObjList*)m_Ptr) : default;
+
+        public WrenNativeMap AsMap() => IsType(WrenObjectType.Map) ? new WrenNativeMap((WrenInternalObjMap*)m_Ptr) : default;
 
         #region Object
 
@@ -62,9 +68,13 @@ namespace WrenSharp.Unsafe
         public static bool operator ==(WrenObject left, WrenObject right) => left.Equals(right);
         public static bool operator !=(WrenObject left, WrenObject right) => !(left == right);
 
+        public static explicit operator WrenObjectType(WrenObject obj) => obj.Type;
         public static explicit operator WrenClass(WrenObject obj) => obj.AsClass();
         public static explicit operator WrenInstance(WrenObject obj) => obj.AsInstance();
         public static explicit operator WrenString(WrenObject obj) => obj.AsString();
+        public static explicit operator WrenForeign(WrenObject obj) => obj.AsForeign();
+        public static explicit operator WrenNativeList(WrenObject obj) => obj.AsList();
+        public static explicit operator WrenNativeMap(WrenObject obj) => obj.AsMap();
 
         #endregion
     }

@@ -87,6 +87,8 @@ namespace WrenSharp.Unsafe
 
         public WrenNativeList AsList => IsObjectType(WrenObjectType.List) ? new WrenNativeList(CastObj<WrenInternalObjList>()) : default;
 
+        public WrenNativeMap AsMap => IsObjectType(WrenObjectType.Map) ? new WrenNativeMap(CastObj<WrenInternalObjMap>()) : default;
+
         public string StringValue
         {
             get
@@ -215,6 +217,10 @@ namespace WrenSharp.Unsafe
 
         #endregion
 
+        public T* AsForeignPtr<T>() where T : unmanaged => AsForeign.AsPtr<T>();
+
+        public T AsForeignType<T>() where T : unmanaged => AsForeign.As<T>();
+
         /// <summary>
         /// Returns a boolean indicating if the value represents a Wren object of <paramref name="type"/>.
         /// </summary>
@@ -240,7 +246,6 @@ namespace WrenSharp.Unsafe
         /// <param name="value">The object value to set.</param>
         public void Set(WrenObject value) => this = new WrenValue(value);
 
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private T* CastObj<T>() where T : unmanaged => (T*)ObjectPtr;
 
@@ -252,9 +257,9 @@ namespace WrenSharp.Unsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(WrenValue left, WrenValue right) => !(left == right);
 
-        public static implicit operator bool(WrenValue wrenValue) => wrenValue.IsBool ? wrenValue.AsBool : default;
-        public static implicit operator double(WrenValue wrenValue) => wrenValue.IsNumber ? wrenValue.AsNumber : default;
-        public static implicit operator WrenObject(WrenValue wrenValue) => wrenValue.IsObject ? wrenValue.AsObject : default;
+        public static implicit operator bool(WrenValue wrenValue) => wrenValue.AsBool;
+        public static implicit operator double(WrenValue wrenValue) => wrenValue.AsNumber;
+        public static implicit operator WrenObject(WrenValue wrenValue) => wrenValue.AsObject;
 
         #endregion
     }

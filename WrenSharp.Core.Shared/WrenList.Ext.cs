@@ -54,6 +54,14 @@ namespace WrenSharp
             return false;
         }
 
+        public unsafe ref Unsafe.WrenValue GetUnsafe(int index, int? elementSlot = default) => ref *GetUnsafePtr(index, elementSlot);
+
+        public unsafe Unsafe.WrenValue* GetUnsafePtr(int index, int? elementSlot = default)
+        {
+            int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
+            Wren.GetListElement(m_Vm.m_Ptr, m_ListSlot, index, slot);
+            return Wren.GetSlotPtr(m_Vm.m_Ptr, slot);
+        }
     }
 }
 #endif

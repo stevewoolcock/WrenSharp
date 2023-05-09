@@ -42,6 +42,10 @@ namespace WrenSharp.Unsafe
             m_Ptr = instance;
         }
 
+        public ref T As<T>() where T : unmanaged => ref *(T*)&m_Ptr->Data;
+
+        public T* AsPtr<T>() where T : unmanaged => (T*)&m_Ptr->Data;
+
         public Span<T> AsSpan<T>() where T : unmanaged => new Span<T>(&m_Ptr->Data, Size / sizeof(T));
 
         #region Object

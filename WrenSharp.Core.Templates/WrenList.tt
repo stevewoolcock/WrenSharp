@@ -7,73 +7,56 @@ namespace WrenSharp
 {
 	public partial struct WrenList
 	{
-        #region Contains
-
 <#
 string[] typeNames = new string[] { "string", "double", "bool", "WrenHandle" };
 string[] typeTitleCase = new string[] { "String", "Double", "Bool", "Handle" };
 
 for (int i = 0; i < typeNames.Length; i++)
 {
-        string type = typeNames[i];
-#>
-		public bool Contains(<#=type#> value)
-		{
-            m_Vm.SetSlot(m_ElementSlot, value);
-            return Wren.GetListIndexOf(m_Vm.m_Ptr, m_ListSlot, m_ElementSlot) >= 0;
-		}
-
-<#
-}
-#>
-        #endregion
-
-        #region Get
-
-<#
-for (int i = 0; i < typeNames.Length; i++)
-{
     string valueType = typeNames[i];
-    if (valueType == "WrenHandle")
-        continue;
-
+    
+    if (valueType != "WrenHandle")
+    {
 #>
 		public <#=valueType#> Get<#=typeTitleCase[i]#>(int index, int? elementSlot = default)
 		{
-            int slot = elementSlot.GetValueOrDefault(m_ElementSlot);
+            int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
             Wren.GetListElement(m_Vm.m_Ptr, m_ListSlot, index, slot);
             return m_Vm.GetSlot<#=typeTitleCase[i]#>(slot);
 		}
-
-<#
-}
-#>
-        #endregion
         
-        #region Add / Insert
-
 <#
-for (int i = 0; i < typeNames.Length; i++)
-{
-    string valueType = typeNames[i];
+    }
 #>
+		public bool Contains(<#=valueType#> value)
+		{
+            m_Vm.SetSlot(m_DefaultElementSlot, value);
+            return Wren.GetListIndexOf(m_Vm.m_Ptr, m_ListSlot, m_DefaultElementSlot) >= 0;
+		}
+
 		public void Add(<#=valueType#> value, int? elementSlot = default)
 		{
-            int slot = elementSlot.GetValueOrDefault(m_ElementSlot);
+            int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
             m_Vm.SetSlot(slot, value);
             Wren.InsertInList(m_Vm.m_Ptr, m_ListSlot, -1, slot);
 		}
         
 		public void Insert(int index, <#=valueType#> value, int? elementSlot = default)
 		{
-            int slot = elementSlot.GetValueOrDefault(m_ElementSlot);
+            int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
             m_Vm.SetSlot(slot, value);
             Wren.InsertInList(m_Vm.m_Ptr, m_ListSlot, index, slot);
+		}
+        
+		public void Set(int index, <#=valueType#> value, int? elementSlot = default)
+		{
+            int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
+            m_Vm.SetSlot(slot, value);
+            Wren.SetListElement(m_Vm.m_Ptr, m_ListSlot, index, slot);
 		}
 
 <#
 }
 #>
-        #endregion
 	}
 }

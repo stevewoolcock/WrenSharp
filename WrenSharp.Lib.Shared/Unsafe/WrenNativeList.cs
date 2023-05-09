@@ -87,7 +87,7 @@ namespace WrenSharp.Unsafe
 
         public override int GetHashCode() => ((IntPtr)m_Ptr).GetHashCode();
 
-        public override string ToString() => $"instance of {Object.Class.Name}";
+        public override string ToString() => $"instance of List";
 
         public Enumerator GetEnumerator() => new Enumerator(m_Ptr);
 

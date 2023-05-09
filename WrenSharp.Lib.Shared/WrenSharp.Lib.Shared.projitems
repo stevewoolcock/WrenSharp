@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Unsafe\UnsafeUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Unsafe\WrenNativeMap.cs" />
     <Compile Include="..\WrenSharp.Lib.Shared\Unsafe\WrenNativeList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Unsafe\WrenForeign.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Unsafe\WrenObject.cs" />

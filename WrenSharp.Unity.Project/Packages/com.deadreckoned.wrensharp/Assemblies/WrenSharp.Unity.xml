@@ -338,12 +338,45 @@
             The <see cref="T:WrenSharp.WrenVM"/> that the list belongs to.
             </summary>
         </member>
+        <member name="P:WrenSharp.WrenList.Item(System.Int32)">
+            <summary>
+            Gets or sets the value at <paramref name="index"/>. The value is placed in <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>.
+            </summary>
+            <param name="index">The index</param>
+            <returns>A <see cref="T:WrenSharp.WrenSlot"/> pointing to <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenList.Clear">
+            <summary>
+            Clears all values in the list
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenList.CreateHandle(System.Int32)">
+            <summary>
+            Creates a <see cref="T:WrenSharp.WrenHandle"/> wrapping the value in <paramref name="index"/>.
+            </summary>
+            <param name="index">The index of the value.</param>
+            <returns>A <see cref="T:WrenSharp.WrenHandle"/>.</returns>
+        </member>
         <member name="M:WrenSharp.WrenList.Add(System.Nullable{System.Int32})">
             <summary>
             Appends the value in slot[<paramref name="elementSlot"/>] to the end of the list.
             If <paramref name="elementSlot"/> is not supplied, <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>, is used.
             </summary>
             <param name="elementSlot">The slot containing the value to append. Defaults to <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>.</param>
+        </member>
+        <member name="M:WrenSharp.WrenList.AddNewList(System.Nullable{System.Int32})">
+            <summary>
+            Creates a new list in <paramref name="elementSlot"/> and appends it to the end of list.
+            If <paramref name="elementSlot"/> is not supplied, <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>, is used.
+            </summary>
+            <param name="elementSlot">The slot to create the new list in. Defaults to <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>.</param>
+        </member>
+        <member name="M:WrenSharp.WrenList.AddNewMap(System.Nullable{System.Int32})">
+            <summary>
+            Creates a new map in <paramref name="elementSlot"/> and appends it to the end of list.
+            If <paramref name="elementSlot"/> is not supplied, <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>, is used.
+            </summary>
+            <param name="elementSlot">The slot to create the new map in. Defaults to <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>.</param>
         </member>
         <member name="M:WrenSharp.WrenList.Insert(System.Int32,System.Nullable{System.Int32})">
             <summary>
@@ -352,6 +385,46 @@
             </summary>
             <param name="index">The index to insert the value at.</param>
             <param name="elementSlot">The slot containing the value to insert. Defaults to <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>.</param>
+        </member>
+        <member name="M:WrenSharp.WrenList.InsertNewList(System.Int32,System.Nullable{System.Int32})">
+            <summary>
+            Creates a new list in <paramref name="elementSlot"/> and inserts it into the list at <paramref name="index"/>.
+            If <paramref name="elementSlot"/> is not supplied, <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>, is used.
+            </summary>
+            <param name="index">The index to insert the list at.</param>
+            <param name="elementSlot">The slot to create the new list in. Defaults to <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>.</param>
+        </member>
+        <member name="M:WrenSharp.WrenList.InsertNewMap(System.Int32,System.Nullable{System.Int32})">
+            <summary>
+            Creates a new map in <paramref name="elementSlot"/> and inserts it into the list at <paramref name="index"/>.
+            If <paramref name="elementSlot"/> is not supplied, <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>, is used.
+            </summary>
+            <param name="index">The index to insert the map at.</param>
+            <param name="elementSlot">The slot to create the new map in. Defaults to <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>.</param>
+        </member>
+        <member name="M:WrenSharp.WrenList.Set(System.Int32,System.Nullable{System.Int32})">
+            <summary>
+            Creates a new list in <paramref name="elementSlot"/> and sets it as the value at <paramref name="index"/>.
+            If <paramref name="elementSlot"/> is not supplied, <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>, is used.
+            </summary>
+            <param name="index">The index of to set the value at.</param>
+            <param name="elementSlot">The slot to create the new list in. Defaults to <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>.</param>
+        </member>
+        <member name="M:WrenSharp.WrenList.SetNewList(System.Int32,System.Nullable{System.Int32})">
+            <summary>
+            Creates a new list in <paramref name="elementSlot"/> and sets it as the value at <paramref name="index"/>.
+            If <paramref name="elementSlot"/> is not supplied, <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>, is used.
+            </summary>
+            <param name="index">The index of to set the value at.</param>
+            <param name="elementSlot">The slot to create the new list in. Defaults to <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>.</param>
+        </member>
+        <member name="M:WrenSharp.WrenList.SetNewMap(System.Int32,System.Nullable{System.Int32})">
+            <summary>
+            Creates a new map in <paramref name="elementSlot"/> and sets it as the value at <paramref name="index"/>.
+            If <paramref name="elementSlot"/> is not supplied, <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>, is used.
+            </summary>
+            <param name="index">The index of to set the value at.</param>
+            <param name="elementSlot">The slot to create the new map in. Defaults to <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>.</param>
         </member>
         <member name="M:WrenSharp.WrenList.Remove(System.Int32,System.Nullable{System.Int32})">
             <summary>
@@ -406,6 +479,20 @@
             Indicates if the map contains a "null" key.
             </summary>
             <returns>True if the map contains a "null" key, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenMap.ContainsKey(System.Int32)">
+            <summary>
+            Indicates if the map contains an entry with a key represented by the value in <paramref name="keySlot"/>.
+            </summary>
+            <param name="keySlot">The slot to read the value to compare from.</param>
+            <returns>True if the key is found, otherwise false.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenMap.SetValue(System.Int32,System.Int32)">
+            <summary>
+            Sets a key/value pair in the map using the values in <paramref name="keySlot"/> and <paramref name="valueSlot"/>.
+            </summary>
+            <param name="keySlot">The slot containing the key.</param>
+            <param name="valueSlot">The slot containing the value.</param>
         </member>
         <member name="T:WrenSharp.IWrenErrorOutput">
             <summary>
@@ -1160,6 +1247,12 @@
             </summary>
             <param name="value">The value to set.</param>
         </member>
+        <member name="M:WrenSharp.WrenSlot.Set(WrenSharp.WrenHandle)">
+            <summary>
+            Sets the value in this slot to <paramref name="value"/>.
+            </summary>
+            <param name="value">The value to set.</param>
+        </member>
         <member name="M:WrenSharp.WrenSlot.SetNull">
             <summary>
             Sets the value in this slot to null.
@@ -1189,6 +1282,61 @@
             Exposes an API for manipulating Wren API slots.
             </summary>
         </member>
+        <member name="P:WrenSharp.WrenSlots.Span">
+            <summary>
+            Returns a direct view to the native Wren API slot memory for fast access by avoiding subsequent
+            calls into the Wren API to retrieve value information. This method calls the Wren API to retrieve
+            the current total number of slots and a pointer to the first slot, therefore the returned <see cref="T:System.Span`1"/>
+            should be cached in a local variable, or any performance gains are lost.
+            <para/>
+            The returned span beings at slot[0] and ends at slot[Count]. Call <see cref="M:WrenSharp.WrenSlots.EnsureCapacity(System.Int32)"/>
+            first to ensure the span contains at least the required number of slots.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenSlots.Copy(System.Int32,System.Int32)">
+            <summary>
+            Copies the value in slot[<paramref name="slotFrom"/>] to slot[<paramref name="slotTo"/>].
+            If <paramref name="slotFrom"/> is equal to <paramref name="slotTo"/>, this method does nothing.
+            This method does not ensure that <paramref name="slotFrom"/> or <paramref name="slotTo"/> are valid
+            before attempting the copy.
+            </summary>
+            <param name="slotFrom">The slot containing the value to copy.</param>
+            <param name="slotTo">The slot to copy the value into.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenSlots"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenSlots.AsSpan(System.Int32)">
+            <summary>
+            Returns a direct view to the native Wren API slot memory for fast access by avoiding subsequent
+            calls into the Wren API to retrieve value information. This method ensures that <paramref name="count"/>
+            slots will exist, there is no need to call <see cref="M:WrenSharp.WrenSlots.EnsureCapacity(System.Int32)"/> before invoking this method.
+            The returned <see cref="T:System.Span`1"/> should be cached in a local variable, or any performance gains are lost.
+            <para/>
+            The returned span beings at slot[0] and ends at slot[<paramref name="count"/>].
+            </summary>
+            <param name="count">The number of slots to span.</param>
+            <returns>A span around the native slot values.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenSlots.AsSpan(System.Int32,System.Int32)">
+            <summary>
+            Returns a direct view to the native Wren API slot memory for fast access by avoiding subsequent
+            calls into the Wren API to retrieve value information. This method ensures that required number of
+            slots will exist, there is no need to call <see cref="M:WrenSharp.WrenSlots.EnsureCapacity(System.Int32)"/> before invoking this method.
+            The returned <see cref="T:System.Span`1"/> should be cached in a local variable, or any performance gains are lost.
+            <para/>
+            The returned span beings at slot[<paramref name="startSlot"/>] and ends at slot[<paramref name="startSlot"/> + <paramref name="count"/>].
+            </summary>
+            <param name="startSlot">The slot to being the span at.</param>
+            <param name="count">The number of slots to span.</param>
+            <returns>A span around the native slot values.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenSlots.ValuesEqual(System.Int32,System.Int32)">
+            <summary>
+            Indicates if the values in slot[<paramref name="slot1"/>] and slot[<paramref name="slot2"/>] hold the same values.
+            </summary>
+            <param name="slot1">The first slot to compare.</param>
+            <param name="slot2">The second slot to compare.</param>
+            <returns>True if the values are the same, otherwise false.</returns>
+        </member>
         <member name="P:WrenSharp.WrenSlots.Count">
             <summary>
             Returns the number of allocated API slots for the current Wren fiber.
@@ -1202,53 +1350,12 @@
             <returns>A <see cref="T:WrenSharp.WrenSlot"/> value.</returns>
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown if <paramref name="index"/>is less than zero or greater or equal to <see cref="P:WrenSharp.WrenSlots.Count"/>.</exception>
         </member>
-        <member name="M:WrenSharp.WrenSlots.Copy(System.Int32,System.Int32)">
-            <summary>
-            Copies the value in slot[<paramref name="slotFrom"/>] to slot[<paramref name="slotTo"/>].
-            If <paramref name="slotFrom"/> is equal to <paramref name="slotTo"/>, this method does nothing.
-            This method does not ensure that <paramref name="slotFrom"/> or <paramref name="slotTo"/> are valid
-            before attempting the copy.
-            </summary>
-            <param name="slotFrom">The slot containing the value to copy.</param>
-            <param name="slotTo">The slot to copy the value into.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.WrenSlots"/>.</returns>
-        </member>
         <member name="M:WrenSharp.WrenSlots.EnsureCapacity(System.Int32)">
             <summary>
             Ensures the current Wren fiber has at least <paramref name="capacity"/> API slots available.
             </summary>
             <param name="capacity">The capacity of API slots to ensure.</param>
             <returns>A reference to this <see cref="T:WrenSharp.WrenSlots"/>.</returns>
-        </member>
-        <member name="P:WrenSharp.WrenSlots.Values">
-            <summary>
-            Returns a direct view to the native Wren API slot memory for fast access by avoiding subsequent
-            calls into the Wren API to retrieve value information. This method retrieves the current total number
-            of slots and a pointer to the first slot, therefore the returned <see cref="T:System.Span`1"/> should be cached
-            in a local variable, or any performance gains are lost.
-            <para/>
-            The returned span beings at slot[0] and ends at slot[Count]. Call <see cref="M:WrenSharp.WrenSlots.EnsureCapacity(System.Int32)"/>
-            first to ensure the span contains at least the required number of slots.
-            </summary>
-        </member>
-        <member name="M:WrenSharp.WrenSlots.GetValues(System.Int32)">
-            <summary>
-            Returns a direct view to the native Wren API slot memory for fast access by avoiding subsequent
-            calls into the Wren API to retrieve value information. This method ensures that <paramref name="count"/>
-            slots will exist, there is no need to call <see cref="M:WrenSharp.WrenSlots.EnsureCapacity(System.Int32)"/> before invoking this method.
-            The returned <see cref="T:System.Span`1"/> should be cached in a local variable, or any performance gains are lost.
-            <para/>
-            The returned span beings at slot[0] and ends at slot[<paramref name="count"/>].
-            </summary>
-            <param name="count">The number of slots to span.</param>
-        </member>
-        <member name="M:WrenSharp.WrenSlots.ValuesEqual(System.Int32,System.Int32)">
-            <summary>
-            Indicates if the values in slot[<paramref name="slot1"/>] and slot[<paramref name="slot2"/>] hold the same values.
-            </summary>
-            <param name="slot1">The first slot to compare.</param>
-            <param name="slot2">The second slot to compare.</param>
-            <returns>True if the values are the same, otherwise false.</returns>
         </member>
         <member name="T:WrenSharp.WrenVM">
             <summary>

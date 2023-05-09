@@ -33,6 +33,20 @@ namespace WrenSharp
         /// </summary>
         public WrenVM VM => m_Vm;
 
+        /// <summary>
+        /// Gets or sets the value at <paramref name="index"/>. The value is placed in <see cref="DefaultElementSlot"/>.
+        /// </summary>
+        /// <param name="index">The index</param>
+        /// <returns>A <see cref="WrenSlot"/> pointing to <see cref="DefaultElementSlot"/>.</returns>
+        public WrenSlot this[int index]
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Get(index);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => Set(index, value);
+        }
+
         #endregion
 
         public WrenList(WrenVM vm, int listSlot, int? defaultElementSlot = default)
@@ -46,8 +60,19 @@ namespace WrenSharp
             m_DefaultElementSlot = defaultElementSlot.GetValueOrDefault(m_ListSlot + 1);
         }
 
+        /// <summary>
+        /// Clears all values in the list
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear() => m_Vm.ListClear(m_ListSlot);
+
+        /// <summary>
+        /// Creates a <see cref="WrenHandle"/> wrapping the value in <paramref name="index"/>.
+        /// </summary>
+        /// <param name="index">The index of the value.</param>
+        /// <returns>A <see cref="WrenHandle"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public WrenHandle CreateHandle(int index) => Get(index).CreateHandle();
 
         #region Get
 
@@ -112,6 +137,30 @@ namespace WrenSharp
         public void Add(int? elementSlot = default)
         {
             Wren.InsertInList(m_Vm.m_Ptr, m_ListSlot, -1, elementSlot.GetValueOrDefault(DefaultElementSlot));
+        }
+
+        /// <summary>
+        /// Creates a new list in <paramref name="elementSlot"/> and appends it to the end of list.
+        /// If <paramref name="elementSlot"/> is not supplied, <see cref="DefaultElementSlot"/>, is used.
+        /// </summary>
+        /// <param name="elementSlot">The slot to create the new list in. Defaults to <see cref="DefaultElementSlot"/>.</param>
+        public void AddNewList(int? elementSlot = default)
+        {
+            int slot = elementSlot.GetValueOrDefault(DefaultElementSlot);
+            Wren.SetSlotNewList(m_Vm.m_Ptr, slot);
+            Wren.InsertInList(m_Vm.m_Ptr, m_ListSlot, -1, slot);
+        }
+
+        /// <summary>
+        /// Creates a new map in <paramref name="elementSlot"/> and appends it to the end of list.
+        /// If <paramref name="elementSlot"/> is not supplied, <see cref="DefaultElementSlot"/>, is used.
+        /// </summary>
+        /// <param name="elementSlot">The slot to create the new map in. Defaults to <see cref="DefaultElementSlot"/>.</param>
+        public void AddNewMap(int? elementSlot = default)
+        {
+            int slot = elementSlot.GetValueOrDefault(DefaultElementSlot);
+            Wren.SetSlotNewMap(m_Vm.m_Ptr, slot);
+            Wren.InsertInList(m_Vm.m_Ptr, m_ListSlot, -1, slot);
         }
 
         public void AddSharedData(object value, out WrenSharedDataHandle handle, int? elementSlot = default)
@@ -181,6 +230,32 @@ namespace WrenSharp
             Wren.InsertInList(m_Vm.m_Ptr, m_ListSlot, index, elementSlot.GetValueOrDefault(DefaultElementSlot));
         }
 
+        /// <summary>
+        /// Creates a new list in <paramref name="elementSlot"/> and inserts it into the list at <paramref name="index"/>.
+        /// If <paramref name="elementSlot"/> is not supplied, <see cref="DefaultElementSlot"/>, is used.
+        /// </summary>
+        /// <param name="index">The index to insert the list at.</param>
+        /// <param name="elementSlot">The slot to create the new list in. Defaults to <see cref="DefaultElementSlot"/>.</param>
+        public void InsertNewList(int index, int? elementSlot = default)
+        {
+            int slot = elementSlot.GetValueOrDefault(DefaultElementSlot);
+            Wren.SetSlotNewList(m_Vm.m_Ptr, slot);
+            Wren.InsertInList(m_Vm.m_Ptr, m_ListSlot, index, slot);
+        }
+
+        /// <summary>
+        /// Creates a new map in <paramref name="elementSlot"/> and inserts it into the list at <paramref name="index"/>.
+        /// If <paramref name="elementSlot"/> is not supplied, <see cref="DefaultElementSlot"/>, is used.
+        /// </summary>
+        /// <param name="index">The index to insert the map at.</param>
+        /// <param name="elementSlot">The slot to create the new map in. Defaults to <see cref="DefaultElementSlot"/>.</param>
+        public void InsertNewMap(int index, int? elementSlot = default)
+        {
+            int slot = elementSlot.GetValueOrDefault(DefaultElementSlot);
+            Wren.SetSlotNewMap(m_Vm.m_Ptr, slot);
+            Wren.InsertInList(m_Vm.m_Ptr, m_ListSlot, index, slot);
+        }
+
         public void InsertSharedData(int index, object value, out WrenSharedDataHandle handle, int? elementSlot = default)
         {
             int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
@@ -230,6 +305,101 @@ namespace WrenSharp
             int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
             T* returnVal = m_Vm.SetSlotNewForeignPtr(slot, classSlot, in span);
             Wren.InsertInList(m_Vm.m_Ptr, m_ListSlot, index, slot);
+            return returnVal;
+        }
+
+        #endregion
+
+        #region Set
+
+        /// <summary>
+        /// Creates a new list in <paramref name="elementSlot"/> and sets it as the value at <paramref name="index"/>.
+        /// If <paramref name="elementSlot"/> is not supplied, <see cref="DefaultElementSlot"/>, is used.
+        /// </summary>
+        /// <param name="index">The index of to set the value at.</param>
+        /// <param name="elementSlot">The slot to create the new list in. Defaults to <see cref="DefaultElementSlot"/>.</param>
+        public void Set(int index, int? elementSlot = default)
+        {
+            int slot = elementSlot.GetValueOrDefault(DefaultElementSlot);
+            Wren.SetSlotNewList(m_Vm.m_Ptr, slot);
+            Wren.SetListElement(m_Vm.m_Ptr, m_ListSlot, index, slot);
+        }
+
+        /// <summary>
+        /// Creates a new list in <paramref name="elementSlot"/> and sets it as the value at <paramref name="index"/>.
+        /// If <paramref name="elementSlot"/> is not supplied, <see cref="DefaultElementSlot"/>, is used.
+        /// </summary>
+        /// <param name="index">The index of to set the value at.</param>
+        /// <param name="elementSlot">The slot to create the new list in. Defaults to <see cref="DefaultElementSlot"/>.</param>
+        public void SetNewList(int index, int? elementSlot = default)
+        {
+            int slot = elementSlot.GetValueOrDefault(DefaultElementSlot);
+            Wren.SetSlotNewList(m_Vm.m_Ptr, slot);
+            Wren.SetListElement(m_Vm.m_Ptr, m_ListSlot, index, slot);
+        }
+
+        /// <summary>
+        /// Creates a new map in <paramref name="elementSlot"/> and sets it as the value at <paramref name="index"/>.
+        /// If <paramref name="elementSlot"/> is not supplied, <see cref="DefaultElementSlot"/>, is used.
+        /// </summary>
+        /// <param name="index">The index of to set the value at.</param>
+        /// <param name="elementSlot">The slot to create the new map in. Defaults to <see cref="DefaultElementSlot"/>.</param>
+        public void SetNewMap(int index, int? elementSlot = default)
+        {
+            int slot = elementSlot.GetValueOrDefault(DefaultElementSlot);
+            Wren.SetSlotNewMap(m_Vm.m_Ptr, slot);
+            Wren.SetListElement(m_Vm.m_Ptr, m_ListSlot, index, slot);
+        }
+
+        public void SetSharedData(int index, object value, out WrenSharedDataHandle handle, int? elementSlot = default)
+        {
+            int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
+            m_Vm.SetSlotSharedData(slot, value, out handle);
+            Wren.SetListElement(m_Vm.m_Ptr, m_ListSlot, index, slot);
+        }
+
+        public void SetNewSharedData(int index, int classSlot, WrenSharedDataHandle handle, int? elementSlot = default)
+        {
+            int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
+            m_Vm.SetSlotNewSharedData(slot, classSlot, handle);
+            Wren.SetListElement(m_Vm.m_Ptr, m_ListSlot, index, slot);
+        }
+
+        public void SetNewSharedData(int index, int classSlot, object value, int? elementSlot = default)
+        {
+            int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
+            m_Vm.SetSlotNewSharedData(slot, classSlot, value);
+            Wren.SetListElement(m_Vm.m_Ptr, m_ListSlot, index, slot);
+        }
+
+        public void SetNewForeign(int index, int classSlot, ulong size, int? elementSlot = default)
+        {
+            int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
+            Wren.SetSlotNewForeign(m_Vm.m_Ptr, slot, classSlot, size);
+            Wren.SetListElement(m_Vm.m_Ptr, m_ListSlot, index, slot);
+        }
+
+        public ref T SetNewForeign<T>(int index, int classSlot, in T value = default, int? elementSlot = default) where T : unmanaged
+        {
+            int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
+            ref T returnVal = ref m_Vm.SetSlotNewForeign(slot, classSlot, value);
+            Wren.SetListElement(m_Vm.m_Ptr, m_ListSlot, index, slot);
+            return ref returnVal;
+        }
+
+        public unsafe T* SetNewForeignPtr<T>(int index, int classSlot, in T value = default, int? elementSlot = default) where T : unmanaged
+        {
+            int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
+            T* returnVal = m_Vm.SetSlotNewForeignPtr(slot, classSlot, value);
+            Wren.SetListElement(m_Vm.m_Ptr, m_ListSlot, index, slot);
+            return returnVal;
+        }
+
+        public unsafe T* SetNewForeignPtr<T>(int index, int classSlot, in ReadOnlySpan<T> span, int? elementSlot = default) where T : unmanaged
+        {
+            int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
+            T* returnVal = m_Vm.SetSlotNewForeignPtr(slot, classSlot, in span);
+            Wren.SetListElement(m_Vm.m_Ptr, m_ListSlot, index, slot);
             return returnVal;
         }
 
