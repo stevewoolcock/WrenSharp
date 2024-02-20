@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Internal\ForeignLookup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Internal\InternalWrenHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Internal\StringBuilderCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Internal\WrenInternal.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IWrenErrorOutput.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IWrenModuleProvider.cs" />

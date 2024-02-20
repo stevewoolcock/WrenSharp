@@ -9,6 +9,7 @@
     <Import_RootNamespace>WrenSharp.Internal</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)StringBuilderCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Unsafe\UnsafeUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Unsafe\WrenNativeMap.cs" />
     <Compile Include="..\WrenSharp.Lib.Shared\Unsafe\WrenNativeList.cs" />

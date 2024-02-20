@@ -33,7 +33,6 @@ namespace WrenSharp.Unity
         private readonly IWrenErrorOutput m_ErrorOutput;
         private readonly IWrenModuleProvider m_ModuleProvider;
         private readonly IWrenModuleResolver m_ModuleResolver;
-        private readonly UnityWrenDebugOutput m_UnityDebugOutput;
 
         // Module load state
         private WrenNativeFn.LoadModuleComplete m_LoadModuleCallback;
@@ -64,9 +63,6 @@ namespace WrenSharp.Unity
                 m_ModuleProvider = config.ModuleProvider;
                 m_ModuleResolver = config.ModuleResolver;
             }
-
-            // This is used to avoid casting when it is needed
-            m_UnityDebugOutput = m_WriteOutput as UnityWrenDebugOutput;
 
             var nativeConfig = WrenConfiguration.InitializeNew();
             CopyManagedConfigToNativeConfig(config, ref nativeConfig);

@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using WrenSharp.Native;
 using WrenSharp.Memory;
+using WrenSharp.Internal;
 
 namespace WrenSharp
 {
@@ -294,14 +295,14 @@ namespace WrenSharp
         /// <param name="source">The source to interpret.</param>
         /// <param name="throwOnFailure">If true, a <see cref="WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
         /// <returns>The result of the interpret operation.</returns>
-        public unsafe WrenInterpretResult Interpret(string module, string source, bool throwOnFailure = false)
+        public WrenInterpretResult Interpret(string module, string source, bool throwOnFailure = false)
         {
             InterpretBegin();
 
             // NOTE: Allowing p/invoke with ANSI charset to marshal the string is faster than the custom
             // encoding method that is used in the explicit encoding/StringBuilder overloads, so we
             // use that here.
-            var result = Wren.Interpret(m_Ptr, module, source);
+            WrenInterpretResult result = Wren.Interpret(m_Ptr, module, source);
 
             InterpretEnd(result, throwOnFailure);
             return result;
@@ -316,17 +317,22 @@ namespace WrenSharp
         /// <param name="encoding">The encoding to use when converting the string to a native buffer.</param>
         /// <param name="throwOnFailure">If true, a <see cref="WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
         /// <returns>The result of the interpret operation.</returns>
-        public unsafe WrenInterpretResult Interpret(string module, string source, Encoding encoding, bool throwOnFailure = false)
+        public unsafe WrenInterpretResult Interpret(string module, ReadOnlySpan<char> source, Encoding encoding = null, bool throwOnFailure = false)
         {
             encoding ??= Encoding.UTF8;
-            WrenInternal.EncodeTextBufferFromString(
-                source, encoding, m_Allocator,
-                ref m_StringBuffer, ref m_StringBufferSize,
-                out _, out _);
+            WrenInternal.EncodeTextBufferFromString
+            (
+                source,
+                encoding,
+                m_Allocator,
+                ref m_StringBuffer,
+                ref m_StringBufferSize,
+                out _, out _
+            );
 
             InterpretBegin();
 
-            var result = Wren.Interpret(m_Ptr, module, (IntPtr)m_StringBuffer);
+            WrenInterpretResult result = Wren.Interpret(m_Ptr, module, (IntPtr)m_StringBuffer);
 
             InterpretEnd(result, throwOnFailure);
             return result;
@@ -344,14 +350,19 @@ namespace WrenSharp
         public unsafe WrenInterpretResult Interpret(string module, StringBuilder source, Encoding encoding = null, bool throwOnFailure = false)
         {
             encoding ??= Encoding.UTF8;
-            WrenInternal.EncodeTextBufferFromStringBuilder(
-                source, encoding, m_Allocator,
-                ref m_StringBuffer, ref m_StringBufferSize,
-                out _, out _);
+            WrenInternal.EncodeTextBufferFromStringBuilder
+            (
+                source,
+                encoding,
+                m_Allocator,
+                ref m_StringBuffer,
+                ref m_StringBufferSize,
+                out _, out _
+            );
 
             InterpretBegin();
 
-            var result = Wren.Interpret(m_Ptr, module, (IntPtr)m_StringBuffer);
+            WrenInterpretResult result = Wren.Interpret(m_Ptr, module, (IntPtr)m_StringBuffer);
 
             InterpretEnd(result, throwOnFailure);
             return result;
@@ -372,7 +383,7 @@ namespace WrenSharp
         {
             InterpretBegin();
 
-            var result = Wren.Interpret(m_Ptr, module, source);
+            WrenInterpretResult result = Wren.Interpret(m_Ptr, module, source);
 
             InterpretEnd(result, throwOnFailure);
             return result;
@@ -392,8 +403,8 @@ namespace WrenSharp
         public WrenInterpretResult Interpret(string module, IntPtr source, bool throwOnFailure = false)
         {
             InterpretBegin();
-            
-            var result = Wren.Interpret(m_Ptr, module, source);
+
+            WrenInterpretResult result = Wren.Interpret(m_Ptr, module, source);
 
             InterpretEnd(result, throwOnFailure);
             return result;
@@ -612,7 +623,7 @@ namespace WrenSharp
         /// <param name="slot">The slot index to load the function into and create the handle from.</param>
         /// <param name="throwOnFailure">If true, a <see cref="WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
         /// <returns>A handle to the newly created function.</returns>
-        public WrenHandle CreateFunction(string module, string paramsSignature, string functionBody, int slot = 0, bool throwOnFailure = false)
+        public WrenHandle CreateFunction(string module, ReadOnlySpan<char> paramsSignature, ReadOnlySpan<char> functionBody, int slot = 0, bool throwOnFailure = false)
         {
             // This method works by interpreting dynamically created Wren source that assigns
             // a new Wren function to a variable, then creating a handle to that variable. This
@@ -624,10 +635,20 @@ namespace WrenSharp
             // a way to get a handle to a *variable*, only values/objects.
             if (!HasModule(module) || !HasVariable(module, varName))
             {
-                Interpret(module, "var " + varName);
+                Interpret(module, $"var {varName}");
             }
 
-            var script = $"{varName} = Fn.new {{|{paramsSignature}|\n{functionBody}\n}}";
+            int len = 16 + paramsSignature.Length + functionBody.Length + varName.Length;
+            var sb = StringBuilderCache.Acquire(len);
+            sb.Append(varName)
+              .Append(" = Fn.new {|")
+              .Append(paramsSignature)
+              .Append("|\n")
+              .Append(functionBody)
+              .Append("\n}")
+              ;
+
+            var script = StringBuilderCache.GetStringAndRelease(sb);
             var result = Interpret(module, script, throwOnFailure);
             if (result != WrenInterpretResult.Success)
                 return default;

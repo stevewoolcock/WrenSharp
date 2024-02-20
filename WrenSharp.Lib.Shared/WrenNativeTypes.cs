@@ -73,7 +73,7 @@ namespace WrenSharp.Native
         /// <summary>
         /// Indicates if the configuration has been initialized.
         /// </summary>
-        public bool IsInitialized => Reallocate != null && InitialHeapSize > 0;
+        public readonly bool IsInitialized => Reallocate != null && InitialHeapSize > 0;
     }
 
     /// <summary>

@@ -483,6 +483,11 @@
             <param name="keySlot">The slot containing the key.</param>
             <param name="valueSlot">The slot containing the value.</param>
         </member>
+        <member name="T:WrenSharp.Internal.StringBuilderCache">
+            <summary>
+            From .NET: https://github.com/dotnet/runtime/blob/main/src/libraries/Common/src/System/Text/StringBuilderCache.cs
+            </summary>
+        </member>
         <member name="T:WrenSharp.IWrenErrorOutput">
             <summary>
             An interface for implementing Wren error callbacks.
@@ -2331,7 +2336,7 @@
             <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
             <returns>The result of the interpret operation.</returns>
         </member>
-        <member name="M:WrenSharp.WrenVM.Interpret(System.String,System.String,System.Text.Encoding,System.Boolean)">
+        <member name="M:WrenSharp.WrenVM.Interpret(System.String,System.ReadOnlySpan{System.Char},System.Text.Encoding,System.Boolean)">
             <summary>
             Runs Wren source <paramref name="source"/> in a new fiber, in the context of module <paramref name="module"/>.
             If the resolved module is not found, a new module will be created.
@@ -2499,7 +2504,7 @@
             <param name="signature">The call signature.</param>
             <returns></returns>
         </member>
-        <member name="M:WrenSharp.WrenVM.CreateFunction(System.String,System.String,System.String,System.Int32,System.Boolean)">
+        <member name="M:WrenSharp.WrenVM.CreateFunction(System.String,System.ReadOnlySpan{System.Char},System.ReadOnlySpan{System.Char},System.Int32,System.Boolean)">
             <summary>
             Interprets a Wren function by wrapping <paramref name="functionBody"/> in the Wren function syntax (<c>Fn.new {...}</c>)
             and returns a handle to the newly created function object. This is useful for creating functions dynamically from managed code

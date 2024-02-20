@@ -25,6 +25,9 @@ namespace WrenSharp.Native
         public static extern WrenInterpretResult Interpret(IntPtr vm, [In] string module, [In] string source);
 
         [DllImport(NativeLibrary, EntryPoint = "wrenInterpret", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        public unsafe static extern WrenInterpretResult Interpret(IntPtr vm, [In] string module, [In] ReadOnlySpan<char> source);
+
+        [DllImport(NativeLibrary, EntryPoint = "wrenInterpret", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         public static extern WrenInterpretResult Interpret(IntPtr vm, [In] string module, [In] StringBuilder source);
 
         [DllImport(NativeLibrary, EntryPoint = "wrenInterpret", CallingConvention = CallingConvention.Cdecl)]

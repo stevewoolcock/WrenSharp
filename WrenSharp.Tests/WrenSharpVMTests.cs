@@ -119,6 +119,21 @@ namespace WrenSharp.Tests
         }
 
         [Fact]
+        public void Interpet_CharSpan_Pass()
+        {
+            string source = "prefixed junk\nSystem.print(\"Hello world\")\n some extra junk";
+            m_VM.Interpret("main", source.AsSpan(14, 27), throwOnFailure: true);
+        }
+
+        [Fact]
+        public void Interpet_StringBuilder_Pass()
+        {
+            var sb = new StringBuilder();
+            sb.Append("System.print(\"Hello world\")");
+            m_VM.Interpret("main", sb, throwOnFailure: true);
+        }
+
+        [Fact]
         public void LoadModule_Pass()
         {
             m_VM.Interpret("main", @"

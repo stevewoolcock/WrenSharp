@@ -88,7 +88,7 @@ namespace WrenSharp.Native
         }
 
         public unsafe static void EncodeTextBufferFromString(
-            string str, Encoding encoding, IAllocator allocator,
+            ReadOnlySpan<char> str, Encoding encoding, IAllocator allocator,
             ref byte* buffer, ref int bufferSize,
             out int charCount, out int byteCount)
         {
@@ -121,11 +121,7 @@ namespace WrenSharp.Native
                 }
             }
 
-            // Encode chars in buffer
-            fixed (char* chars = str)
-            {
-                byteCount = encoding.GetBytes(chars, charCount, buffer, bufferSize);
-            }
+            byteCount = encoding.GetBytes(str, new Span<byte>(buffer, bufferSize));
 
             // Add the null terminator
             buffer[byteCount++] = (byte)'\0';
