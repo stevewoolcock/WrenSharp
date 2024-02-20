@@ -641,12 +641,20 @@ namespace WrenSharp
             int len = 16 + paramsSignature.Length + functionBody.Length + varName.Length;
             var sb = StringBuilderCache.Acquire(len);
             sb.Append(varName)
-              .Append(" = Fn.new {|")
-              .Append(paramsSignature)
-              .Append("|\n")
+              .Append(" = Fn.new {");
+
+            if (paramsSignature.Length > 0)
+            {
+                sb
+                  .Append('|')
+                  .Append(paramsSignature)
+                  .Append('|');
+            }
+
+            sb
+              .Append('\n')
               .Append(functionBody)
-              .Append("\n}")
-              ;
+              .Append("\n}");
 
             var script = StringBuilderCache.GetStringAndRelease(sb);
             var result = Interpret(module, script, throwOnFailure);
