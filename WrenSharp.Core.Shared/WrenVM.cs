@@ -313,6 +313,28 @@ namespace WrenSharp
         /// If the resolved module is not found, a new module will be created.
         /// </summary>
         /// <param name="module">The name of the resolved module to run the source within.</param>
+        /// <param name="utf8Source">The source to interpret.</param>
+        /// <param name="throwOnFailure">If true, a <see cref="WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
+        /// <returns>The result of the interpret operation.</returns>
+        public unsafe WrenInterpretResult Interpret(string module, ReadOnlySpan<byte> utf8Source, bool throwOnFailure = false)
+        {
+            InterpretBegin();
+
+            WrenInterpretResult result;
+            fixed (byte* src = utf8Source)
+            {
+                result = Wren.Interpret(m_Ptr, module, (IntPtr)src);
+            }
+
+            InterpretEnd(result, throwOnFailure);
+            return result;
+        }
+
+        /// <summary>
+        /// Runs Wren source <paramref name="source"/> in a new fiber, in the context of module <paramref name="module"/>.
+        /// If the resolved module is not found, a new module will be created.
+        /// </summary>
+        /// <param name="module">The name of the resolved module to run the source within.</param>
         /// <param name="source">The source to interpret.</param>
         /// <param name="encoding">The encoding to use when converting the string to a native buffer.</param>
         /// <param name="throwOnFailure">If true, a <see cref="WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>

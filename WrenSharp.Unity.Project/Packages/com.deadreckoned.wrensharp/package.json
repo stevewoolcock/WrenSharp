@@ -1,6 +1,6 @@
 {
   "name": "com.deadreckoned.wrensharp",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "displayName": "WrenSharp",
   "description": "A Unity wrapper for the Wren scripting language, compatible with both Mono and IL2CPP.",
   "unity": "2019.1",
