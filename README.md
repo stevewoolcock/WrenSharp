@@ -256,7 +256,7 @@ vm
 
   // Get a "WrenForeign" for the class we defined above, which provides
   // a builder pattern API for creating foreign bindings
-  .Foreign(module: "main", cls: "MyForeignClass")
+  .Foreign(moduleName: "main", className: "MyForeignClass")
   
   // Allocator
   // Called whenever a new instance of the class is created by Wren
