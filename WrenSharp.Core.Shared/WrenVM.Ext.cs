@@ -31,9 +31,13 @@ namespace WrenSharp
         /// <summary>
         /// Sets the enabled state of the Wren garbage collector.
         /// </summary>
-        /// <param name="gcEnabled"></param>
+        /// <param name="gcEnabled">The enabled state to set.</param>
         public void SetGCEnabled(bool gcEnabled) => Wren.SetGCEnabled(m_Ptr, gcEnabled);
 
+        /// <summary>
+        /// Gets the enabled state of the Wren garbage collector.
+        /// </summary>
+        /// <returns>True if the Wren garbage collector is enabled, otherwise false.</returns>
         public bool GetGCEnabled() => Wren.GetGCEnabled(m_Ptr);
     }
 }

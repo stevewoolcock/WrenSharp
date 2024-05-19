@@ -307,6 +307,14 @@
             </summary>
             <returns>A new <see cref="T:WrenSharp.WrenVMConfiguration"/> that is a shallow copy of this configuration.</returns>
         </member>
+        <member name="M:WrenSharp.WrenList.Remove(System.Int32,System.Nullable{System.Int32})">
+            <summary>
+            Removes the value stored in <paramref name="index"/> from the list and places the removed value in slot[<paramref name="removedValueSlot"/>].
+            If <paramref name="removedValueSlot"/> is not supplied, the default value, <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>, is used.
+            </summary>
+            <param name="index">The index to insert the value at.</param>
+            <param name="removedValueSlot">The slot to place the removed value in. Defaults to <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>.</param>
+        </member>
         <member name="P:WrenSharp.WrenList.Count">
             <summary>
             Gets the count of elements in the list.
@@ -414,14 +422,6 @@
             </summary>
             <param name="index">The index of to set the value at.</param>
             <param name="elementSlot">The slot to create the new map in. Defaults to <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>.</param>
-        </member>
-        <member name="M:WrenSharp.WrenList.Remove(System.Int32,System.Nullable{System.Int32})">
-            <summary>
-            Removes the value stored in <paramref name="index"/> from the list and places the removed value in slot[<paramref name="removedValueSlot"/>].
-            If <paramref name="removedValueSlot"/> is not supplied, the default value, <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>, is used.
-            </summary>
-            <param name="index">The index to insert the value at.</param>
-            <param name="removedValueSlot">The slot to place the removed value in. Defaults to <see cref="P:WrenSharp.WrenList.DefaultElementSlot"/>.</param>
         </member>
         <member name="P:WrenSharp.WrenMap.MapSlot">
             <summary>
@@ -1372,7 +1372,13 @@
             <summary>
             Sets the enabled state of the Wren garbage collector.
             </summary>
-            <param name="gcEnabled"></param>
+            <param name="gcEnabled">The enabled state to set.</param>
+        </member>
+        <member name="M:WrenSharp.WrenVM.GetGCEnabled">
+            <summary>
+            Gets the enabled state of the Wren garbage collector.
+            </summary>
+            <returns>True if the Wren garbage collector is enabled, otherwise false.</returns>
         </member>
         <member name="M:WrenSharp.WrenVM.EnsureSlotCount(System.Int32)">
             <summary>
@@ -2053,6 +2059,14 @@
             <param name="mapSlot">The slot to load the map into.</param>
             <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
         </member>
+        <member name="M:WrenSharp.WrenVM.SetSlot(System.Int32,WrenSharp.Unsafe.WrenValue)">
+            <summary>
+            Sets the value of a slot.
+            </summary>
+            <param name="slot">The slot index.</param>
+            <param name="value">The value to set.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
+        </member>
         <member name="M:WrenSharp.WrenVM.GetUserData">
             <summary>
             Returns a pointer to the user data associated with the VM.
@@ -2463,6 +2477,9 @@
             <seealso cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)"/>
             <seealso cref="M:WrenSharp.WrenVM.CreateCallHandle(System.String)"/>
         </member>
+        <!-- Badly formed XML comment ignored for member "M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle)" -->
+        <!-- Badly formed XML comment ignored for member "M:WrenSharp.WrenVM.CreateCall(System.String,System.String,WrenSharp.WrenCallHandle)" -->
+        <!-- Badly formed XML comment ignored for member "M:WrenSharp.WrenVM.CreateFunctionCall(WrenSharp.WrenHandle,System.Int32)" -->
         <member name="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)">
             <summary>
             Creates a <see cref="T:WrenSharp.WrenCall"/> value that can be used to prepare and execute a call.

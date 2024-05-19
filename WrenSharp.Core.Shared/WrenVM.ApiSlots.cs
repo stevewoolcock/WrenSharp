@@ -152,6 +152,9 @@ namespace WrenSharp
         /// <returns>The <see cref="WrenType"/> of the value.</returns>
         public WrenType GetSlotType(int slot) => Wren.GetSlotType(m_Ptr, slot);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal IntPtr GetSlotHandle(int slot) => Wren.GetSlotHandle(m_Ptr, slot);
+
         // 
 
         /// <summary>
@@ -1213,6 +1216,12 @@ namespace WrenSharp
             return this;
         }
 
+        /// <summary>
+        /// Sets the value of a slot.
+        /// </summary>
+        /// <param name="slot">The slot index.</param>
+        /// <param name="value">The value to set.</param>
+        /// <returns>A reference to this <see cref="WrenVM"/>.</returns>
         public WrenVM SetSlot(int slot, Unsafe.WrenValue value)
         {
             Wren.SetSlot(m_Ptr, slot, value);

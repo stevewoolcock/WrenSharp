@@ -5,13 +5,28 @@ using WrenSharp.Unsafe;
 
 namespace WrenSharp
 {
-    public partial struct WrenList
+    public readonly partial struct WrenList
     {
         #region Properties
 
         public unsafe WrenNativeList AsNativeList => Wren.GetSlotPtr(m_Vm.m_Ptr, m_ListSlot)->AsList;
 
         #endregion
+
+        /// <summary>
+        /// Removes the value stored in <paramref name="index"/> from the list and places the removed value in slot[<paramref name="removedValueSlot"/>].
+        /// If <paramref name="removedValueSlot"/> is not supplied, the default value, <see cref="DefaultElementSlot"/>, is used.
+        /// </summary>
+        /// <param name="index">The index to insert the value at.</param>
+        /// <param name="removedValueSlot">The slot to place the removed value in. Defaults to <see cref="DefaultElementSlot"/>.</param>
+        public WrenSlot Remove(int index, int? removedValueSlot = default)
+        {
+            int slot = removedValueSlot.GetValueOrDefault(m_DefaultElementSlot);
+            Wren.ListRemove(m_Vm.m_Ptr, m_ListSlot, index, slot);
+            return new WrenSlot(m_Vm, slot);
+        }
+
+        #region Unsafe
 
         public void Add(Unsafe.WrenValue value, int? elementSlot = default)
         {
@@ -62,6 +77,8 @@ namespace WrenSharp
             Wren.GetListElement(m_Vm.m_Ptr, m_ListSlot, index, slot);
             return Wren.GetSlotPtr(m_Vm.m_Ptr, slot);
         }
+
+        #endregion
     }
 }
 #endif

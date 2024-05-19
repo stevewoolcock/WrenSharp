@@ -13,7 +13,10 @@ namespace WrenSharp
     {
         private readonly WrenVM m_Vm;
         private readonly WrenCallHandle m_CallHandle;
+
+#if WRENSHARP_EXT
         private readonly WrenFiberResume m_FiberResume;
+#endif
 
         #region Properties
 
@@ -28,6 +31,18 @@ namespace WrenSharp
         public int ParamCount => m_CallHandle.ParamCount;
 
         #endregion
+
+#if WRENSHARP_EXT
+
+        internal WrenCall(WrenVM vm, WrenHandle receiver, WrenCallHandle callHandle) : this(vm, receiver, callHandle, newFiber: false)
+        {
+            //
+        }
+
+        internal WrenCall(WrenVM vm, string module, string className, WrenCallHandle callHandle) : this(vm, module, className, callHandle, newFiber: false)
+        {
+            //
+        }
 
         internal WrenCall(WrenVM vm, WrenHandle receiver, WrenCallHandle callHandle, bool newFiber)
         {
@@ -49,6 +64,28 @@ namespace WrenSharp
             Wren.GetVariable(m_Vm.m_Ptr, module, className, 0);
         }
 
+#else
+
+        internal WrenCall(WrenVM vm, WrenHandle receiver, WrenCallHandle callHandle)
+        {
+            m_Vm = vm;
+            m_CallHandle = callHandle;
+
+            Wren.EnsureSlots(m_Vm.m_Ptr, callHandle.m_ParamCount + 1);
+            Wren.SetSlotHandle(m_Vm.m_Ptr, 0, receiver.m_Ptr);
+        }
+
+        internal WrenCall(WrenVM vm, string module, string className, WrenCallHandle callHandle)
+        {
+            m_Vm = vm;
+            m_CallHandle = callHandle;
+
+            Wren.EnsureSlots(m_Vm.m_Ptr, callHandle.m_ParamCount + 1);
+            Wren.GetVariable(m_Vm.m_Ptr, module, className, 0);
+        }
+
+#endif
+
 
         /// <summary>
         /// Disposes of the call and restores the Wren API stack pointer if a new Fiber was created for this call.
@@ -56,10 +93,12 @@ namespace WrenSharp
         /// <seealso cref="WrenVM.CreateCall(WrenHandle, WrenCallHandle, bool)"/>
         public void Dispose()
         {
+#if WRENSHARP_EXT
             if (m_FiberResume.IsValid)
             {
                 Wren.ResumeFiber(m_Vm.m_Ptr, m_FiberResume);
             }
+#endif
         }
 
         #region Arguments

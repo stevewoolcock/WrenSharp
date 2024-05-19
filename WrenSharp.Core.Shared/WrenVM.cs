@@ -539,10 +539,52 @@ namespace WrenSharp
         /// </summary>
         /// <param name="receiverHandle">A handle to the receiver object.</param>
         /// <param name="callHandle">A handle for the method to call.</param>
+        /// to call back into Wren from the managed side without clobbering the Wren API stack.</param>
+        /// <returns>A <see cref="WrenCall"/> value.</returns>
+        public WrenCall CreateCall(WrenHandle receiverHandle, WrenCallHandle callHandle)
+        {
+            EnsureValidHandle(receiverHandle);
+            EnsureValidHandle(callHandle);
+            return new WrenCall(this, receiverHandle, callHandle);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="WrenCall"/> value that can be used to prepare and execute a call to a static class method.
+        /// </summary>
+        /// <param name="module">The name of the module the class resides in.</param>
+        /// <param name="className">The name of the class to execute the call on.</param>
+        /// <param name="callHandle">A handle for the method to call.</param>
+        /// to call back into Wren from the managed side without clobbering the Wren API stack.</param>
+        /// <returns>A <see cref="WrenCall"/> value.</returns>
+        public WrenCall CreateCall(string module, string className, WrenCallHandle callHandle)
+        {
+            EnsureValidHandle(callHandle);
+            return new WrenCall(this, module, className, callHandle);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="WrenCall"/> for a Wren Fn object, that can be used to prepare and execute the call.
+        /// </summary>
+        /// <param name="functionHandle">A handle wrapping a Wren Fn object.</param>
+        /// <param name="argCount">The number of arguments the function expects.</param>
+        /// to call back into Wren from the managed side without clobbering the Wren API stack.</param>
+        /// <returns>A <see cref="WrenCall"/> value.</returns>
+        public WrenCall CreateFunctionCall(WrenHandle functionHandle, int argCount)
+        {
+            WrenCallHandle callHandle = GetFunctionCallHandle(argCount);
+            return new WrenCall(this, functionHandle, callHandle);
+        }
+
+#if WRENSHARP_EXT
+        /// <summary>
+        /// Creates a <see cref="WrenCall"/> value that can be used to prepare and execute a call.
+        /// </summary>
+        /// <param name="receiverHandle">A handle to the receiver object.</param>
+        /// <param name="callHandle">A handle for the method to call.</param>
         /// <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
         /// to call back into Wren from the managed side without clobbering the Wren API stack.</param>
         /// <returns>A <see cref="WrenCall"/> value.</returns>
-        public WrenCall CreateCall(WrenHandle receiverHandle, WrenCallHandle callHandle, bool createNewFiber = false)
+        public WrenCall CreateCall(WrenHandle receiverHandle, WrenCallHandle callHandle, bool createNewFiber)
         {
             EnsureValidHandle(receiverHandle);
             EnsureValidHandle(callHandle);
@@ -558,7 +600,7 @@ namespace WrenSharp
         /// <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
         /// to call back into Wren from the managed side without clobbering the Wren API stack.</param>
         /// <returns>A <see cref="WrenCall"/> value.</returns>
-        public WrenCall CreateCall(string module, string className, WrenCallHandle callHandle, bool createNewFiber = false)
+        public WrenCall CreateCall(string module, string className, WrenCallHandle callHandle, bool createNewFiber)
         {
             EnsureValidHandle(callHandle);
             return new WrenCall(this, module, className, callHandle, createNewFiber);
@@ -572,11 +614,12 @@ namespace WrenSharp
         /// <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
         /// to call back into Wren from the managed side without clobbering the Wren API stack.</param>
         /// <returns>A <see cref="WrenCall"/> value.</returns>
-        public WrenCall CreateFunctionCall(WrenHandle functionHandle, int argCount, bool createNewFiber = false)
+        public WrenCall CreateFunctionCall(WrenHandle functionHandle, int argCount, bool createNewFiber)
         {
             WrenCallHandle callHandle = GetFunctionCallHandle(argCount);
             return new WrenCall(this, functionHandle, callHandle, createNewFiber);
         }
+#endif
 
         #endregion
 

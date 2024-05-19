@@ -4,7 +4,7 @@ using WrenSharp.Native;
 
 namespace WrenSharp
 {
-    public partial struct WrenMap
+    public readonly partial struct WrenMap
     {
         private readonly WrenVM m_Vm;
         private readonly int m_MapSlot;

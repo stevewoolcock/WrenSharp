@@ -5,7 +5,7 @@ using System;
 
 namespace WrenSharp
 {
-	public partial struct WrenList
+	public readonly partial struct WrenList
 	{
 <#
 string[] typeNames = new string[] { "string", "double", "bool", "WrenHandle" };
@@ -28,10 +28,10 @@ for (int i = 0; i < typeNames.Length; i++)
 <#
     }
 #>
-		public bool Contains(<#=valueType#> value)
+
+		public bool Contains(<#=valueType#> value, int? elementSlot = default)
 		{
-            m_Vm.SetSlot(m_DefaultElementSlot, value);
-            return Wren.GetListIndexOf(m_Vm.m_Ptr, m_ListSlot, m_DefaultElementSlot) >= 0;
+            return IndexOf(value, elementSlot) >= 0;
 		}
 
 		public void Add(<#=valueType#> value, int? elementSlot = default)
@@ -54,6 +54,50 @@ for (int i = 0; i < typeNames.Length; i++)
             m_Vm.SetSlot(slot, value);
             Wren.SetListElement(m_Vm.m_Ptr, m_ListSlot, index, slot);
 		}
+
+#if WRENSHARP_EXT
+		public int IndexOf(<#=valueType#> value, int? elementSlot = default)
+		{
+            int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
+            m_Vm.SetSlot(slot, value);
+            return Wren.GetListIndexOf(m_Vm.m_Ptr, m_ListSlot, slot);
+		}
+#else
+        public int IndexOf(<#=valueType#> value, int? elementSlot = default)
+        {
+            int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
+            m_Vm.SetSlot(m_DefaultElementSlot, value);
+
+            int count = Wren.GetListCount(m_Vm.m_Ptr, m_ListSlot);
+            for (int i = 0; i < count; i++)
+            {
+                Wren.GetListElement(m_Vm.m_Ptr, m_ListSlot, i, slot);
+<#
+                if (valueType == "WrenHandle")
+                {
+#>
+                if (m_Vm.GetSlot<#=typeTitleCase[i]#>(slot) == value.m_Ptr)
+                {
+                    return i;
+                }
+<#
+                }
+                else
+                {
+#>
+                if (m_Vm.GetSlot<#=typeTitleCase[i]#>(slot) == value)
+                {
+                    return i;
+                }
+<#
+                }
+#>
+
+            }
+
+            return -1;
+        }
+#endif
 
 <#
 }

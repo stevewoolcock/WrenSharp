@@ -6,7 +6,7 @@ using WrenSharp.Unsafe;
 
 namespace WrenSharp
 {
-    public partial struct WrenMap
+    public readonly partial struct WrenMap
     {
         #region Properties
 
