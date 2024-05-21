@@ -18,6 +18,13 @@ namespace WrenSharp
     public delegate IntPtr WrenVMInitializer(ref WrenConfiguration configuration);
 
     /// <summary>
+    /// A delegate invoked when a <see cref="WrenVM"/> is disposed.
+    /// </summary>
+    /// <param name="vm">The <see cref="WrenVM"/> being disposed.</param>
+    /// <param name="disposeManagedState">True if both managed and unmanaged state should be disposed. If false, only unmanaged state should be disposed.</param>
+    public delegate void WrenVMDestructor(WrenVM vm, bool disposeManagedState);
+
+    /// <summary>
     /// A delegate executed for a Wren foreign method call.
     /// </summary>
     /// <param name="call">The method call API.</param>
@@ -45,6 +52,19 @@ namespace WrenSharp
 
         private static readonly Dictionary<IntPtr, WrenVM> _vmsByPtr = new Dictionary<IntPtr, WrenVM>();
 
+        private static readonly WrenVMInitializer _defaultInitializer = (ref WrenConfiguration config) => Wren.NewVM(ref config);
+
+        private static readonly WrenVMDestructor _defaultDestructor = (vm, disposing) =>
+        {
+            if (vm == null)
+                return;
+
+            if (vm.NativePointer != IntPtr.Zero)
+            {
+                Wren.FreeVM(vm.NativePointer);
+            }
+        };
+
         /// <summary>
         /// Returns the version number of the Wren library.
         /// </summary>
@@ -58,7 +78,19 @@ namespace WrenSharp
         /// <summary>
         /// An enumeration of all <see cref="WrenVM"/> instances.
         /// </summary>
-        public IEnumerable<WrenVM> VMs => _vmsByPtr.Values;
+        public static IEnumerable<WrenVM> VMs => _vmsByPtr.Values;
+
+        /// <summary>
+        /// The default <see cref="WrenVMInitializer"/> delegate used when no custom initializer is supplied.<para/>
+        /// Creates a new native Wren VM using the supplied configuration, using <see cref="Wren.NewVM(ref WrenConfiguration)"/>.
+        /// </summary>
+        public static WrenVMInitializer DefaultInitializer => _defaultInitializer;
+
+        /// <summary>
+        /// The default <see cref="WrenVMDestructor"/> delegate used when no custom destructor is supplied.<para/>
+        /// Frees the <see cref="WrenVM"/>'s underlying native VM if it has a valid pointer, using <see cref="Wren.FreeVM"/>.
+        /// </summary>
+        public static WrenVMDestructor DefaultDestructor => _defaultDestructor;
 
         /// <summary>
         /// Gets the managed <see cref="WrenVM"/> corresponding to a native Wren VM.
@@ -128,6 +160,7 @@ namespace WrenSharp
         private readonly HashSet<WrenHandleInternal> m_ActiveHandles = new HashSet<WrenHandleInternal>();
         private readonly WrenSharedDataTable m_SharedData = new WrenSharedDataTable();
         private readonly List<WrenError> m_Errors = new List<WrenError>(0);
+        private WrenVMDestructor m_Destructor;
         private IAllocator m_Allocator;
 
         // The native config struct needs to be kept on the heap as it keeps function pointers to delegates
@@ -142,15 +175,12 @@ namespace WrenSharp
         // Used by List and Map helper methods
         private WrenCallHandle m_CallHandle_Clear;
 
-        // Unmanaged buffer used for encoding strings from StringBuilder
-        private byte* m_StringBuffer = (byte*)IntPtr.Zero;
-        private int m_StringBufferSize = 0;
-
         // Unmanaged buffer for storing VM user data
         // This isn't particularly useful in a managed environment, but available to offer parity with the full Wren API.
         private IntPtr m_UserDataBuffer = IntPtr.Zero;
         private int m_UserDataBufferSize = 0;
 
+        private int m_CreateFunctionDepth;
         private bool m_Initialized;
         private bool m_Disposed;
 
@@ -227,7 +257,7 @@ namespace WrenSharp
         /// <param name="allocator">The <see cref="IAllocator"/> to use when allocated unmanaged memory from C#. This is not used by the native Wren VM instance.</param>
         public WrenVM(ref WrenConfiguration config, IAllocator allocator = default) : this()
         {
-            Initialize(null, ref config, allocator);
+            Initialize(vmInitializer: null, vmDestructor: null, ref config, allocator);
         }
 
         /// <summary>
@@ -236,29 +266,32 @@ namespace WrenSharp
         /// allowing for full control over the VM initializer.
         /// </summary>
         /// <param name="vmInitializer">The <see cref="WrenVMInitializer"/> delegate to initialize the native Wren VM. Leave null to use the default initializer (<see cref="Wren.NewVM(ref WrenConfiguration)"/>).</param>
+        /// <param name="vmDestructor">The <see cref="WrenVMDestructor"/> delegate called when the VM is disposed.</param>
         /// <param name="config">The <see cref="WrenConfiguration"/>.</param>
         /// <param name="allocator">The <see cref="IAllocator"/> to use when allocated unmanaged memory from C#. This is not used by the native Wren VM instance.</param>
-        public WrenVM(WrenVMInitializer vmInitializer, ref WrenConfiguration config, IAllocator allocator = default) : this()
+        public WrenVM(WrenVMInitializer vmInitializer, WrenVMDestructor vmDestructor, ref WrenConfiguration config, IAllocator allocator = default) : this()
         {
-            Initialize(vmInitializer, ref config, allocator);
+            Initialize(vmInitializer, vmDestructor, ref config, allocator);
         }
 
         /// <summary>
         /// Initializes the VM using the given configuration.
         /// </summary>
         /// <param name="vmInitializer">The initializer to use to create the native Wren VM. Leave null to use the defaultinitializer(<see cref="Wren.NewVM(ref WrenConfiguration)"/>).</param>
+        /// <param name="vmDestructor">The <see cref="WrenVMDestructor"/> delegate called when the VM is disposed.</param>
         /// <param name="config">The <see cref="WrenConfiguration"/> that is passed to native Wren.</param>
         /// <param name="allocator">An optional memory allocator to use for unamanged buffers. If null, the
         /// default allocator (<see cref="HGlobalAllocator"/>) is used.</param>
         /// <exception cref="InvalidOperationException">Thrown if the VM has already been initialized.</exception>
-        protected void Initialize(WrenVMInitializer vmInitializer, ref WrenConfiguration config, IAllocator allocator)
+        protected void Initialize(WrenVMInitializer vmInitializer, WrenVMDestructor vmDestructor, ref WrenConfiguration config, IAllocator allocator)
         {
             if (m_Initialized)
                 throw new InvalidOperationException("A WrenVM instance can only be initialized once.");
 
             m_Config = config;
+            m_Destructor = vmDestructor ?? _defaultDestructor;
             m_Allocator = allocator ?? HGlobalAllocator.Default;
-            m_Ptr = vmInitializer == null ? Wren.NewVM(ref m_Config) : vmInitializer(ref m_Config);
+            m_Ptr = vmInitializer?.Invoke(ref m_Config) ?? _defaultInitializer(ref config);
             if (m_Ptr == IntPtr.Zero)
             {
                 throw new WrenInitializationException(this, "Failed to intiailize WrenVM");
@@ -298,12 +331,7 @@ namespace WrenSharp
         public WrenInterpretResult Interpret(string module, string source, bool throwOnFailure = false)
         {
             InterpretBegin();
-
-            // NOTE: Allowing p/invoke with ANSI charset to marshal the string is faster than the custom
-            // encoding method that is used in the explicit encoding/StringBuilder overloads, so we
-            // use that here.
             WrenInterpretResult result = Wren.Interpret(m_Ptr, module, source);
-
             InterpretEnd(result, throwOnFailure);
             return result;
         }
@@ -339,25 +367,12 @@ namespace WrenSharp
         /// <param name="encoding">The encoding to use when converting the string to a native buffer.</param>
         /// <param name="throwOnFailure">If true, a <see cref="WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
         /// <returns>The result of the interpret operation.</returns>
-        public unsafe WrenInterpretResult Interpret(string module, ReadOnlySpan<char> source, Encoding encoding = null, bool throwOnFailure = false)
+        public WrenInterpretResult Interpret(string module, ReadOnlySpan<char> source, bool throwOnFailure = false)
         {
-            encoding ??= Encoding.UTF8;
-            WrenInternal.EncodeTextBufferFromString
-            (
-                source,
-                encoding,
-                m_Allocator,
-                ref m_StringBuffer,
-                ref m_StringBufferSize,
-                out _, out _
-            );
-
-            InterpretBegin();
-
-            WrenInterpretResult result = Wren.Interpret(m_Ptr, module, (IntPtr)m_StringBuffer);
-
-            InterpretEnd(result, throwOnFailure);
-            return result;
+            using Utf8StringBuilder sb = Utf8StringBuilder.Create(source.Length * 2);
+            sb.Append(source);
+            sb.Append('\0');
+            return Interpret(module, sb.AsSpan(), throwOnFailure);
         }
 
         /// <summary>
@@ -366,28 +381,14 @@ namespace WrenSharp
         /// </summary>
         /// <param name="module">The name of the resolved module to run the source within.</param>
         /// <param name="source">The source to interpret.</param>
-        /// <param name="encoding">The encoding to use when converting the string to a native buffer. Defaults to UTF8 encoding if not specified.</param>
         /// <param name="throwOnFailure">If true, a <see cref="WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
         /// <returns>The result of the interpret operation.</returns>
-        public unsafe WrenInterpretResult Interpret(string module, StringBuilder source, Encoding encoding = null, bool throwOnFailure = false)
+        public WrenInterpretResult Interpret(string module, StringBuilder source, bool throwOnFailure = false)
         {
-            encoding ??= Encoding.UTF8;
-            WrenInternal.EncodeTextBufferFromStringBuilder
-            (
-                source,
-                encoding,
-                m_Allocator,
-                ref m_StringBuffer,
-                ref m_StringBufferSize,
-                out _, out _
-            );
-
-            InterpretBegin();
-
-            WrenInterpretResult result = Wren.Interpret(m_Ptr, module, (IntPtr)m_StringBuffer);
-
-            InterpretEnd(result, throwOnFailure);
-            return result;
+            using Utf8StringBuilder sb = Utf8StringBuilder.Create(source.Length * 2);
+            sb.Append(source);
+            sb.Append('\0');
+            return Interpret(module, sb.AsSpan(), throwOnFailure);
         }
 
         /// <summary>
@@ -693,41 +694,59 @@ namespace WrenSharp
             // This method works by interpreting dynamically created Wren source that assigns
             // a new Wren function to a variable, then creating a handle to that variable. This
             // is done in the internal WrenSharp module to hide this functionality.
-            const string varName = "ws__dynFn__";
+            const string VarNameBase = "ws__dynFn__";
 
-            // Ensure the target variable exists so we can assign it
-            // Unfortunately we need to look this up by name every time, as Wren does not provide
-            // a way to get a handle to a *variable*, only values/objects.
-            if (!HasModule(module) || !HasVariable(module, varName))
+            m_CreateFunctionDepth++;
+            try
             {
-                Interpret(module, $"var {varName}");
+                string varName = m_CreateFunctionDepth > 1
+                    ? $"{VarNameBase}{m_CreateFunctionDepth}"
+                    : VarNameBase;
+
+                // Ensure the target variable exists so we can assign it
+                // Unfortunately we need to look this up by name every time, as Wren does not provide
+                // a way to get a handle to a *variable*, only values/objects.
+                if (!HasModule(module) || !HasVariable(module, varName))
+                {
+                    using Utf8StringBuilder sb = Utf8StringBuilder.Create(32);
+                    sb.Append("var ");
+                    sb.Append(varName);
+                    sb.Append('\0');
+
+                    var result = Interpret(module, sb.AsSpan(), throwOnFailure);
+                    if (result != WrenInterpretResult.Success)
+                        return default;
+                }
+
+                {
+                    int len = 17 + paramsSignature.Length + functionBody.Length + varName.Length;
+                    using Utf8StringBuilder sb = Utf8StringBuilder.Create(len);
+                    sb.Append(varName);
+                    sb.Append(" = Fn.new {");
+
+                    if (paramsSignature.Length > 0)
+                    {
+                        sb.Append('|');
+                        sb.Append(paramsSignature);
+                        sb.Append('|');
+                    }
+
+                    sb.Append('\n');
+                    sb.Append(functionBody);
+                    sb.Append("\n}\0");
+
+                    var result = Interpret(module, sb.AsSpan(), throwOnFailure);
+                    if (result != WrenInterpretResult.Success)
+                        return default;
+                }
+
+                LoadVariable(module, varName, slot);
+                return CreateHandle(slot);
             }
-
-            int len = 16 + paramsSignature.Length + functionBody.Length + varName.Length;
-            var sb = StringBuilderCache.Acquire(len);
-            sb.Append(varName)
-              .Append(" = Fn.new {");
-
-            if (paramsSignature.Length > 0)
+            finally
             {
-                sb
-                  .Append('|')
-                  .Append(paramsSignature)
-                  .Append('|');
+                m_CreateFunctionDepth--;
             }
-
-            sb
-              .Append('\n')
-              .Append(functionBody)
-              .Append("\n}");
-
-            var script = StringBuilderCache.GetStringAndRelease(sb);
-            var result = Interpret(module, script, throwOnFailure);
-            if (result != WrenInterpretResult.Success)
-                return default;
-
-            LoadVariable(module, varName, slot);
-            return CreateHandle(slot);
         }
 
         /// <summary>
@@ -1016,10 +1035,10 @@ namespace WrenSharp
 
         #region IDisposable
 
-        ~WrenVM()
-        {
-            Dispose(disposing: false);
-        }
+        /// <summary>
+        /// Finalizer for <see cref="WrenVM"/> instances.
+        /// </summary>
+        ~WrenVM() => Dispose(disposing: false);
 
         /// <summary>
         /// Disposes of the VM and releases all allocated resources.
@@ -1036,7 +1055,8 @@ namespace WrenSharp
             {
                 if (disposing)
                 {
-                    // Dispose managed state
+                    // Disposing managed state
+
                     DisposeManagedState();
 
                     lock (_vmsByPtr)
@@ -1052,17 +1072,7 @@ namespace WrenSharp
                 DisposeUnmanagedState();
                 ReleaseAllHandles();
 
-                if (m_Ptr != IntPtr.Zero)
-                {
-                    Wren.FreeVM(m_Ptr);
-                }
-
-                if (m_StringBuffer != null)
-                {
-                    m_Allocator.Free((IntPtr)m_StringBuffer);
-                    m_StringBuffer = null;
-                    m_StringBufferSize = 0;
-                }
+                m_Destructor(this, disposing);
 
                 if (m_UserDataBuffer != IntPtr.Zero)
                 {
@@ -1070,7 +1080,7 @@ namespace WrenSharp
                     m_UserDataBuffer = default;
                     m_UserDataBufferSize = 0;
                 }
-                
+
                 m_Disposed = true;
             }
         }

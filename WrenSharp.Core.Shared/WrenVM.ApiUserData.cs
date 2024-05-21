@@ -21,6 +21,13 @@ namespace WrenSharp
         public ref T GetUserData<T>() where T : unmanaged => ref *(T*)Wren.GetUserData(m_Ptr);
 
         /// <summary>
+        /// Returns a pointer to the user data associated with the VM, as <typeparamref name="T"/>.
+        /// </summary>
+        /// <returns>A pointer to the VM user data as <typeparamref name="T"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T* GetUserDataPtr<T>() where T : unmanaged => (T*)Wren.GetUserData(m_Ptr);
+
+        /// <summary>
         /// Returns the shared data value assigned as the VM user data, as <typeparamref name="T"/>.
         /// <see cref="SetUserSharedData(object)"/>.
         /// </summary>
@@ -59,24 +66,34 @@ namespace WrenSharp
 
         /// <summary>
         /// Sets the user data associated with the VM to a pointer. It is the user's responsibility to ensure
-        /// the pointer is valid.
+        /// the pointer is valid. Any previous userData assigned via methods on <see cref="WrenVM"/> will have their underlying memory freed.
         /// </summary>
         /// <param name="userData">A pointer to the user data value.</param>
+        /// <seealso cref="GetUserData()"/>
+        /// <seealso cref="GetUserData{T}()"/>
+        /// <seealso cref="GetUserDataPtr{T}"/>
         public WrenVM SetUserData(IntPtr userData)
         {
+            // Free the existing buffer
+            if (m_UserDataBuffer != IntPtr.Zero)
+            {
+                m_Allocator.Free(m_UserDataBuffer);
+                m_UserDataBuffer = IntPtr.Zero;
+            }
+
             Wren.SetUserData(m_Ptr, userData);
             return this;
         }
 
         /// <summary>
-        /// Adds <paramref name="userData"/> to the <see cref="SharedData"/> table, and sets the VM's user data
-        /// to a <see cref="WrenSharedDataHandle"/>, pointing to <paramref name="userData"/>.
+        /// Sets the VM's userData pointer to a a copy of <paramref name="userData"/>. Allocates unmanaged memory to
+        /// hold the copy. Any previous userData assigned via methods on <see cref="WrenVM"/> will have their underlying memory freed.
         /// </summary>
         /// <param name="userData">The value to set the VM's user data to.</param>
         /// <returns>A reference to this <see cref="WrenVM"/> instance.</returns>
-        /// <seealso cref="GetUserSharedData"/>
-        /// <seealso cref="GetUserSharedData{T}"/>
-        /// <seealso cref="GetUserSharedDataHandle"/>
+        /// <seealso cref="GetUserData()"/>
+        /// <seealso cref="GetUserData{T}()"/>
+        /// <seealso cref="GetUserDataPtr{T}"/>
         public WrenVM SetUserData<T>(in T userData) where T : unmanaged
         {
             // The userData argument lives on the stack or the managed heap.
@@ -84,24 +101,36 @@ namespace WrenSharp
             // is set, so the value must be copied into an unmanaged buffer to escape the GC, and
             // the Wren user data will point that unamanged location.
 
-            // Free the existing buffer if it is not large enough to hold a value of T
-            if (m_UserDataBufferSize < sizeof(T) && m_UserDataBuffer != IntPtr.Zero)
+            // Free the existing buffer
+            if (m_UserDataBuffer != IntPtr.Zero)
             {
                 m_Allocator.Free(m_UserDataBuffer);
                 m_UserDataBuffer = IntPtr.Zero;
             }
 
-            // Allocate a buffer large enough to hold a value of T, if one doesn't currently exist
-            if (m_UserDataBuffer == IntPtr.Zero)
-            {
-                m_UserDataBufferSize = sizeof(T);
-                m_UserDataBuffer = m_Allocator.Allocate(m_UserDataBufferSize);
-            }
+            // Allocate a buffer large enough to hold a value of T
+            m_UserDataBufferSize = sizeof(T);
+            m_UserDataBuffer = m_Allocator.Allocate(m_UserDataBufferSize);
 
             // Assign userData
             *(T*)m_UserDataBuffer = userData;
             Wren.SetUserData(m_Ptr, m_UserDataBuffer);
             return this;
+        }
+
+        /// <summary>
+        /// Sets the VM's userData pointer to an empty value of <typeparamref name="T"/>. Allocates unmanaged memory to
+        /// hold the value. Any previous userData assigned via methods on <see cref="WrenVM"/> will have their underlying memory freed.
+        /// </summary>
+        /// <param name="userData">The value to set the VM's user data to.</param>
+        /// <returns>A reference to this empty <typeparamref name="T"/> that was allocated.</returns>
+        /// <seealso cref="GetUserData()"/>
+        /// <seealso cref="GetUserData{T}()"/>
+        /// <seealso cref="GetUserDataPtr{T}"/>
+        public ref T SetUserData<T>() where T : unmanaged
+        {
+            SetUserData<T>(default);
+            return ref GetUserData<T>();
         }
 
         /// <summary>

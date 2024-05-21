@@ -17,6 +17,11 @@ namespace WrenSharp
         public WrenVMInitializer Initializer { get; set; }
 
         /// <summary>
+        /// The <see cref="WrenVMDestructor"/> delegate to execute when the VM is disposed.
+        /// </summary>
+        public WrenVMDestructor Destructor { get; set; }
+
+        /// <summary>
         /// The allocator to use for unmanaged memory. Some WrenSharp features use unmanaged memory for performance reasons.
         /// The native Wren VM does not use this. If null, the default allocator (<see cref="HGlobalAllocator.Default"/>) is used.
         /// </summary>

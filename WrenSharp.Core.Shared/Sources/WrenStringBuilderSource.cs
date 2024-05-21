@@ -35,7 +35,7 @@ namespace WrenSharp
         #endregion
 
         /// <summary>
-        /// Creates a new <see cref="WrenStringSource"/>, wrapping a string.
+        /// Creates a new <see cref="WrenStringSource"/>, wrapping a <see cref="System.Text.StringBuilder"/>.
         /// </summary>
         /// <param name="stringBuilder">The <see cref="System.Text.StringBuilder"/> containing the Wren source.</param>
         /// <param name="encoding">The Encoding of the string. If this parameter is null, UTF8 encoding is used.</param>

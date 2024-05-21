@@ -129,7 +129,9 @@ namespace WrenSharp.Tests
         public void Interpet_StringBuilder_Pass()
         {
             var sb = new StringBuilder();
-            sb.Append("System.print(\"Hello world\")");
+            sb.Append("System.print(\"Hello world\")\n");
+            sb.Append("System.print(\"Foo Bar!\")\n");
+            sb.Append("System.print(\"Lorem ipsum dolor sit amet\")\n");
             m_VM.Interpret("main", sb, throwOnFailure: true);
         }
 

@@ -68,7 +68,7 @@ namespace WrenSharp.Unity
             CopyManagedConfigToNativeConfig(config, ref nativeConfig);
 
             // Initialize the VM with the configuration
-            Initialize(config.Initializer, ref nativeConfig, config.Allocator);
+            Initialize(config.Initializer, config.Destructor, ref nativeConfig, config.Allocator);
         }
 
         private void CopyManagedConfigToNativeConfig(WrenVMConfiguration config, ref WrenConfiguration nativeConfig)
@@ -91,6 +91,7 @@ namespace WrenSharp.Unity
             m_LoadModuleCallback = _OnModuleLoadComplete;
         }
 
+        /// <inheritdoc/>
         protected override void DisposeManagedState()
         {
             base.DisposeManagedState();

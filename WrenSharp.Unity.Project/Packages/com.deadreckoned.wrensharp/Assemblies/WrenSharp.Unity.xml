@@ -64,6 +64,9 @@
             </summary>
             <param name="config">The configuration to use.</param>
         </member>
+        <member name="M:WrenSharp.Unity.UnityWrenVM.DisposeManagedState">
+            <inheritdoc/>
+        </member>
         <member name="M:WrenSharp.Unity.UnityWrenVM.Foreign(System.String,System.String)">
             <summary>
             Gets the <see cref="T:WrenSharp.Unity.WrenForeign"/> object for building foreign classes and methods.
@@ -222,6 +225,11 @@
             to use the default initializer (<see cref="M:WrenSharp.Native.Wren.NewVM(WrenSharp.Native.WrenConfiguration@)"/>. Supplying a custom
             initializer allows for greater control over the routine used to create the VM (for example, using a native plugin
             to initialize the VM with a custom native reallocator function).
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenVMConfiguration.Destructor">
+            <summary>
+            The <see cref="T:WrenSharp.WrenVMDestructor"/> delegate to execute when the VM is disposed.
             </summary>
         </member>
         <member name="P:WrenSharp.WrenVMConfiguration.Allocator">
@@ -2079,6 +2087,12 @@
             </summary>
             <returns>A ref to the VM user data as <typeparamref name="T"/>.</returns>
         </member>
+        <member name="M:WrenSharp.WrenVM.GetUserDataPtr``1">
+            <summary>
+            Returns a pointer to the user data associated with the VM, as <typeparamref name="T"/>.
+            </summary>
+            <returns>A pointer to the VM user data as <typeparamref name="T"/>.</returns>
+        </member>
         <member name="M:WrenSharp.WrenVM.GetUserSharedData``1">
             <summary>
             Returns the shared data value assigned as the VM user data, as <typeparamref name="T"/>.
@@ -2108,20 +2122,34 @@
         <member name="M:WrenSharp.WrenVM.SetUserData(System.IntPtr)">
             <summary>
             Sets the user data associated with the VM to a pointer. It is the user's responsibility to ensure
-            the pointer is valid.
+            the pointer is valid. Any previous userData assigned via methods on <see cref="T:WrenSharp.WrenVM"/> will have their underlying memory freed.
             </summary>
             <param name="userData">A pointer to the user data value.</param>
+            <seealso cref="M:WrenSharp.WrenVM.GetUserData"/>
+            <seealso cref="M:WrenSharp.WrenVM.GetUserData``1"/>
+            <seealso cref="M:WrenSharp.WrenVM.GetUserDataPtr``1"/>
         </member>
         <member name="M:WrenSharp.WrenVM.SetUserData``1(``0@)">
             <summary>
-            Adds <paramref name="userData"/> to the <see cref="P:WrenSharp.WrenVM.SharedData"/> table, and sets the VM's user data
-            to a <see cref="T:WrenSharp.WrenSharedDataHandle"/>, pointing to <paramref name="userData"/>.
+            Sets the VM's userData pointer to a a copy of <paramref name="userData"/>. Allocates unmanaged memory to
+            hold the copy. Any previous userData assigned via methods on <see cref="T:WrenSharp.WrenVM"/> will have their underlying memory freed.
             </summary>
             <param name="userData">The value to set the VM's user data to.</param>
             <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/> instance.</returns>
-            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedData"/>
-            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedData``1"/>
-            <seealso cref="M:WrenSharp.WrenVM.GetUserSharedDataHandle"/>
+            <seealso cref="M:WrenSharp.WrenVM.GetUserData"/>
+            <seealso cref="M:WrenSharp.WrenVM.GetUserData``1"/>
+            <seealso cref="M:WrenSharp.WrenVM.GetUserDataPtr``1"/>
+        </member>
+        <member name="M:WrenSharp.WrenVM.SetUserData``1">
+            <summary>
+            Sets the VM's userData pointer to an empty value of <typeparamref name="T"/>. Allocates unmanaged memory to
+            hold the value. Any previous userData assigned via methods on <see cref="T:WrenSharp.WrenVM"/> will have their underlying memory freed.
+            </summary>
+            <param name="userData">The value to set the VM's user data to.</param>
+            <returns>A reference to this empty <typeparamref name="T"/> that was allocated.</returns>
+            <seealso cref="M:WrenSharp.WrenVM.GetUserData"/>
+            <seealso cref="M:WrenSharp.WrenVM.GetUserData``1"/>
+            <seealso cref="M:WrenSharp.WrenVM.GetUserDataPtr``1"/>
         </member>
         <member name="M:WrenSharp.WrenVM.SetUserSharedData(System.Object)">
             <summary>
@@ -2207,6 +2235,18 @@
         <member name="P:WrenSharp.WrenVM.VMs">
             <summary>
             An enumeration of all <see cref="T:WrenSharp.WrenVM"/> instances.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenVM.DefaultInitializer">
+            <summary>
+            The default <see cref="T:WrenSharp.WrenVMInitializer"/> delegate used when no custom initializer is supplied.<para/>
+            Creates a new native Wren VM using the supplied configuration, using <see cref="M:WrenSharp.Native.Wren.NewVM(WrenSharp.Native.WrenConfiguration@)"/>.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenVM.DefaultDestructor">
+            <summary>
+            The default <see cref="T:WrenSharp.WrenVMDestructor"/> delegate used when no custom destructor is supplied.<para/>
+            Frees the <see cref="T:WrenSharp.WrenVM"/>'s underlying native VM if it has a valid pointer, using <see cref="M:WrenSharp.Native.Wren.FreeVM(System.IntPtr)"/>.
             </summary>
         </member>
         <member name="M:WrenSharp.WrenVM.GetVM(System.IntPtr)">
@@ -2310,21 +2350,23 @@
             <param name="config">The <see cref="T:WrenSharp.Native.WrenConfiguration"/>.</param>
             <param name="allocator">The <see cref="T:WrenSharp.Memory.IAllocator"/> to use when allocated unmanaged memory from C#. This is not used by the native Wren VM instance.</param>
         </member>
-        <member name="M:WrenSharp.WrenVM.#ctor(WrenSharp.WrenVMInitializer,WrenSharp.Native.WrenConfiguration@,WrenSharp.Memory.IAllocator)">
+        <member name="M:WrenSharp.WrenVM.#ctor(WrenSharp.WrenVMInitializer,WrenSharp.WrenVMDestructor,WrenSharp.Native.WrenConfiguration@,WrenSharp.Memory.IAllocator)">
             <summary>
             Creates a new Wren VM to run Wren scripts. This constructor provides the ability to explicitly
             set the delete used to initialize the native Wren VM, as well as the native configuration passed into the Wren instance,
             allowing for full control over the VM initializer.
             </summary>
             <param name="vmInitializer">The <see cref="T:WrenSharp.WrenVMInitializer"/> delegate to initialize the native Wren VM. Leave null to use the default initializer (<see cref="M:WrenSharp.Native.Wren.NewVM(WrenSharp.Native.WrenConfiguration@)"/>).</param>
+            <param name="vmDestructor">The <see cref="T:WrenSharp.WrenVMDestructor"/> delegate called when the VM is disposed.</param>
             <param name="config">The <see cref="T:WrenSharp.Native.WrenConfiguration"/>.</param>
             <param name="allocator">The <see cref="T:WrenSharp.Memory.IAllocator"/> to use when allocated unmanaged memory from C#. This is not used by the native Wren VM instance.</param>
         </member>
-        <member name="M:WrenSharp.WrenVM.Initialize(WrenSharp.WrenVMInitializer,WrenSharp.Native.WrenConfiguration@,WrenSharp.Memory.IAllocator)">
+        <member name="M:WrenSharp.WrenVM.Initialize(WrenSharp.WrenVMInitializer,WrenSharp.WrenVMDestructor,WrenSharp.Native.WrenConfiguration@,WrenSharp.Memory.IAllocator)">
             <summary>
             Initializes the VM using the given configuration.
             </summary>
             <param name="vmInitializer">The initializer to use to create the native Wren VM. Leave null to use the defaultinitializer(<see cref="M:WrenSharp.Native.Wren.NewVM(WrenSharp.Native.WrenConfiguration@)"/>).</param>
+            <param name="vmDestructor">The <see cref="T:WrenSharp.WrenVMDestructor"/> delegate called when the VM is disposed.</param>
             <param name="config">The <see cref="T:WrenSharp.Native.WrenConfiguration"/> that is passed to native Wren.</param>
             <param name="allocator">An optional memory allocator to use for unamanged buffers. If null, the
             default allocator (<see cref="T:WrenSharp.Memory.HGlobalAllocator"/>) is used.</param>
@@ -2360,7 +2402,7 @@
             <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
             <returns>The result of the interpret operation.</returns>
         </member>
-        <member name="M:WrenSharp.WrenVM.Interpret(System.String,System.ReadOnlySpan{System.Char},System.Text.Encoding,System.Boolean)">
+        <member name="M:WrenSharp.WrenVM.Interpret(System.String,System.ReadOnlySpan{System.Char},System.Boolean)">
             <summary>
             Runs Wren source <paramref name="source"/> in a new fiber, in the context of module <paramref name="module"/>.
             If the resolved module is not found, a new module will be created.
@@ -2371,14 +2413,13 @@
             <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
             <returns>The result of the interpret operation.</returns>
         </member>
-        <member name="M:WrenSharp.WrenVM.Interpret(System.String,System.Text.StringBuilder,System.Text.Encoding,System.Boolean)">
+        <member name="M:WrenSharp.WrenVM.Interpret(System.String,System.Text.StringBuilder,System.Boolean)">
             <summary>
             Runs Wren source (the contents of <paramref name="source"/>) in a new fiber, in the context of module <paramref name="module"/>.
             If the resolved module is not found, a new module will be created.
             </summary>
             <param name="module">The name of the resolved module to run the source within.</param>
             <param name="source">The source to interpret.</param>
-            <param name="encoding">The encoding to use when converting the string to a native buffer. Defaults to UTF8 encoding if not specified.</param>
             <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
             <returns>The result of the interpret operation.</returns>
         </member>
@@ -2665,6 +2706,11 @@
             <param name="module">The name of the module the error occured in.</param>
             <param name="lineNumber">The line number of the source the error occured in.</param>
             <param name="message">The error message.</param>
+        </member>
+        <member name="M:WrenSharp.WrenVM.Finalize">
+            <summary>
+            Finalizer for <see cref="T:WrenSharp.WrenVM"/> instances.
+            </summary>
         </member>
         <member name="M:WrenSharp.WrenVM.Dispose">
             <summary>
@@ -3301,7 +3347,7 @@
         </member>
         <member name="M:WrenSharp.WrenStringBuilderSource.#ctor(System.Text.StringBuilder,System.Text.Encoding,WrenSharp.Memory.IAllocator)">
             <summary>
-            Creates a new <see cref="T:WrenSharp.WrenStringSource"/>, wrapping a string.
+            Creates a new <see cref="T:WrenSharp.WrenStringSource"/>, wrapping a <see cref="T:System.Text.StringBuilder"/>.
             </summary>
             <param name="stringBuilder">The <see cref="T:System.Text.StringBuilder"/> containing the Wren source.</param>
             <param name="encoding">The Encoding of the string. If this parameter is null, UTF8 encoding is used.</param>
@@ -3519,6 +3565,13 @@
             </summary>
             <param name="configuration">The <see cref="T:WrenSharp.Native.WrenConfiguration"/> to pass to the native Wren VM initializer.</param>
             <returns>A pointer to the native Wren VM.</returns>
+        </member>
+        <member name="T:WrenSharp.WrenVMDestructor">
+            <summary>
+            A delegate invoked when a <see cref="T:WrenSharp.WrenVM"/> is disposed.
+            </summary>
+            <param name="vm">The <see cref="T:WrenSharp.WrenVM"/> being disposed.</param>
+            <param name="disposeManagedState">True if both managed and unmanaged state should be disposed. If false, only unmanaged state should be disposed.</param>
         </member>
         <member name="T:WrenSharp.WrenForeignMethod">
             <summary>
