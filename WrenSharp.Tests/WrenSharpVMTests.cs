@@ -136,6 +136,18 @@ namespace WrenSharp.Tests
         }
 
         [Fact]
+        public void Interpet_Utf8Bytes_Pass()
+        {
+            var sb = new StringBuilder();
+            sb.Append("System.print(\"Hello world\")\n");
+            sb.Append("System.print(\"Foo Bar!\")\n");
+            sb.Append("System.print(\"Lorem ipsum dolor sit amet\")\n");
+
+            byte[] utf8Bytes = Encoding.UTF8.GetBytes(sb.ToString());
+            m_VM.Interpret("main", utf8Bytes, throwOnFailure: true);
+        }
+
+        [Fact]
         public void LoadModule_Pass()
         {
             m_VM.Interpret("main", @"

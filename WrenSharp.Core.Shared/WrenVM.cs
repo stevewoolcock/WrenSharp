@@ -369,7 +369,7 @@ namespace WrenSharp
         /// <returns>The result of the interpret operation.</returns>
         public WrenInterpretResult Interpret(string module, ReadOnlySpan<char> source, bool throwOnFailure = false)
         {
-            using Utf8StringBuilder sb = Utf8StringBuilder.Create(source.Length * 2);
+            using Utf8StringBuilder sb = Utf8StringBuilder.Create(source.Length * sizeof(char));
             sb.Append(source);
             sb.Append('\0');
             return Interpret(module, sb.AsSpan(), throwOnFailure);
@@ -385,31 +385,10 @@ namespace WrenSharp
         /// <returns>The result of the interpret operation.</returns>
         public WrenInterpretResult Interpret(string module, StringBuilder source, bool throwOnFailure = false)
         {
-            using Utf8StringBuilder sb = Utf8StringBuilder.Create(source.Length * 2);
+            using Utf8StringBuilder sb = Utf8StringBuilder.Create(source.Length * sizeof(char));
             sb.Append(source);
             sb.Append('\0');
             return Interpret(module, sb.AsSpan(), throwOnFailure);
-        }
-
-        /// <summary>
-        /// Runs Wren source (the contents of <paramref name="source"/>) in a new fiber, in the context of module <paramref name="module"/>.
-        /// If the resolved module is not found, a new module will be created.<para />
-        /// <paramref name="source"/> is expected to contain a null-terminated C-style string that is either ANSI or UTF8 encoded.<para />
-        /// For UTF8 encoding, is recommended that the string contain the UTF8 BOM (Byte Order Mark) at the beginning of the file, or Wren may fail
-        /// to parse the source string correctly.
-        /// </summary>
-        /// <param name="module">The name of the resolved module to run the source within.</param>
-        /// <param name="source">The raw bytes of Wren source to interpret.</param>
-        /// <param name="throwOnFailure">If true, a <see cref="WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
-        /// <returns>The result of the interpret operation.</returns>
-        public WrenInterpretResult Interpret(string module, byte[] source, bool throwOnFailure = false)
-        {
-            InterpretBegin();
-
-            WrenInterpretResult result = Wren.Interpret(m_Ptr, module, source);
-
-            InterpretEnd(result, throwOnFailure);
-            return result;
         }
 
         /// <summary>
@@ -643,15 +622,218 @@ namespace WrenSharp
         /// See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
         /// </summary>
         /// <param name="signature">The call signature.</param>
-        /// <returns></returns>
+        /// <returns>A <see cref="WrenCallHandle"/>.</returns>
         public WrenCallHandle CreateCallHandle(string signature)
         {
             var paramCount = WrenUtils.GetParameterCount(signature);
-            if (paramCount == MaxCallParameters)
-                throw new ArgumentException("Signature exceeds maximum parameter count.");
+            if (paramCount >= MaxCallParameters)
+                throw new ArgumentException($"Signature exceeds maximum parameter count of {MaxCallParameters}.");
 
             var ptr = Wren.MakeCallHandle(m_Ptr, signature);
             return new WrenCallHandle(AcquireHandle(ptr), paramCount);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="WrenCallHandle"/> representing a method call that can be used with the <see cref="Call(WrenCallHandle, bool)"/>
+        /// and <see cref="CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren method from C#.<para />
+        /// This method generates the function call signature for you, given a method name and parameter count. For example:
+        /// <code>
+        /// paramCount = 1 -> name(_)
+        /// paramCount = 2 -> name(_,_)
+        /// paramCount = 3 -> name(_,_,_)
+        /// </code>
+        /// See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
+        /// </summary>
+        /// <param name="methodName">The name of the method.</param>
+        /// <param name="paramCount">The number of parameters.</param>
+        /// <returns>A <see cref="WrenCallHandle"/>.</returns>
+        public WrenCallHandle CreateMethodCallHandle(string methodName, int paramCount)
+        {
+            if (paramCount >= MaxCallParameters)
+                throw new ArgumentOutOfRangeException(nameof(paramCount), $"Parameter count exceeds maximum of {MaxCallParameters}.");
+
+            using var sb = Utf8StringBuilder.Create(methodName.Length + paramCount * 2 + 4);
+            sb.Append(methodName);
+            sb.Append('(');
+            for (int i = 0; i < paramCount; i++)
+            {
+                sb.Append('_');
+
+                if (i < paramCount - 1)
+                {
+                    sb.Append(',');
+                }
+            }
+            sb.Append(')');
+            sb.Append('\0');
+
+            fixed (byte* b = sb.AsSpan())
+            {
+                var ptr = Wren.MakeCallHandle(m_Ptr, (IntPtr)b);
+                return new WrenCallHandle(AcquireHandle(ptr), (byte)paramCount);
+            }
+        }
+
+        /// <summary>
+        /// Creates a <see cref="WrenCallHandle"/> representing a property getter call that can be used with the <see cref="Call(WrenCallHandle, bool)"/>
+        /// and <see cref="CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren getter from C#.<para />
+        /// See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
+        /// </summary>
+        /// <param name="propertyName">The name of the property.</param>
+        /// <returns>A <see cref="WrenCallHandle"/>.</returns>
+        public WrenCallHandle CreateGetterCallHandle(string propertyName)
+        {
+            using var sb = Utf8StringBuilder.Create(propertyName.Length + 1);
+            sb.Append(propertyName);
+            sb.Append('\0');
+
+            fixed (byte* b = sb.AsSpan())
+            {
+                var ptr = Wren.MakeCallHandle(m_Ptr, (IntPtr)b);
+                return new WrenCallHandle(AcquireHandle(ptr), 0);
+            }
+        }
+
+        /// <summary>
+        /// Creates a <see cref="WrenCallHandle"/> representing a property setter call that can be used with the <see cref="Call(WrenCallHandle, bool)"/>
+        /// and <see cref="CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren setter from C#.<para />
+        /// See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
+        /// </summary>
+        /// <param name="propertyName">The name of the property.</param>
+        /// <returns>A <see cref="WrenCallHandle"/>.</returns>
+        public WrenCallHandle CreateSetterCallHandle(string propertyName)
+        {
+            using var sb = Utf8StringBuilder.Create(propertyName.Length + 6);
+            sb.Append(propertyName);
+            sb.Append("=(_)");
+            sb.Append('\0');
+
+            fixed (byte* b = sb.AsSpan())
+            {
+                var ptr = Wren.MakeCallHandle(m_Ptr, (IntPtr)b);
+                return new WrenCallHandle(AcquireHandle(ptr), 0);
+            }
+        }
+
+        /// <summary>
+        /// Creates a <see cref="WrenCallHandle"/> representing a prefix operator call that can be used with the <see cref="Call(WrenCallHandle, bool)"/>
+        /// and <see cref="CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren prefix operator from C#.<para />
+        /// See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
+        /// </summary>
+        /// <param name="operatorName">The operator name (eg. "-", "+").</param>
+        /// <returns>A <see cref="WrenCallHandle"/>.</returns>
+        public WrenCallHandle CreateOperatorPrefixCallHandle(string operatorName)
+        {
+            using var sb = Utf8StringBuilder.Create(operatorName.Length + 1);
+            sb.Append(operatorName);
+            sb.Append('\0');
+
+            fixed (byte* b = sb.AsSpan())
+            {
+                var ptr = Wren.MakeCallHandle(m_Ptr, (IntPtr)b);
+                return new WrenCallHandle(AcquireHandle(ptr), 0);
+            }
+        }
+
+        /// <summary>
+        /// Creates a <see cref="WrenCallHandle"/> representing an infix operator call that can be used with the <see cref="Call(WrenCallHandle, bool)"/>
+        /// and <see cref="CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren infix operator from C#.<para />
+        /// See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
+        /// </summary>
+        /// <param name="operatorName">The operator name (eg. "-", "+").</param>
+        /// <returns>A <see cref="WrenCallHandle"/>.</returns>
+        public WrenCallHandle CreateOperatorInfixCallHandle(string operatorName)
+        {
+            using var sb = Utf8StringBuilder.Create(operatorName.Length + 5);
+            sb.Append(operatorName);
+            sb.Append("(_)");
+            sb.Append('\0');
+
+            fixed (byte* b = sb.AsSpan())
+            {
+                var ptr = Wren.MakeCallHandle(m_Ptr, (IntPtr)b);
+                return new WrenCallHandle(AcquireHandle(ptr), 0);
+            }
+        }
+
+        /// <summary>
+        /// Creates a <see cref="WrenCallHandle"/> representing a subscript getter call that can be used with the <see cref="Call(WrenCallHandle, bool)"/>
+        /// and <see cref="CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren method from C#.<para />
+        /// This method generates the subscript getter call signature for you, given a parameter count. For example:
+        /// <code>
+        /// paramCount = 1 -> [_]
+        /// paramCount = 2 -> [_,_]
+        /// paramCount = 3 -> [_,_,_]
+        /// </code>
+        /// See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
+        /// </summary>
+        /// <param name="paramCount">The number of parameters.</param>
+        /// <returns>A <see cref="WrenCallHandle"/>.</returns>
+        public WrenCallHandle CreateSubscriptGetCallHandle(int paramCount)
+        {
+            if (paramCount >= MaxCallParameters)
+                throw new ArgumentOutOfRangeException(nameof(paramCount), $"Subscript getter parameter count exceeds maximum of {MaxCallParameters}.");
+
+            using var sb = Utf8StringBuilder.Create(paramCount * 2 + 4);
+            sb.Append('[');
+            for (int i = 0; i < paramCount; i++)
+            {
+                sb.Append('_');
+
+                if (i < paramCount - 1)
+                {
+                    sb.Append(',');
+                }
+            }
+            sb.Append(']');
+            sb.Append('\0');
+
+            fixed (byte* b = sb.AsSpan())
+            {
+                var ptr = Wren.MakeCallHandle(m_Ptr, (IntPtr)b);
+                return new WrenCallHandle(AcquireHandle(ptr), (byte)paramCount);
+            }
+        }
+
+        /// <summary>
+        /// Creates a <see cref="WrenCallHandle"/> representing a subscript setter call that can be used with the <see cref="Call(WrenCallHandle, bool)"/>
+        /// and <see cref="CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren method from C#.<para />
+        /// This method generates the subscript setter call signature for you, given a parameter count. For example:
+        /// <code>
+        /// paramCount = 1 -> [_]=(_)
+        /// paramCount = 2 -> [_,_]=(_)
+        /// paramCount = 3 -> [_,_,_]=(_)
+        /// </code>
+        /// See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
+        /// </summary>
+        /// <param name="paramCount">The number of parameters.</param>
+        /// <returns>A <see cref="WrenCallHandle"/>.</returns>
+        public WrenCallHandle CreateSubscriptSetCallHandle(int paramCount)
+        {
+            // Subscript setters need an extra parameter for the function portion
+
+            if (paramCount >= MaxCallParameters - 1)
+                throw new ArgumentOutOfRangeException(nameof(paramCount), $"Subscript setter parameter count exceeds maximum of {MaxCallParameters - 1}.");
+
+            using var sb = Utf8StringBuilder.Create(paramCount * 2 + 8);
+            sb.Append('[');
+            for (int i = 0; i < paramCount; i++)
+            {
+                sb.Append('_');
+
+                if (i < paramCount - 1)
+                {
+                    sb.Append(',');
+                }
+            }
+            sb.Append("]=(_)");
+            sb.Append('\0');
+
+            fixed (byte* b = sb.AsSpan())
+            {
+                var ptr = Wren.MakeCallHandle(m_Ptr, (IntPtr)b);
+                return new WrenCallHandle(AcquireHandle(ptr), (byte)(paramCount + 1));
+            }
         }
 
         /// <summary>
@@ -708,7 +890,7 @@ namespace WrenSharp
                 // a way to get a handle to a *variable*, only values/objects.
                 if (!HasModule(module) || !HasVariable(module, varName))
                 {
-                    using Utf8StringBuilder sb = Utf8StringBuilder.Create(32);
+                    using Utf8StringBuilder sb = Utf8StringBuilder.Create(varName.Length + 5);
                     sb.Append("var ");
                     sb.Append(varName);
                     sb.Append('\0');
@@ -719,7 +901,7 @@ namespace WrenSharp
                 }
 
                 {
-                    int len = 17 + paramsSignature.Length + functionBody.Length + varName.Length;
+                    int len = 17 + varName.Length + paramsSignature.Length + functionBody.Length * sizeof(char);
                     using Utf8StringBuilder sb = Utf8StringBuilder.Create(len);
                     sb.Append(varName);
                     sb.Append(" = Fn.new {");
@@ -733,7 +915,8 @@ namespace WrenSharp
 
                     sb.Append('\n');
                     sb.Append(functionBody);
-                    sb.Append("\n}\0");
+                    sb.Append("\n}");
+                    sb.Append('\0');
 
                     var result = Interpret(module, sb.AsSpan(), throwOnFailure);
                     if (result != WrenInterpretResult.Success)
@@ -772,6 +955,7 @@ namespace WrenSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public WrenHandle CreateHandle(string module, string variableName, int slot = 0)
         {
+            Wren.EnsureSlots(m_Ptr, slot + 1);
             Wren.GetVariable(m_Ptr, module, variableName, slot);
             return CreateHandle(slot);
         }
@@ -823,7 +1007,7 @@ namespace WrenSharp
         /// <summary>
         /// Attemps to create a <see cref="WrenHandle"/> from the value in <paramref name="variableName"/> in resolved module <paramref name="module"/>.
         /// The value of the variable is loaded into slot <paramref name="slot"/>, and the handle is created from the value in that slot.<para/>
-        /// Returns true if <paramref name="slot"/> is less than the number of slots and the variable exists.
+        /// Returns true if the variable exists.
         /// </summary>
         /// <param name="module">The module the variable resides in.</param>
         /// <param name="variableName">The name of the variable.</param>
@@ -832,10 +1016,9 @@ namespace WrenSharp
         /// <returns>True if the handle was created, otherwise false.</returns>
         public bool TryCreateHandle(string module, string variableName, int slot, out WrenHandle handle)
         {
-            if (Wren.GetSlotCount(m_Ptr) > slot && Wren.HasVariable(m_Ptr, module, variableName) != 0)
+            if (Wren.HasVariable(m_Ptr, module, variableName) != 0)
             {
-                Wren.GetVariable(m_Ptr, module, variableName, slot);
-                handle = CreateHandle(slot);
+                handle = CreateHandle(module, variableName, slot);
                 return true;
             }
 
@@ -853,7 +1036,7 @@ namespace WrenSharp
         /// <param name="handle">Stores the created handle.</param>
         /// <returns>True if the handle was created, otherwise false.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryCreateHandle(string module, string variableName, out WrenHandle handle) => TryCreateHandle(module, variableName, 0, out handle);
+        public bool TryCreateHandle(string module, string variableName, out WrenHandle handle) => TryCreateHandle(module, variableName, slot: 0, out handle);
 
 
         /// <summary>

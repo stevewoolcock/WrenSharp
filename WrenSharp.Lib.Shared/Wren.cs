@@ -31,13 +31,13 @@ namespace WrenSharp.Native
         public static extern WrenInterpretResult Interpret(IntPtr vm, [In] string module, [In] StringBuilder source);
 
         [DllImport(NativeLibrary, EntryPoint = "wrenInterpret", CallingConvention = CallingConvention.Cdecl)]
-        public unsafe static extern WrenInterpretResult Interpret(IntPtr vm, [In] string module, [In] byte[] source);
-
-        [DllImport(NativeLibrary, EntryPoint = "wrenInterpret", CallingConvention = CallingConvention.Cdecl)]
         public unsafe static extern WrenInterpretResult Interpret(IntPtr vm, [In] string module, [In] IntPtr source);
 
         [DllImport(NativeLibrary, EntryPoint = "wrenMakeCallHandle", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         public static extern IntPtr MakeCallHandle(IntPtr vm, [In] string signature);
+
+        [DllImport(NativeLibrary, EntryPoint = "wrenMakeCallHandle", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr MakeCallHandle(IntPtr vm, [In] IntPtr signature);
 
         [DllImport(NativeLibrary, EntryPoint = "wrenCall", CallingConvention = CallingConvention.Cdecl)]
         public static extern WrenInterpretResult Call(IntPtr vm, IntPtr method);

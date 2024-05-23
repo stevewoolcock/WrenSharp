@@ -2423,19 +2423,6 @@
             <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
             <returns>The result of the interpret operation.</returns>
         </member>
-        <member name="M:WrenSharp.WrenVM.Interpret(System.String,System.Byte[],System.Boolean)">
-            <summary>
-            Runs Wren source (the contents of <paramref name="source"/>) in a new fiber, in the context of module <paramref name="module"/>.
-            If the resolved module is not found, a new module will be created.<para />
-            <paramref name="source"/> is expected to contain a null-terminated C-style string that is either ANSI or UTF8 encoded.<para />
-            For UTF8 encoding, is recommended that the string contain the UTF8 BOM (Byte Order Mark) at the beginning of the file, or Wren may fail
-            to parse the source string correctly.
-            </summary>
-            <param name="module">The name of the resolved module to run the source within.</param>
-            <param name="source">The raw bytes of Wren source to interpret.</param>
-            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
-            <returns>The result of the interpret operation.</returns>
-        </member>
         <member name="M:WrenSharp.WrenVM.Interpret(System.String,System.IntPtr,System.Boolean)">
             <summary>
             Runs Wren source (the contents of <paramref name="source"/>) in a new fiber, in the context of module <paramref name="module"/>.
@@ -2570,7 +2557,89 @@
             See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
             </summary>
             <param name="signature">The call signature.</param>
-            <returns></returns>
+            <returns>A <see cref="T:WrenSharp.WrenCallHandle"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.CreateMethodCallHandle(System.String,System.Int32)">
+            <summary>
+            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing a method call that can be used with the <see cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle,System.Boolean)"/>
+            and <see cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)"/> methods to call a Wren method from C#.<para />
+            This method generates the function call signature for you, given a method name and parameter count. For example:
+            <code>
+            paramCount = 1 -> name(_)
+            paramCount = 2 -> name(_,_)
+            paramCount = 3 -> name(_,_,_)
+            </code>
+            See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
+            </summary>
+            <param name="methodName">The name of the method.</param>
+            <param name="paramCount">The number of parameters.</param>
+            <returns>A <see cref="T:WrenSharp.WrenCallHandle"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.CreateGetterCallHandle(System.String)">
+            <summary>
+            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing a property getter call that can be used with the <see cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle,System.Boolean)"/>
+            and <see cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)"/> methods to call a Wren getter from C#.<para />
+            See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
+            </summary>
+            <param name="propertyName">The name of the property.</param>
+            <returns>A <see cref="T:WrenSharp.WrenCallHandle"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.CreateSetterCallHandle(System.String)">
+            <summary>
+            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing a property setter call that can be used with the <see cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle,System.Boolean)"/>
+            and <see cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)"/> methods to call a Wren setter from C#.<para />
+            See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
+            </summary>
+            <param name="propertyName">The name of the property.</param>
+            <returns>A <see cref="T:WrenSharp.WrenCallHandle"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.CreateOperatorPrefixCallHandle(System.String)">
+            <summary>
+            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing a prefix operator call that can be used with the <see cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle,System.Boolean)"/>
+            and <see cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)"/> methods to call a Wren prefix operator from C#.<para />
+            See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
+            </summary>
+            <param name="operatorName">The operator name (eg. "-", "+").</param>
+            <returns>A <see cref="T:WrenSharp.WrenCallHandle"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.CreateOperatorInfixCallHandle(System.String)">
+            <summary>
+            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing an infix operator call that can be used with the <see cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle,System.Boolean)"/>
+            and <see cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)"/> methods to call a Wren infix operator from C#.<para />
+            See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
+            </summary>
+            <param name="operatorName">The operator name (eg. "-", "+").</param>
+            <returns>A <see cref="T:WrenSharp.WrenCallHandle"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.CreateSubscriptGetCallHandle(System.Int32)">
+            <summary>
+            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing a subscript getter call that can be used with the <see cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle,System.Boolean)"/>
+            and <see cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)"/> methods to call a Wren method from C#.<para />
+            This method generates the subscript getter call signature for you, given a parameter count. For example:
+            <code>
+            paramCount = 1 -> [_]
+            paramCount = 2 -> [_,_]
+            paramCount = 3 -> [_,_,_]
+            </code>
+            See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
+            </summary>
+            <param name="paramCount">The number of parameters.</param>
+            <returns>A <see cref="T:WrenSharp.WrenCallHandle"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.CreateSubscriptSetCallHandle(System.Int32)">
+            <summary>
+            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing a subscript setter call that can be used with the <see cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle,System.Boolean)"/>
+            and <see cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle,WrenSharp.WrenCallHandle,System.Boolean)"/> methods to call a Wren method from C#.<para />
+            This method generates the subscript setter call signature for you, given a parameter count. For example:
+            <code>
+            paramCount = 1 -> [_]=(_)
+            paramCount = 2 -> [_,_]=(_)
+            paramCount = 3 -> [_,_,_]=(_)
+            </code>
+            See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
+            </summary>
+            <param name="paramCount">The number of parameters.</param>
+            <returns>A <see cref="T:WrenSharp.WrenCallHandle"/>.</returns>
         </member>
         <member name="M:WrenSharp.WrenVM.CreateFunction(System.String,System.ReadOnlySpan{System.Char},System.ReadOnlySpan{System.Char},System.Int32,System.Boolean)">
             <summary>
@@ -2649,7 +2718,7 @@
             <summary>
             Attemps to create a <see cref="T:WrenSharp.WrenHandle"/> from the value in <paramref name="variableName"/> in resolved module <paramref name="module"/>.
             The value of the variable is loaded into slot <paramref name="slot"/>, and the handle is created from the value in that slot.<para/>
-            Returns true if <paramref name="slot"/> is less than the number of slots and the variable exists.
+            Returns true if the variable exists.
             </summary>
             <param name="module">The module the variable resides in.</param>
             <param name="variableName">The name of the variable.</param>
