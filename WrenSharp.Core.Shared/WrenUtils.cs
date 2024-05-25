@@ -39,9 +39,17 @@ namespace WrenSharp
         /// </summary>
         /// <param name="signature">The call signature to scan.</param>
         /// <returns>The number of arugment tokens in <paramref name="signature"/>.</returns>
-        public static byte GetParameterCount(string signature)
+        public static int GetParameterCount(string signature) => GetParameterCount(signature.AsSpan());
+
+        /// <summary>
+        /// Scans a Wren call signature and returns the number of parameters it contains. This method does
+        /// not ensure the validity of the signature, only the number of argument tokens it contains.
+        /// </summary>
+        /// <param name="signature">The call signature to scan.</param>
+        /// <returns>The number of arugment tokens in <paramref name="signature"/>.</returns>
+        public static int GetParameterCount(ReadOnlySpan<char> signature)
         {
-            if (string.IsNullOrEmpty(signature))
+            if (signature.Length == 0)
                 return 0;
 
             // Search for the call token: either a '(' (function) or '[' (subscript)
@@ -81,7 +89,7 @@ namespace WrenSharp
 
             return paramCount;
         }
-        
+
         /// <summary>
         /// Creates a method signature from the input arguments.
         /// </summary>

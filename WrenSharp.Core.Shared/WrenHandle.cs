@@ -25,7 +25,7 @@ namespace WrenSharp
         /// Indicates if the handle is valid. A handle is valid if it has been created and not released.
         /// Once a handle is released, all <see cref="WrenHandle"/> values pointing to it will become invalid.
         /// </summary>
-        public bool IsValid => m_Handle != null && m_Handle.IsValid() && m_Version == m_Handle.Version && m_Ptr == m_Handle.Ptr;
+        public bool IsValid => m_Handle?.IsValid() == true && m_Version == m_Handle.Version && m_Ptr == m_Handle.Ptr;
 
         #endregion
 
@@ -39,7 +39,7 @@ namespace WrenSharp
         /// <summary>
         /// Releases the handle. Once released, the handle can no longer be used.
         /// </summary>
-        public void Dispose() => m_Handle.VM.ReleaseHandle(in this);
+        public void Dispose() => m_Handle?.VM.ReleaseHandle(in this);
 
         #region Object
 

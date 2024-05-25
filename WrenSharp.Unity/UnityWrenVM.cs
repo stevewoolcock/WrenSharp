@@ -11,7 +11,7 @@ namespace WrenSharp.Unity
     /// <summary>
     /// A WrenVM configured for use with the Unity game engine.
     /// </summary>
-    public sealed class UnityWrenVM : WrenVM
+    public sealed class UnityWrenVM : WrenVM, IWrenVMWithForeign
     {
         #region Static
 
@@ -27,7 +27,7 @@ namespace WrenSharp.Unity
 
         #endregion
 
-        private readonly ForeignLookup<WrenForeign> m_ForeignLookup = new ForeignLookup<WrenForeign>();
+        private readonly ForeignLookup<UnityWrenForeign> m_ForeignLookup = new ForeignLookup<UnityWrenForeign>();
 
         private readonly IWrenWriteOutput m_WriteOutput;
         private readonly IWrenErrorOutput m_ErrorOutput;
@@ -103,19 +103,14 @@ namespace WrenSharp.Unity
 
         #region Public API
 
-        /// <summary>
-        /// Gets the <see cref="WrenForeign"/> object for building foreign classes and methods.
-        /// </summary>
-        /// <param name="module">The Wren module name.</param>
-        /// <param name="cls">The Wren class name.</param>
-        /// <returns>The <see cref="WrenForeign"/> instance for the supplied class.</returns>
-        public WrenForeign Foreign(string module, string cls)
+        /// <inheritdoc/>
+        public IWrenForeign Foreign(string moduleName, string className)
         {
-            WrenForeign foreign = m_ForeignLookup.GetClass(module, cls);
+            UnityWrenForeign foreign = m_ForeignLookup.GetClass(moduleName, className);
             if (foreign == null)
             {
-                foreign = new WrenForeign(this);
-                m_ForeignLookup.AddClass(module, cls, foreign);
+                foreign = new UnityWrenForeign(this);
+                m_ForeignLookup.AddClass(moduleName, className, foreign);
             }
 
             return foreign;
@@ -249,7 +244,7 @@ namespace WrenSharp.Unity
         [AOT.MonoPInvokeCallback(typeof(WrenNativeFn.BindForeignMethod))]
         private static WrenForeignMethodData _BindForeignMethodFn(IntPtr vmPtr, string module, string cls, byte isStatic, string signature)
         {
-            WrenForeign foreign = GetVM<UnityWrenVM>(vmPtr).m_ForeignLookup.GetClass(module, cls);
+            UnityWrenForeign foreign = GetVM<UnityWrenVM>(vmPtr).m_ForeignLookup.GetClass(module, cls);
             if (foreign == null)
                 return WrenForeignMethodData.NotFound;
 
@@ -259,7 +254,7 @@ namespace WrenSharp.Unity
         [AOT.MonoPInvokeCallback(typeof(WrenNativeFn.BindForeignClass))]
         private static WrenForeignClassMethods _BindForeignClassFn(IntPtr vmPtr, string module, string cls)
         {
-            WrenForeign foreign = GetVM<UnityWrenVM>(vmPtr).m_ForeignLookup.GetClass(module, cls);
+            UnityWrenForeign foreign = GetVM<UnityWrenVM>(vmPtr).m_ForeignLookup.GetClass(module, cls);
             return foreign?.GetClassMethods() ?? default;
         }
 

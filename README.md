@@ -373,14 +373,14 @@ vm.SharedData.Remove(handle);
 
 
 ## Dynamic Functions
-WrenSharp provides an API for generating Wren functions on the fly that can be cached and called at any time. You supply an argument 'signature' and function body, and in turn receive a `WrenHandle` pointing to the compiled function. Now it is ready to be called from anywhere, at anytime.
+WrenSharp provides an API for generating Wren functions on the fly that can be cached and called at any time. You supply an argument signature and function body, and in turn receive a `WrenFn` wrapping the compiled function. The function can then be called from anywhere, at anytime.
 
 Here's an example:
 ```cs
-// Define a function and return a handle to the Wren Fn object that was created 
-// The handle can be stored and called again at any point in the future. The
-// function object lives as long as the handle remains allocated.
-WrenHandle dynamicFn = vm.CreateFunction(
+// Define a function, which returns a WrenFn value.
+// The WrenFn value can be stored and called again at any point in the future.
+// The function lives as long as the handle remains allocated.
+WrenFn dynamicFn = vm.CreateFunction(
     module: "main",                 // Compile in "main" module
     paramsSignature: "active, num", // Function has 2 parameters
     functionBody: @"
@@ -388,21 +388,22 @@ WrenHandle dynamicFn = vm.CreateFunction(
         return num * 2
     ");
 
-// If the function did not compile, the handle will be not be valid.
-// CreateFunction() can also be instructed to throw a WrenInterpretException in this case.
+// If the function did not compile, the WrenFn will be not be valid.
+// CreateFunction() can also be instructed to throw a WrenInterpretException.
 if (dynamicFn.IsValid)
 {
-    // Call the function via CreateFunctionCall()
-    WrenCall call = vm.CreateFunctionCall(
-        functionHandle: dynamicFn,  // The function we created above
-        argCount: 2                 // It requires 2 arguments
-    );
+    WrenCall call = dynamicFn.CreateCall();
     call.SetArg(0, true); // arg 0 (active)
     call.SetArg(1, 1234); // arg 1 (num)
     call.Call(out double returnValue);
     
     Console.WriteLine(returnValue); // Output: 2468
 }
+    
+// WrenFn implements IDisposable, which will release the underlying WrenHandle
+// to the function that was created when Dispose() is called.
+dynamicFn.Dispose();
+
 ```
 
 

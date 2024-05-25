@@ -15,6 +15,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Internal\Utf8StringBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Internal\WrenInternal.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IWrenErrorOutput.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IWrenVMWithForeign.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IWrenForeign.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IWrenModuleProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IWrenModuleResolver.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IWrenSource.cs" />
@@ -33,6 +35,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)WrenCall.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenCallHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Sources\WrenFileSource.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenFn.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenList.Ext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenMap.Ext.cs" />
@@ -41,7 +44,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)WrenSlots.Ext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenSlots.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenVM.Ext.cs" />
-    <Compile Include="..\WrenSharp.Core.Shared\WrenSlot.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenSlot.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenVMConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenError.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenExceptions.cs" />

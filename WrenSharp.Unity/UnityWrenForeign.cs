@@ -8,13 +8,13 @@ namespace WrenSharp.Unity
     /// <summary>
     /// A builder for binding Wren foreign classes and methods.
     /// </summary>
-    public sealed class WrenForeign
+    public sealed class UnityWrenForeign : IWrenForeign
     {
         //
         // Implementation notes:
         //
         // When using IL2CPP, marshalling p/invoke delegates through instances is not possible as there's no JIT
-        // available at runtime compile and perform the correct marshalling.
+        // available at runtime to compile and perform the correct marshalling.
         //
         // Unfortunately, this means that all p/invoke function pointers into managed code must point to static
         // methods (in Unity, they must also be annotated with the AOT.MonoPInvokeCallback attribute).
@@ -23,18 +23,11 @@ namespace WrenSharp.Unity
         // to the Wren source that attaches a uint16 symbol to foreign methods. The symbol is assigned on the managed
         // side (in this class, WrenForeign) and passed through as an argument when Wren calls the function pointer.
         //
-        // This means that we can place every foreign method delegate into a static array and have Wren foriegn
+        // This means that we can place every foreign method delegate into a static array and have Wren foreign
         // methods call to a static managed method which can use the symbol to lookup the managed delegate.
         //
         // This class provides the same public API as the standard WrenForeign.
         //
-
-        public delegate void Allocator(UnityWrenVM vm);
-        public delegate void Allocator<T>(UnityWrenVM vm, ref T data) where T : unmanaged;
-        public delegate void AllocatorCall(WrenCallContext call);
-        public delegate void AllocatorCall<T>(WrenCallContext call, ref T data) where T : unmanaged;
-        public delegate void Finalizer<T>(ref T data) where T : unmanaged;
-        public delegate void Finalizer(IntPtr data);
 
         // Internal class used to manage a collection of delegates for foreign method binding
         // Each delegate is given a symbol corresponding to an index within an array
@@ -122,7 +115,7 @@ namespace WrenSharp.Unity
         private Dictionary<string, ushort> m_StaticMethods;
         private Dictionary<string, ushort> m_InstanceMethods;
 
-        internal WrenForeign(UnityWrenVM vm)
+        internal UnityWrenForeign(UnityWrenVM vm)
         {
             m_Vm = vm;
         }
@@ -156,43 +149,22 @@ namespace WrenSharp.Unity
 
         #region Public API
 
-        /// <summary>
-        /// Sets the allocator function called when an instance of this foreign class is created from a Wren program.<para />
-        /// This is a bare allocator, and does not actually create any foreign class data. To do so, you must call one of the foreign instance constructor API methods:<para/>
-        /// <see cref="WrenVM.SetSlotNewForeign(int, int, ulong)"/><br/>
-        /// <see cref="WrenVM.SetSlotNewForeign{T}(int, int, in T)"/>
-        /// </summary>
-        /// <param name="allocator">The allocator delegate to call when an instance is created. Use this create the foriegn data and to set the initial state of the memory.</param>
-        /// <returns>A reference to this <see cref="WrenForeign"/> instance.</returns>
-        public WrenForeign Allocate(Allocator allocator)
+        /// <inheritdoc/>
+        public IWrenForeign Allocate(IWrenForeign.Allocator allocator)
         {
             m_Allocator = _methodTable.Add(() => allocator(m_Vm));
             return this;
         }
 
-        /// <summary>
-        /// Sets the allocator function called when an instance of this foreign class is created from a Wren program.<para />
-        /// This is a bare allocator, and does not actually create any foreign class data. To do so, you must call one of the foreign instance constructor API methods:<para/>
-        /// <see cref="WrenVM.SetSlotNewForeign(int, int, ulong)"/><br/>
-        /// <see cref="WrenVM.SetSlotNewForeign{T}(int, int, in T)"/>
-        /// </summary>
-        /// <param name="allocator">The allocator delegate to call when an instance is created. Use this create the foriegn data and to set the initial state of the memory.</param>
-        /// <param name="paramCount">The number of parameters expected in the constructor. Note that it is not possible to know which constructor was invoked on the Wren
-        /// side from within the allocator. This parameter defaults to <see cref="WrenVM.MaxCallParameters"/>.</param>
-        /// <returns>A reference to this <see cref="WrenForeign"/> instance.</returns>
-        public WrenForeign Allocate(AllocatorCall allocator, byte paramCount = WrenVM.MaxCallParameters)
+        /// <inheritdoc/>
+        public IWrenForeign Allocate(IWrenForeign.AllocatorCall allocator, byte paramCount = WrenVM.MaxCallParameters)
         {
             m_Allocator = _methodTable.Add(() => allocator(new WrenCallContext(m_Vm, WrenMethodType.Allocator, paramCount)));
             return this;
         }
 
-        /// <summary>
-        /// Sets the allocator function called when an instance of this foreign class is created from a Wren program.<para />
-        /// This allocator creates allocates the memory to hold a value of <typeparamref name="T"/> and places an initialized value
-        /// of <typeparamref name="T"/> at the address of the newly allocated memory, ready to be used.
-        /// </summary>
-        /// <returns>A reference to this <see cref="WrenForeign"/> instance.</returns>
-        public unsafe WrenForeign Allocate<T>() where T : unmanaged
+        /// <inheritdoc/>
+        public unsafe IWrenForeign Allocate<T>() where T : unmanaged
         {
             m_Allocator = _methodTable.Add(() =>
             {
@@ -202,14 +174,8 @@ namespace WrenSharp.Unity
             return this;
         }
 
-        /// <summary>
-        /// Sets the allocator function called when an instance of this foreign class is created from a Wren program.<para />
-        /// This allocator creates allocates the memory to hold a value of <typeparamref name="T"/> and places an initialized value
-        /// of <typeparamref name="T"/> at the address of the newly allocated memory, ready to be used.
-        /// </summary>
-        /// <param name="allocator">The allocator delegate to call when an instance is created. Use this to set the initial state of the memory.</param>
-        /// <returns>A reference to this <see cref="WrenForeign"/> instance.</returns>
-        public unsafe WrenForeign Allocate<T>(Allocator<T> allocator) where T : unmanaged
+        /// <inheritdoc/>
+        public unsafe IWrenForeign Allocate<T>(IWrenForeign.Allocator<T> allocator) where T : unmanaged
         {
             m_Allocator = _methodTable.Add(() =>
             {
@@ -220,16 +186,8 @@ namespace WrenSharp.Unity
             return this;
         }
 
-        /// <summary>
-        /// Sets the allocator function called when an instance of this foreign class is created from a Wren program.<para />
-        /// This allocator creates allocates the memory to hold a value of <typeparamref name="T"/> and places an initialized value
-        /// of <typeparamref name="T"/> at the address of the newly allocated memory, ready to be used.
-        /// </summary>
-        /// <param name="allocator">The allocator delegate to call when an instance is created. Use this to set the initial state of the memory.</param>
-        /// <param name="paramCount">The number of parameters expected in the constructor. Note that it is not possible to know which constructor was invoked on the Wren
-        /// side from within the allocator. This parameter defaults to <see cref="WrenVM.MaxCallParameters"/>.</param>
-        /// <returns>A reference to this <see cref="WrenForeign"/> instance.</returns>
-        public unsafe WrenForeign Allocate<T>(AllocatorCall<T> allocator, byte paramCount = WrenVM.MaxCallParameters) where T : unmanaged
+        /// <inheritdoc/>
+        public unsafe IWrenForeign Allocate<T>(IWrenForeign.AllocatorCall<T> allocator, byte paramCount = WrenVM.MaxCallParameters) where T : unmanaged
         {
             m_Allocator = _methodTable.Add(() =>
             {
@@ -240,49 +198,29 @@ namespace WrenSharp.Unity
             return this;
         }
 
-        /// <summary>
-        /// Sets the finalizer function called when an instance of this foreign class is cleaned up by the Wren garbage collector.<para />
-        /// Use this method to free unmanaged memory that may have been allocated within the class's allocator or in any of its methods.
-        /// </summary>
-        /// <param name="finalizer">The finalizer delegate to call when the instance is garbage collected.</param>
-        /// <returns>A reference to this <see cref="WrenForeign"/> instance.</returns>
-        public WrenForeign Finalize(Finalizer finalizer)
+        /// <inheritdoc/>
+        public IWrenForeign Finalize(IWrenForeign.Finalizer finalizer)
         {
             m_Finalizer = _finalizerTable.Add((data) => finalizer(data));
             return this;
         }
 
-        /// <summary>
-        /// Sets the finalizer function called when an instance of this foreign class is cleaned up by the Wren garbage collector.<para />
-        /// Use this method to free unmanaged memory that may have been allocated within the class's allocator or in any of its methods.
-        /// </summary>
-        /// <param name="finalizer">The finalizer delegate to call when the instance is garbage collected.</param>
-        /// <returns>A reference to this <see cref="WrenForeign"/> instance.</returns>
-        public unsafe WrenForeign Finalize<T>(Finalizer<T> finalizer) where T : unmanaged
+        /// <inheritdoc/>
+        public unsafe IWrenForeign Finalize<T>(IWrenForeign.Finalizer<T> finalizer) where T : unmanaged
         {
             m_Finalizer = _finalizerTable.Add((data) => finalizer(ref *(T*)data));
             return this;
         }
 
-        /// <summary>
-        /// Sets the delegate to be invoked when the foreign instance method <paramref name="signature"/> is called for this class.
-        /// </summary>
-        /// <param name="signature">The signature of the method.</param>
-        /// <param name="method">The method delegate to invoke when called.</param>
-        /// <returns>A reference to this <see cref="WrenForeign"/> instance.</returns>
-        public WrenForeign Instance(string signature, WrenForeignMethod method)
+        /// <inheritdoc/>
+        public IWrenForeign Instance(string signature, WrenForeignMethod method)
         {
             InternalAddMethod(WrenMethodType.Instance, signature, method);
             return this;
         }
 
-        /// <summary>
-        /// Sets the delegate to be invoked when the foreign static method <paramref name="signature"/> is called for this class.
-        /// </summary>
-        /// <param name="signature">The signature of the method.</param>
-        /// <param name="method">The method delegate to invoke when called.</param>
-        /// <returns>A reference to this <see cref="WrenForeign"/> instance.</returns>
-        public WrenForeign Static(string signature, WrenForeignMethod method)
+        /// <inheritdoc/>
+        public IWrenForeign Static(string signature, WrenForeignMethod method)
         {
             InternalAddMethod(WrenMethodType.Static, signature, method);
             return this;
@@ -296,7 +234,7 @@ namespace WrenSharp.Unity
             if (paramCount == WrenVM.MaxCallParameters)
                 throw new ArgumentException("Signature exceeds maximum parameter count.");
 
-            var symbol = _methodTable.Add(() => method(new WrenCallContext(m_Vm, methodType, paramCount)));
+            var symbol = _methodTable.Add(() => method(new WrenCallContext(m_Vm, methodType, (byte)paramCount)));
 
             if (methodType == WrenMethodType.Static)
             {

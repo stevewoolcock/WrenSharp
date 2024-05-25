@@ -2,7 +2,7 @@
 
 namespace WrenSharp
 {
-    public class WrenSharpVM : WrenVM
+    public class WrenSharpVM : WrenVM, IWrenVMWithForeign
     {
         private readonly ForeignLookup<WrenForeign> m_ForeignLookup = new ForeignLookup<WrenForeign>();
 
@@ -72,13 +72,8 @@ namespace WrenSharp
 
         #region Public API
 
-        /// <summary>
-        /// Gets the <see cref="WrenForeign"/> object for building foreign classes and methods.
-        /// </summary>
-        /// <param name="moduleName">The Wren module name.</param>
-        /// <param name="className">The Wren class name.</param>
-        /// <returns>The <see cref="WrenForeign"/> instance for the supplied class.</returns>
-        public WrenForeign Foreign(string moduleName, string className)
+        /// <inheritdoc/>
+        public IWrenForeign Foreign(string moduleName, string className)
         {
             WrenForeign foreign = m_ForeignLookup.GetClass(moduleName, className);
             if (foreign == null)

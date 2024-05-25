@@ -30,6 +30,11 @@ namespace WrenSharp
         /// </summary>
         public int ParamCount => m_CallHandle.ParamCount;
 
+        /// <summary>
+        /// Returns true if the call is valid and can be invoked.
+        /// </summary>
+        public bool IsValid => m_CallHandle.IsValid;
+
         #endregion
 
 #if WRENSHARP_EXT
@@ -109,7 +114,7 @@ namespace WrenSharp
         /// <param name="arg">The argument index.</param>
         /// <returns>The slot for <paramref name="arg"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int ArgSlot(int arg) => arg + 1;
+        public static int ArgSlot(int arg) => arg + 1;
 
         /// <summary>
         /// Sets the value of argument <paramref name="arg"/> to a boolean.

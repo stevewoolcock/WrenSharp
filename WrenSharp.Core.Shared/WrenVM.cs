@@ -630,7 +630,7 @@ namespace WrenSharp
                 throw new ArgumentException($"Signature exceeds maximum parameter count of {MaxCallParameters}.");
 
             var ptr = Wren.MakeCallHandle(m_Ptr, signature);
-            return new WrenCallHandle(AcquireHandle(ptr), paramCount);
+            return new WrenCallHandle(AcquireHandle(ptr), (byte)paramCount);
         }
 
         /// <summary>
@@ -871,60 +871,85 @@ namespace WrenSharp
         /// <param name="slot">The slot index to load the function into and create the handle from.</param>
         /// <param name="throwOnFailure">If true, a <see cref="WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
         /// <returns>A handle to the newly created function.</returns>
-        public WrenHandle CreateFunction(string module, ReadOnlySpan<char> paramsSignature, ReadOnlySpan<char> functionBody, int slot = 0, bool throwOnFailure = false)
+        public WrenFn CreateFunction(string module, ReadOnlySpan<char> paramsSignature, ReadOnlySpan<char> functionBody, int slot = 0, bool throwOnFailure = false)
         {
             // This method works by interpreting dynamically created Wren source that assigns
-            // a new Wren function to a variable, then creating a handle to that variable. This
-            // is done in the internal WrenSharp module to hide this functionality.
+            // a new Wren function to a variable, then creating a handle to that variable.
             const string VarNameBase = "ws__dynFn__";
+
+            int paramCount = 0;
+            if (paramsSignature.Length > 0)
+            {
+                paramCount++;
+
+                for (int i = 0, len = paramsSignature.Length; i < len; i++)
+                {
+                    if (paramsSignature[i] == ',')
+                    {
+                        paramCount++;
+                    }
+                }
+
+                if (paramCount > MaxCallParameters)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(paramsSignature), $"Max function arguments are {MaxCallParameters}");
+                }
+            }
 
             m_CreateFunctionDepth++;
             try
             {
+                // Function is reused whenever possible, however the depth variable accounts for the
+                // possibility that a dynamically created function may call back into C# and in turn
+                // attempt to create *another* dynamic function, which would clobber the caller.
+                // A new variable will be created for each nested call to CreateFunction.
                 string varName = m_CreateFunctionDepth > 1
                     ? $"{VarNameBase}{m_CreateFunctionDepth}"
                     : VarNameBase;
 
-                // Ensure the target variable exists so we can assign it
-                // Unfortunately we need to look this up by name every time, as Wren does not provide
-                // a way to get a handle to a *variable*, only values/objects.
+                // Ensure a UTF8 string buffer is created that will be large enough to hold the function
+                // definition. We allocate slightly more than required here, and the length accounts for
+                // C# UTF16 chars.
+                int len = 24 + varName.Length + paramsSignature.Length + functionBody.Length * sizeof(char);
+                using Utf8StringBuilder sb = Utf8StringBuilder.Create(len);
+
+                // A variable cannot be declared twice, so we first have to check that it exists.
+                // If it does not, it wil be declared as part of the Interpret call.
+                //
+                // Unfortunately we need to look this up by name every time a function is created, as
+                // Wren does not provide a way to get a handle to a *variable*, only values/objects.
                 if (!HasModule(module) || !HasVariable(module, varName))
                 {
-                    using Utf8StringBuilder sb = Utf8StringBuilder.Create(varName.Length + 5);
                     sb.Append("var ");
-                    sb.Append(varName);
-                    sb.Append('\0');
-
-                    var result = Interpret(module, sb.AsSpan(), throwOnFailure);
-                    if (result != WrenInterpretResult.Success)
-                        return default;
                 }
 
+                // varname = Fn.new {
+                sb.Append(varName);
+                sb.Append(" = Fn.new {");
+
+                // | params |
+                if (paramsSignature.Length > 0)
                 {
-                    int len = 17 + varName.Length + paramsSignature.Length + functionBody.Length * sizeof(char);
-                    using Utf8StringBuilder sb = Utf8StringBuilder.Create(len);
-                    sb.Append(varName);
-                    sb.Append(" = Fn.new {");
-
-                    if (paramsSignature.Length > 0)
-                    {
-                        sb.Append('|');
-                        sb.Append(paramsSignature);
-                        sb.Append('|');
-                    }
-
-                    sb.Append('\n');
-                    sb.Append(functionBody);
-                    sb.Append("\n}");
-                    sb.Append('\0');
-
-                    var result = Interpret(module, sb.AsSpan(), throwOnFailure);
-                    if (result != WrenInterpretResult.Success)
-                        return default;
+                    sb.Append('|');
+                    sb.Append(paramsSignature);
+                    sb.Append('|');
                 }
+
+                //   .. functionBody ..
+                // }
+                sb.Append('\n');
+                sb.Append(functionBody);
+                sb.Append("\n}");
+                sb.Append('\0');
+
+                WrenInterpretResult result = Interpret(module, sb.AsSpan(), throwOnFailure);
+                if (result != WrenInterpretResult.Success)
+                    return default;
 
                 LoadVariable(module, varName, slot);
-                return CreateHandle(slot);
+                WrenHandle fnHandle = CreateHandle(slot);
+
+                return new WrenFn(this, module, fnHandle, (byte)paramCount);
             }
             finally
             {
@@ -969,14 +994,13 @@ namespace WrenSharp
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="paramCount"/> is greater than <see cref="MaxCallParameters"/>.</exception>
         public WrenCallHandle GetFunctionCallHandle(int paramCount)
         {
-            if (paramCount > MaxCallParameters)
-                throw new ArgumentOutOfRangeException(nameof(paramCount), "Max call parameter count is " + MaxCallParameters);
+            if (paramCount < 0 || paramCount > MaxCallParameters)
+                throw new ArgumentOutOfRangeException(nameof(paramCount), $"Call parameter count must be between zero and {MaxCallParameters}");
 
             WrenCallHandle callHandle = m_FnCallHandles[paramCount];
             if (!callHandle.IsValid)
             {
-                string sig = WrenUtils.MethodSignature("call", paramCount);
-                callHandle = CreateCallHandle(sig);
+                callHandle = CreateMethodCallHandle("call", paramCount);
                 m_FnCallHandles[paramCount] = callHandle;
             }
 

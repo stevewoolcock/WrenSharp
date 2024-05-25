@@ -228,14 +228,14 @@ namespace WrenSharp.Tests
         [Fact]
         public void CreateFunction_Pass()
         {
-            var fnHandle = m_VM.CreateFunction("main", "arg1, arg2", @"
+            var fn = m_VM.CreateFunction("main", "arg1, arg2", @"
                 System.print(""arg1=%(arg1)"")
                 System.print(""arg2=%(arg2)"")
                 return arg2 * 2
             ",
             throwOnFailure: true);
 
-            var call = m_VM.CreateFunctionCall(fnHandle, 2);
+            var call = fn.CreateCall();
             call.SetArg(0, true);
             call.SetArg(1, 1234);
             call.Call(throwOnFailure: true);

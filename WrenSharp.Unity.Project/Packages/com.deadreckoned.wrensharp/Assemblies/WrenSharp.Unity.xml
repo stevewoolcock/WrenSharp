@@ -48,6 +48,38 @@
             Prefix used to print messages from Wren as errors to the Unity log and console.
             </summary>
         </member>
+        <member name="T:WrenSharp.Unity.UnityWrenForeign">
+            <summary>
+            A builder for binding Wren foreign classes and methods.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.Unity.UnityWrenForeign.Allocate(WrenSharp.IWrenForeign.Allocator)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.Unity.UnityWrenForeign.Allocate(WrenSharp.IWrenForeign.AllocatorCall,System.Byte)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.Unity.UnityWrenForeign.Allocate``1">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.Unity.UnityWrenForeign.Allocate``1(WrenSharp.IWrenForeign.Allocator{``0})">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.Unity.UnityWrenForeign.Allocate``1(WrenSharp.IWrenForeign.AllocatorCall{``0},System.Byte)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.Unity.UnityWrenForeign.Finalize(WrenSharp.IWrenForeign.Finalizer)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.Unity.UnityWrenForeign.Finalize``1(WrenSharp.IWrenForeign.Finalizer{``0})">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.Unity.UnityWrenForeign.Instance(System.String,WrenSharp.WrenForeignMethod)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.Unity.UnityWrenForeign.Static(System.String,WrenSharp.WrenForeignMethod)">
+            <inheritdoc/>
+        </member>
         <member name="T:WrenSharp.Unity.UnityWrenVM">
             <summary>
             A WrenVM configured for use with the Unity game engine.
@@ -68,12 +100,7 @@
             <inheritdoc/>
         </member>
         <member name="M:WrenSharp.Unity.UnityWrenVM.Foreign(System.String,System.String)">
-            <summary>
-            Gets the <see cref="T:WrenSharp.Unity.WrenForeign"/> object for building foreign classes and methods.
-            </summary>
-            <param name="module">The Wren module name.</param>
-            <param name="cls">The Wren class name.</param>
-            <returns>The <see cref="T:WrenSharp.Unity.WrenForeign"/> instance for the supplied class.</returns>
+            <inheritdoc/>
         </member>
         <member name="M:WrenSharp.Unity.UnityWrenVM.Interpret(System.String,UnityEngine.TextAsset,System.Boolean)">
             <summary>
@@ -111,93 +138,6 @@
             Called after Wren interprets source or a direct call is made.
             </summary>
             <param name="result">The result of the interpretation or call.</param>
-        </member>
-        <member name="T:WrenSharp.Unity.WrenForeign">
-            <summary>
-            A builder for binding Wren foreign classes and methods.
-            </summary>
-        </member>
-        <member name="M:WrenSharp.Unity.WrenForeign.Allocate(WrenSharp.Unity.WrenForeign.Allocator)">
-            <summary>
-            Sets the allocator function called when an instance of this foreign class is created from a Wren program.<para />
-            This is a bare allocator, and does not actually create any foreign class data. To do so, you must call one of the foreign instance constructor API methods:<para/>
-            <see cref="M:WrenSharp.WrenVM.SetSlotNewForeign(System.Int32,System.Int32,System.UInt64)"/><br/>
-            <see cref="M:WrenSharp.WrenVM.SetSlotNewForeign``1(System.Int32,System.Int32,``0@)"/>
-            </summary>
-            <param name="allocator">The allocator delegate to call when an instance is created. Use this create the foriegn data and to set the initial state of the memory.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.Unity.WrenForeign"/> instance.</returns>
-        </member>
-        <member name="M:WrenSharp.Unity.WrenForeign.Allocate(WrenSharp.Unity.WrenForeign.AllocatorCall,System.Byte)">
-            <summary>
-            Sets the allocator function called when an instance of this foreign class is created from a Wren program.<para />
-            This is a bare allocator, and does not actually create any foreign class data. To do so, you must call one of the foreign instance constructor API methods:<para/>
-            <see cref="M:WrenSharp.WrenVM.SetSlotNewForeign(System.Int32,System.Int32,System.UInt64)"/><br/>
-            <see cref="M:WrenSharp.WrenVM.SetSlotNewForeign``1(System.Int32,System.Int32,``0@)"/>
-            </summary>
-            <param name="allocator">The allocator delegate to call when an instance is created. Use this create the foriegn data and to set the initial state of the memory.</param>
-            <param name="paramCount">The number of parameters expected in the constructor. Note that it is not possible to know which constructor was invoked on the Wren
-            side from within the allocator. This parameter defaults to <see cref="F:WrenSharp.WrenVM.MaxCallParameters"/>.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.Unity.WrenForeign"/> instance.</returns>
-        </member>
-        <member name="M:WrenSharp.Unity.WrenForeign.Allocate``1">
-            <summary>
-            Sets the allocator function called when an instance of this foreign class is created from a Wren program.<para />
-            This allocator creates allocates the memory to hold a value of <typeparamref name="T"/> and places an initialized value
-            of <typeparamref name="T"/> at the address of the newly allocated memory, ready to be used.
-            </summary>
-            <returns>A reference to this <see cref="T:WrenSharp.Unity.WrenForeign"/> instance.</returns>
-        </member>
-        <member name="M:WrenSharp.Unity.WrenForeign.Allocate``1(WrenSharp.Unity.WrenForeign.Allocator{``0})">
-            <summary>
-            Sets the allocator function called when an instance of this foreign class is created from a Wren program.<para />
-            This allocator creates allocates the memory to hold a value of <typeparamref name="T"/> and places an initialized value
-            of <typeparamref name="T"/> at the address of the newly allocated memory, ready to be used.
-            </summary>
-            <param name="allocator">The allocator delegate to call when an instance is created. Use this to set the initial state of the memory.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.Unity.WrenForeign"/> instance.</returns>
-        </member>
-        <member name="M:WrenSharp.Unity.WrenForeign.Allocate``1(WrenSharp.Unity.WrenForeign.AllocatorCall{``0},System.Byte)">
-            <summary>
-            Sets the allocator function called when an instance of this foreign class is created from a Wren program.<para />
-            This allocator creates allocates the memory to hold a value of <typeparamref name="T"/> and places an initialized value
-            of <typeparamref name="T"/> at the address of the newly allocated memory, ready to be used.
-            </summary>
-            <param name="allocator">The allocator delegate to call when an instance is created. Use this to set the initial state of the memory.</param>
-            <param name="paramCount">The number of parameters expected in the constructor. Note that it is not possible to know which constructor was invoked on the Wren
-            side from within the allocator. This parameter defaults to <see cref="F:WrenSharp.WrenVM.MaxCallParameters"/>.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.Unity.WrenForeign"/> instance.</returns>
-        </member>
-        <member name="M:WrenSharp.Unity.WrenForeign.Finalize(WrenSharp.Unity.WrenForeign.Finalizer)">
-            <summary>
-            Sets the finalizer function called when an instance of this foreign class is cleaned up by the Wren garbage collector.<para />
-            Use this method to free unmanaged memory that may have been allocated within the class's allocator or in any of its methods.
-            </summary>
-            <param name="finalizer">The finalizer delegate to call when the instance is garbage collected.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.Unity.WrenForeign"/> instance.</returns>
-        </member>
-        <member name="M:WrenSharp.Unity.WrenForeign.Finalize``1(WrenSharp.Unity.WrenForeign.Finalizer{``0})">
-            <summary>
-            Sets the finalizer function called when an instance of this foreign class is cleaned up by the Wren garbage collector.<para />
-            Use this method to free unmanaged memory that may have been allocated within the class's allocator or in any of its methods.
-            </summary>
-            <param name="finalizer">The finalizer delegate to call when the instance is garbage collected.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.Unity.WrenForeign"/> instance.</returns>
-        </member>
-        <member name="M:WrenSharp.Unity.WrenForeign.Instance(System.String,WrenSharp.WrenForeignMethod)">
-            <summary>
-            Sets the delegate to be invoked when the foreign instance method <paramref name="signature"/> is called for this class.
-            </summary>
-            <param name="signature">The signature of the method.</param>
-            <param name="method">The method delegate to invoke when called.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.Unity.WrenForeign"/> instance.</returns>
-        </member>
-        <member name="M:WrenSharp.Unity.WrenForeign.Static(System.String,WrenSharp.WrenForeignMethod)">
-            <summary>
-            Sets the delegate to be invoked when the foreign static method <paramref name="signature"/> is called for this class.
-            </summary>
-            <param name="signature">The signature of the method.</param>
-            <param name="method">The method delegate to invoke when called.</param>
-            <returns>A reference to this <see cref="T:WrenSharp.Unity.WrenForeign"/> instance.</returns>
         </member>
         <member name="T:WrenSharp.WrenVMConfiguration">
             <summary>
@@ -507,6 +447,107 @@
             signature.
             </summary>
         </member>
+        <member name="T:WrenSharp.IWrenVMWithForeign">
+            <summary>
+            An interface describing the contact that must be implemented by <see cref="T:WrenSharp.WrenVM"/> types
+            that provide access to <see cref="T:WrenSharp.IWrenForeign"/> instances.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.IWrenVMWithForeign.Foreign(System.String,System.String)">
+            <summary>
+            Gets an <see cref="T:WrenSharp.IWrenForeign"/> object for building foreign classes and methods.
+            </summary>
+            <param name="moduleName">The Wren module name.</param>
+            <param name="className">The Wren class name.</param>
+            <returns>The <see cref="T:WrenSharp.IWrenForeign"/> instance for the supplied class.</returns>
+        </member>
+        <member name="T:WrenSharp.IWrenForeign">
+            <summary>
+            An interface describing the contract that must be implemented by the Wren foreign class builders.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.IWrenForeign.Allocate(WrenSharp.IWrenForeign.Allocator)">
+            <summary>
+            Sets the allocator function called when an instance of this foreign class is created from a Wren program.<para />
+            This is a bare allocator, and does not actually create any foreign class data. To do so, you must call one of the foreign instance constructor API methods:<para/>
+            <see cref="M:WrenSharp.WrenVM.SetSlotNewForeign(System.Int32,System.Int32,System.UInt64)"/><br/>
+            <see cref="M:WrenSharp.WrenVM.SetSlotNewForeign``1(System.Int32,System.Int32,``0@)"/>
+            </summary>
+            <param name="allocator">The allocator delegate to call when an instance is created. Use this create the foriegn data and to set the initial state of the memory.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.IWrenForeign"/> instance.</returns>
+        </member>
+        <member name="M:WrenSharp.IWrenForeign.Allocate(WrenSharp.IWrenForeign.AllocatorCall,System.Byte)">
+            <summary>
+            Sets the allocator function called when an instance of this foreign class is created from a Wren program.<para />
+            This is a bare allocator, and does not actually create any foreign class data. To do so, you must call one of the foreign instance constructor API methods:<para/>
+            <see cref="M:WrenSharp.WrenVM.SetSlotNewForeign(System.Int32,System.Int32,System.UInt64)"/><br/>
+            <see cref="M:WrenSharp.WrenVM.SetSlotNewForeign``1(System.Int32,System.Int32,``0@)"/>
+            </summary>
+            <param name="allocator">The allocator delegate to call when an instance is created. Use this create the foriegn data and to set the initial state of the memory.</param>
+            <param name="paramCount">The number of parameters expected in the constructor. Note that it is not possible to know which constructor was invoked on the Wren
+            side from within the allocator. This parameter defaults to <see cref="F:WrenSharp.WrenVM.MaxCallParameters"/>.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.IWrenForeign"/> instance.</returns>
+        </member>
+        <member name="M:WrenSharp.IWrenForeign.Allocate``1">
+            <summary>
+            Sets the allocator function called when an instance of this foreign class is created from a Wren program.<para />
+            This allocator creates allocates the memory to hold a value of <typeparamref name="T"/> and places an initialized value
+            of <typeparamref name="T"/> at the address of the newly allocated memory, ready to be used.
+            </summary>
+            <returns>A reference to this <see cref="T:WrenSharp.IWrenForeign"/> instance.</returns>
+        </member>
+        <member name="M:WrenSharp.IWrenForeign.Allocate``1(WrenSharp.IWrenForeign.Allocator{``0})">
+            <summary>
+            Sets the allocator function called when an instance of this foreign class is created from a Wren program.<para />
+            This allocator creates allocates the memory to hold a value of <typeparamref name="T"/> and places an initialized value
+            of <typeparamref name="T"/> at the address of the newly allocated memory, ready to be used.
+            </summary>
+            <param name="allocator">The allocator delegate to call when an instance is created. Use this to set the initial state of the memory.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.IWrenForeign"/> instance.</returns>
+        </member>
+        <member name="M:WrenSharp.IWrenForeign.Allocate``1(WrenSharp.IWrenForeign.AllocatorCall{``0},System.Byte)">
+            <summary>
+            Sets the allocator function called when an instance of this foreign class is created from a Wren program.<para />
+            This allocator creates allocates the memory to hold a value of <typeparamref name="T"/> and places an initialized value
+            of <typeparamref name="T"/> at the address of the newly allocated memory, ready to be used.
+            </summary>
+            <param name="allocator">The allocator delegate to call when an instance is created. Use this to set the initial state of the memory.</param>
+            <param name="paramCount">The number of parameters expected in the constructor. Note that it is not possible to know which constructor was invoked on the Wren
+            side from within the allocator. This parameter defaults to <see cref="F:WrenSharp.WrenVM.MaxCallParameters"/>.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.IWrenForeign"/> instance.</returns>
+        </member>
+        <member name="M:WrenSharp.IWrenForeign.Finalize(WrenSharp.IWrenForeign.Finalizer)">
+            <summary>
+            Sets the finalizer function called when an instance of this foreign class is cleaned up by the Wren garbage collector.<para />
+            Use this method to free unmanaged memory that may have been allocated within the class's allocator or in any of its methods.
+            </summary>
+            <param name="finalizer">The finalizer delegate to call when the instance is garbage collected.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.IWrenForeign"/> instance.</returns>
+        </member>
+        <member name="M:WrenSharp.IWrenForeign.Finalize``1(WrenSharp.IWrenForeign.Finalizer{``0})">
+            <summary>
+            Sets the finalizer function called when an instance of this foreign class is cleaned up by the Wren garbage collector.<para />
+            Use this method to free unmanaged memory that may have been allocated within the class's allocator or in any of its methods.
+            </summary>
+            <param name="finalizer">The finalizer delegate to call when the instance is garbage collected.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.IWrenForeign"/> instance.</returns>
+        </member>
+        <member name="M:WrenSharp.IWrenForeign.Instance(System.String,WrenSharp.WrenForeignMethod)">
+            <summary>
+            Sets the delegate to be invoked when the foreign instance method <paramref name="signature"/> is called for this class.
+            </summary>
+            <param name="signature">The signature of the method.</param>
+            <param name="method">The method delegate to invoke when called.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.IWrenForeign"/> instance.</returns>
+        </member>
+        <member name="M:WrenSharp.IWrenForeign.Static(System.String,WrenSharp.WrenForeignMethod)">
+            <summary>
+            Sets the delegate to be invoked when the foreign static method <paramref name="signature"/> is called for this class.
+            </summary>
+            <param name="signature">The signature of the method.</param>
+            <param name="method">The method delegate to invoke when called.</param>
+            <returns>A reference to this <see cref="T:WrenSharp.IWrenForeign"/> instance.</returns>
+        </member>
         <member name="T:WrenSharp.IWrenModuleProvider">
             <summary>
             An interface for implementing module importing functionality for a <see cref="T:WrenSharp.WrenVM"/>.
@@ -776,6 +817,11 @@
         <member name="P:WrenSharp.WrenCall.ParamCount">
             <summary>
             The number of parameters required by the call.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenCall.IsValid">
+            <summary>
+            Returns true if the call is valid and can be invoked.
             </summary>
         </member>
         <member name="M:WrenSharp.WrenCall.Dispose">
@@ -1065,6 +1111,70 @@
             Releases the in-memory buffer containing the contents of the file, if the file has previously
             been loaded. Otherwise, calling this method does nothing.
             </summary>
+        </member>
+        <member name="T:WrenSharp.WrenFn">
+            <summary>
+            Represents a dynamic Wren function created via <see cref="M:WrenSharp.WrenVM.CreateFunctionCall(WrenSharp.WrenHandle,System.Int32)"/>.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenFn.VM">
+            <summary>
+            The <see cref="T:WrenSharp.WrenVM"/> the function was created with.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenFn.Module">
+            <summary>
+            The name of the module the function was created within.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenFn.Handle">
+            <summary>
+            The <see cref="T:WrenSharp.WrenHandle"/> for the Wren Fn instance.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenFn.ParamCount">
+            <summary>
+            The parameter count of the function.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenFn.IsValid">
+            <summary>
+            Returns true if the function handle is valid.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.WrenFn.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenFn.CreateCall">
+            <summary>
+            Iniitlaizes a <see cref="T:WrenSharp.WrenCall"/> for the function.
+            </summary>
+            <returns>A <see cref="T:WrenSharp.WrenCall"/> value for the function.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenFn.CreateCall(System.Boolean)">
+            <summary>
+            Iniitlaizes a <see cref="T:WrenSharp.WrenCall"/> for the function.
+            </summary>
+            <param name="createNewFibre">If true, a new Wren Fiber is created to execute the call.</param>
+            <returns>A <see cref="T:WrenSharp.WrenCall"/> value for the function.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenFn.Equals(WrenSharp.WrenFn)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenFn.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenFn.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenFn.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenFn.op_Equality(WrenSharp.WrenFn,WrenSharp.WrenFn)">
+            <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenFn.op_Inequality(WrenSharp.WrenFn,WrenSharp.WrenFn)">
+            <inheritdoc/>
         </member>
         <member name="T:WrenSharp.WrenSlot">
             <summary>
@@ -3481,6 +3591,14 @@
             </summary>
         </member>
         <member name="M:WrenSharp.WrenUtils.GetParameterCount(System.String)">
+            <summary>
+            Scans a Wren call signature and returns the number of parameters it contains. This method does
+            not ensure the validity of the signature, only the number of argument tokens it contains.
+            </summary>
+            <param name="signature">The call signature to scan.</param>
+            <returns>The number of arugment tokens in <paramref name="signature"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenUtils.GetParameterCount(System.ReadOnlySpan{System.Char})">
             <summary>
             Scans a Wren call signature and returns the number of parameters it contains. This method does
             not ensure the validity of the signature, only the number of argument tokens it contains.
