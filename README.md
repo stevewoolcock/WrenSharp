@@ -373,14 +373,14 @@ vm.SharedData.Remove(handle);
 
 
 ## Dynamic Functions
-WrenSharp provides an API for generating Wren functions on the fly that can be cached and called at any time. You supply an argument signature and function body, and in turn receive a `WrenFn` wrapping the compiled function. The function can then be called from anywhere, at anytime.
+WrenSharp provides an API for generating Wren functions on the fly that can be cached and called at any time. You supply an argument signature and function body, and in turn receive a `WrenHandle` wrapping the compiled function. The function can then be called from anywhere, at anytime.
 
 Here's an example:
 ```cs
-// Define a function, which returns a WrenFn value.
-// The WrenFn value can be stored and called again at any point in the future.
+// Define a function, which returns a WrenHandle value.
+// The WrenHandle value can be stored and called again at any point in the future.
 // The function lives as long as the handle remains allocated.
-WrenFn dynamicFn = vm.CreateFunction(
+WrenHandle dynamicFn = vm.CreateFunction(
     module: "main",                 // Compile in "main" module
     paramsSignature: "active, num", // Function has 2 parameters
     functionBody: @"
@@ -388,7 +388,7 @@ WrenFn dynamicFn = vm.CreateFunction(
         return num * 2
     ");
 
-// If the function did not compile, the WrenFn will be not be valid.
+// If the function did not compile, the WrenHandle will be not be valid.
 // CreateFunction() can also be instructed to throw a WrenInterpretException.
 if (dynamicFn.IsValid)
 {
@@ -400,7 +400,7 @@ if (dynamicFn.IsValid)
     Console.WriteLine(returnValue); // Output: 2468
 }
     
-// WrenFn implements IDisposable, which will release the underlying WrenHandle
+// WrenHandle implements IDisposable, which will release the underlying WrenHandle
 // to the function that was created when Dispose() is called.
 dynamicFn.Dispose();
 
