@@ -39,17 +39,17 @@ namespace WrenSharp
 
 #if WRENSHARP_EXT
 
-        internal WrenCall(WrenVM vm, WrenHandle receiver, WrenCallHandle callHandle) : this(vm, receiver, callHandle, newFiber: false)
+        internal WrenCall(WrenVM vm, in WrenHandle receiver, in WrenCallHandle callHandle) : this(vm, receiver, callHandle, newFiber: false)
         {
             //
         }
 
-        internal WrenCall(WrenVM vm, string module, string className, WrenCallHandle callHandle) : this(vm, module, className, callHandle, newFiber: false)
+        internal WrenCall(WrenVM vm, string module, string className, in WrenCallHandle callHandle) : this(vm, module, className, callHandle, newFiber: false)
         {
             //
         }
 
-        internal WrenCall(WrenVM vm, WrenHandle receiver, WrenCallHandle callHandle, bool newFiber)
+        internal WrenCall(WrenVM vm, in WrenHandle receiver, in WrenCallHandle callHandle, bool newFiber)
         {
             m_Vm = vm;
             m_CallHandle = callHandle;
@@ -59,7 +59,7 @@ namespace WrenSharp
             Wren.SetSlotHandle(m_Vm.m_Ptr, 0, receiver.m_Ptr);
         }
 
-        internal WrenCall(WrenVM vm, string module, string className, WrenCallHandle callHandle, bool newFiber)
+        internal WrenCall(WrenVM vm, string module, string className, in WrenCallHandle callHandle, bool newFiber)
         {
             m_Vm = vm;
             m_CallHandle = callHandle;
@@ -71,7 +71,7 @@ namespace WrenSharp
 
 #else
 
-        internal WrenCall(WrenVM vm, WrenHandle receiver, WrenCallHandle callHandle)
+        internal WrenCall(WrenVM vm, in WrenHandle receiver, in WrenCallHandle callHandle)
         {
             m_Vm = vm;
             m_CallHandle = callHandle;
@@ -80,7 +80,7 @@ namespace WrenSharp
             Wren.SetSlotHandle(m_Vm.m_Ptr, 0, receiver.m_Ptr);
         }
 
-        internal WrenCall(WrenVM vm, string module, string className, WrenCallHandle callHandle)
+        internal WrenCall(WrenVM vm, string module, string className, in WrenCallHandle callHandle)
         {
             m_Vm = vm;
             m_CallHandle = callHandle;

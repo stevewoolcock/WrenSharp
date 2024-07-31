@@ -236,7 +236,7 @@ namespace WrenSharp
         /// <summary>
         /// Custom user data that you can attach to this VM instance.
         /// </summary>
-        public object HostData { get; set; }
+        public object HostData { get; set; } = null!;
 
         #endregion
 
@@ -246,6 +246,7 @@ namespace WrenSharp
         protected WrenVM()
         {
             m_Allocator = null!;
+            m_Destructor = null!;
             Slots = new WrenSlots(this);
         }
 
@@ -255,9 +256,9 @@ namespace WrenSharp
         /// </summary>
         /// <param name="config">The <see cref="WrenConfiguration"/>.</param>
         /// <param name="allocator">The <see cref="IAllocator"/> to use when allocated unmanaged memory from C#. This is not used by the native Wren VM instance.</param>
-        public WrenVM(ref WrenConfiguration config, IAllocator allocator = default) : this()
+        public WrenVM(ref WrenConfiguration config, IAllocator allocator = default!) : this()
         {
-            Initialize(vmInitializer: null, vmDestructor: null, ref config, allocator);
+            Initialize(vmInitializer: null!, vmDestructor: null!, ref config, allocator);
         }
 
         /// <summary>
@@ -487,9 +488,9 @@ namespace WrenSharp
         /// <exception cref="WrenInterpretException">Thrown if the call is unsuccessful and <paramref name="throwOnFailure"/> is true.</exception>
         /// <seealso cref="CreateHandle(int)"/>
         /// <seealso cref="CreateHandle(string, string, int)"/>
-        public WrenInterpretResult Call(WrenHandle handle, bool throwOnFailure = true)
+        public WrenInterpretResult Call(in WrenHandle handle, bool throwOnFailure = true)
         {
-            EnsureValidHandle(handle);
+            EnsureValidHandle(in handle);
             InterpretBegin();
             WrenInterpretResult result = Wren.Call(m_Ptr, handle.m_Ptr);
             InterpretEnd(result, throwOnFailure);
@@ -503,11 +504,11 @@ namespace WrenSharp
         /// <param name="throwOnFailure">If true, a <see cref="WrenInterpretException"/> will be thrown if the call is unsuccessful.</param>
         /// <returns>The result of the call operation.</returns>
         /// <exception cref="WrenInterpretException">Thrown if the call is unsuccessful and <paramref name="throwOnFailure"/> is true.</exception>
-        /// <seealso cref="CreateCall(WrenHandle, WrenCallHandle, bool)"/>
+        /// <seealso cref="CreateCall(in WrenHandle, in WrenCallHandle, bool)"/>
         /// <seealso cref="CreateCallHandle(string)"/>
-        public WrenInterpretResult Call(WrenCallHandle callHandle, bool throwOnFailure = true)
+        public WrenInterpretResult Call(in WrenCallHandle callHandle, bool throwOnFailure = true)
         {
-            EnsureValidHandle(callHandle);
+            EnsureValidHandle(in callHandle);
             InterpretBegin();
             WrenInterpretResult result = Wren.Call(m_Ptr, callHandle.m_Ptr);
             InterpretEnd(result, throwOnFailure);
@@ -519,13 +520,12 @@ namespace WrenSharp
         /// </summary>
         /// <param name="receiverHandle">A handle to the receiver object.</param>
         /// <param name="callHandle">A handle for the method to call.</param>
-        /// to call back into Wren from the managed side without clobbering the Wren API stack.</param>
         /// <returns>A <see cref="WrenCall"/> value.</returns>
-        public WrenCall CreateCall(WrenHandle receiverHandle, WrenCallHandle callHandle)
+        public WrenCall CreateCall(in WrenHandle receiverHandle, in WrenCallHandle callHandle)
         {
-            EnsureValidHandle(receiverHandle);
-            EnsureValidHandle(callHandle);
-            return new WrenCall(this, receiverHandle, callHandle);
+            EnsureValidHandle(in receiverHandle);
+            EnsureValidHandle(in callHandle);
+            return new WrenCall(this, in receiverHandle, in callHandle);
         }
 
         /// <summary>
@@ -534,11 +534,10 @@ namespace WrenSharp
         /// <param name="module">The name of the module the class resides in.</param>
         /// <param name="className">The name of the class to execute the call on.</param>
         /// <param name="callHandle">A handle for the method to call.</param>
-        /// to call back into Wren from the managed side without clobbering the Wren API stack.</param>
         /// <returns>A <see cref="WrenCall"/> value.</returns>
         public WrenCall CreateCall(string module, string className, WrenCallHandle callHandle)
         {
-            EnsureValidHandle(callHandle);
+            EnsureValidHandle(in callHandle);
             return new WrenCall(this, module, className, callHandle);
         }
 
@@ -547,9 +546,8 @@ namespace WrenSharp
         /// </summary>
         /// <param name="functionHandle">A handle wrapping a Wren Fn object.</param>
         /// <param name="argCount">The number of arguments the function expects.</param>
-        /// to call back into Wren from the managed side without clobbering the Wren API stack.</param>
         /// <returns>A <see cref="WrenCall"/> value.</returns>
-        public WrenCall CreateFunctionCall(WrenHandle functionHandle, int argCount)
+        public WrenCall CreateFunctionCall(in WrenHandle functionHandle, int argCount)
         {
             WrenCallHandle callHandle = GetFunctionCallHandle(argCount);
             return new WrenCall(this, functionHandle, callHandle);
@@ -564,11 +562,11 @@ namespace WrenSharp
         /// <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
         /// to call back into Wren from the managed side without clobbering the Wren API stack.</param>
         /// <returns>A <see cref="WrenCall"/> value.</returns>
-        public WrenCall CreateCall(WrenHandle receiverHandle, WrenCallHandle callHandle, bool createNewFiber)
+        public WrenCall CreateCall(in WrenHandle receiverHandle, in WrenCallHandle callHandle, bool createNewFiber)
         {
-            EnsureValidHandle(receiverHandle);
-            EnsureValidHandle(callHandle);
-            return new WrenCall(this, receiverHandle, callHandle, createNewFiber);
+            EnsureValidHandle(in receiverHandle);
+            EnsureValidHandle(in callHandle);
+            return new WrenCall(this, in receiverHandle, in callHandle, createNewFiber);
         }
 
         /// <summary>
@@ -580,10 +578,10 @@ namespace WrenSharp
         /// <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
         /// to call back into Wren from the managed side without clobbering the Wren API stack.</param>
         /// <returns>A <see cref="WrenCall"/> value.</returns>
-        public WrenCall CreateCall(string module, string className, WrenCallHandle callHandle, bool createNewFiber)
+        public WrenCall CreateCall(string module, string className, in WrenCallHandle callHandle, bool createNewFiber)
         {
             EnsureValidHandle(callHandle);
-            return new WrenCall(this, module, className, callHandle, createNewFiber);
+            return new WrenCall(this, module, className, in callHandle, createNewFiber);
         }
 
         /// <summary>
@@ -594,10 +592,10 @@ namespace WrenSharp
         /// <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
         /// to call back into Wren from the managed side without clobbering the Wren API stack.</param>
         /// <returns>A <see cref="WrenCall"/> value.</returns>
-        public WrenCall CreateFunctionCall(WrenHandle functionHandle, int argCount, bool createNewFiber)
+        public WrenCall CreateFunctionCall(in WrenHandle functionHandle, int argCount, bool createNewFiber)
         {
             WrenCallHandle callHandle = GetFunctionCallHandle(argCount);
-            return new WrenCall(this, functionHandle, callHandle, createNewFiber);
+            return new WrenCall(this, in functionHandle, in callHandle, createNewFiber);
         }
 #endif
 
