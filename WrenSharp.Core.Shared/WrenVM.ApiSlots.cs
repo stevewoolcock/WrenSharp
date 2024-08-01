@@ -772,7 +772,7 @@ namespace WrenSharp
         /// <param name="handle">The <see cref="WrenSharedDataHandle"/> to place in the instance's storage.</param>
         /// <returns>A reference to this <see cref="WrenVM"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public WrenVM SetSlotNewSharedData(int slot, int classSlot, WrenSharedDataHandle handle)
+        public WrenVM SetSlotNewSharedData(int slot, int classSlot, in WrenSharedDataHandle handle)
         {
             var ptr = (WrenSharedDataHandle*)Wren.SetSlotNewForeign(m_Ptr, slot, classSlot, (ulong)sizeof(WrenSharedDataHandle));
             *ptr = handle;
@@ -900,7 +900,7 @@ namespace WrenSharp
         /// <param name="listHandle">The handle wrapping the list.</param>
         /// <param name="listSlot">The slot to load the list into.</param>
         /// <returns>A reference to this <see cref="WrenVM"/>.</returns>
-        public WrenVM ListLoadAndClear(WrenHandle listHandle, int listSlot = 0)
+        public WrenVM ListLoadAndClear(in WrenHandle listHandle, int listSlot = 0)
         {
             EnsureValidHandle(in listHandle);
 
@@ -1043,7 +1043,7 @@ namespace WrenSharp
         /// <param name="mapHandle">The handle wrapping the map.</param>
         /// <param name="mapSlot">The slot to load the map into.</param>
         /// <returns>A reference to this <see cref="WrenVM"/>.</returns>
-        public WrenVM MapLoadAndClear(WrenHandle mapHandle, int mapSlot = 0)
+        public WrenVM MapLoadAndClear(in WrenHandle mapHandle, int mapSlot = 0)
         {
             EnsureValidHandle(in mapHandle);
 
@@ -1167,7 +1167,7 @@ namespace WrenSharp
         /// <param name="listHandle">The handle wrapping the list.</param>
         /// <param name="listSlot">The slot to load the list into.</param>
         /// <returns>A reference to this <see cref="WrenVM"/>.</returns>
-        public WrenVM ListLoadAndClear(WrenHandle listHandle, int listSlot = 0)
+        public WrenVM ListLoadAndClear(in WrenHandle listHandle, int listSlot = 0)
         {
             EnsureValidHandle(in listHandle);
             Wren.SetSlotHandle(m_Ptr, listSlot, listHandle.m_Ptr);
@@ -1208,7 +1208,7 @@ namespace WrenSharp
         /// <param name="mapHandle">The handle wrapping the map.</param>
         /// <param name="mapSlot">The slot to load the map into.</param>
         /// <returns>A reference to this <see cref="WrenVM"/>.</returns>
-        public WrenVM MapLoadAndClear(WrenHandle mapHandle, int mapSlot = 0)
+        public WrenVM MapLoadAndClear(in WrenHandle mapHandle, int mapSlot = 0)
         {
             EnsureValidHandle(in mapHandle);
             Wren.SetSlotHandle(m_Ptr, mapSlot, mapHandle.m_Ptr);

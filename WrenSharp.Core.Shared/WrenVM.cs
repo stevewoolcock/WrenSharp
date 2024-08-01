@@ -125,7 +125,7 @@ namespace WrenSharp
             if (_vmsByPtr.TryGetValue(ptr, out vm) && vm != null)
                 return true;
 
-            vm = default;
+            vm = default!;
             return false;
         }
 
@@ -144,7 +144,7 @@ namespace WrenSharp
                 return true;
             }
 
-            vm = default;
+            vm = default!;
             return false;
         }
 
@@ -270,7 +270,7 @@ namespace WrenSharp
         /// <param name="vmDestructor">The <see cref="WrenVMDestructor"/> delegate called when the VM is disposed.</param>
         /// <param name="config">The <see cref="WrenConfiguration"/>.</param>
         /// <param name="allocator">The <see cref="IAllocator"/> to use when allocated unmanaged memory from C#. This is not used by the native Wren VM instance.</param>
-        public WrenVM(WrenVMInitializer vmInitializer, WrenVMDestructor vmDestructor, ref WrenConfiguration config, IAllocator allocator = default) : this()
+        public WrenVM(WrenVMInitializer vmInitializer, WrenVMDestructor vmDestructor, ref WrenConfiguration config, IAllocator allocator = default!) : this()
         {
             Initialize(vmInitializer, vmDestructor, ref config, allocator);
         }
@@ -338,7 +338,7 @@ namespace WrenSharp
         }
 
         /// <summary>
-        /// Runs Wren source <paramref name="source"/> in a new fiber, in the context of module <paramref name="module"/>.
+        /// Runs Wren source <paramref name="utf8Source"/> in a new fiber, in the context of module <paramref name="module"/>.
         /// If the resolved module is not found, a new module will be created.
         /// </summary>
         /// <param name="module">The name of the resolved module to run the source within.</param>
@@ -365,7 +365,6 @@ namespace WrenSharp
         /// </summary>
         /// <param name="module">The name of the resolved module to run the source within.</param>
         /// <param name="source">The source to interpret.</param>
-        /// <param name="encoding">The encoding to use when converting the string to a native buffer.</param>
         /// <param name="throwOnFailure">If true, a <see cref="WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
         /// <returns>The result of the interpret operation.</returns>
         public WrenInterpretResult Interpret(string module, ReadOnlySpan<char> source, bool throwOnFailure = false)
@@ -604,8 +603,8 @@ namespace WrenSharp
         #region Handles
 
         /// <summary>
-        /// Creates a <see cref="WrenCallHandle"/> that can be used with the <see cref="Call(WrenCallHandle, bool)"/> and <see cref="CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods
-        /// to call a Wren method from C#.<para />
+        /// Creates a <see cref="WrenCallHandle"/> that can be used with the <see cref="Call(in WrenCallHandle, bool)"/> and
+        /// <see cref="CreateCall(in WrenHandle, in WrenCallHandle, bool)"/> methods to call a Wren method from C#.<para />
         /// Call signatures must conform to standard Wren call signatures, for example:
         /// <code>
         /// methodName()      // Method, no arguments
@@ -632,8 +631,8 @@ namespace WrenSharp
         }
 
         /// <summary>
-        /// Creates a <see cref="WrenCallHandle"/> representing a method call that can be used with the <see cref="Call(WrenCallHandle, bool)"/>
-        /// and <see cref="CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren method from C#.<para />
+        /// Creates a <see cref="WrenCallHandle"/> representing a method call that can be used with the <see cref="Call(in WrenCallHandle, bool)"/>
+        /// and <see cref="CreateCall(in WrenHandle, in WrenCallHandle, bool)"/> methods to call a Wren method from C#.<para />
         /// This method generates the function call signature for you, given a method name and parameter count. For example:
         /// <code>
         /// paramCount = 1 -> name(_)
@@ -673,8 +672,8 @@ namespace WrenSharp
         }
 
         /// <summary>
-        /// Creates a <see cref="WrenCallHandle"/> representing a property getter call that can be used with the <see cref="Call(WrenCallHandle, bool)"/>
-        /// and <see cref="CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren getter from C#.<para />
+        /// Creates a <see cref="WrenCallHandle"/> representing a property getter call that can be used with the <see cref="Call(in WrenCallHandle, bool)"/>
+        /// and <see cref="CreateCall(in WrenHandle, in WrenCallHandle, bool)"/> methods to call a Wren getter from C#.<para />
         /// See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
         /// </summary>
         /// <param name="propertyName">The name of the property.</param>
@@ -693,8 +692,8 @@ namespace WrenSharp
         }
 
         /// <summary>
-        /// Creates a <see cref="WrenCallHandle"/> representing a property setter call that can be used with the <see cref="Call(WrenCallHandle, bool)"/>
-        /// and <see cref="CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren setter from C#.<para />
+        /// Creates a <see cref="WrenCallHandle"/> representing a property setter call that can be used with the <see cref="Call(in WrenCallHandle, bool)"/>
+        /// and <see cref="CreateCall(in WrenHandle, in WrenCallHandle, bool)"/> methods to call a Wren setter from C#.<para />
         /// See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
         /// </summary>
         /// <param name="propertyName">The name of the property.</param>
@@ -714,8 +713,8 @@ namespace WrenSharp
         }
 
         /// <summary>
-        /// Creates a <see cref="WrenCallHandle"/> representing a prefix operator call that can be used with the <see cref="Call(WrenCallHandle, bool)"/>
-        /// and <see cref="CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren prefix operator from C#.<para />
+        /// Creates a <see cref="WrenCallHandle"/> representing a prefix operator call that can be used with the <see cref="Call(in WrenCallHandle, bool)"/>
+        /// and <see cref="CreateCall(in WrenHandle, in WrenCallHandle, bool)"/> methods to call a Wren prefix operator from C#.<para />
         /// See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
         /// </summary>
         /// <param name="operatorName">The operator name (eg. "-", "+").</param>
@@ -734,8 +733,8 @@ namespace WrenSharp
         }
 
         /// <summary>
-        /// Creates a <see cref="WrenCallHandle"/> representing an infix operator call that can be used with the <see cref="Call(WrenCallHandle, bool)"/>
-        /// and <see cref="CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren infix operator from C#.<para />
+        /// Creates a <see cref="WrenCallHandle"/> representing an infix operator call that can be used with the <see cref="Call(in WrenCallHandle, bool)"/>
+        /// and <see cref="CreateCall(in WrenHandle, in WrenCallHandle, bool)"/> methods to call a Wren infix operator from C#.<para />
         /// See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
         /// </summary>
         /// <param name="operatorName">The operator name (eg. "-", "+").</param>
@@ -755,8 +754,8 @@ namespace WrenSharp
         }
 
         /// <summary>
-        /// Creates a <see cref="WrenCallHandle"/> representing a subscript getter call that can be used with the <see cref="Call(WrenCallHandle, bool)"/>
-        /// and <see cref="CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren method from C#.<para />
+        /// Creates a <see cref="WrenCallHandle"/> representing a subscript getter call that can be used with the <see cref="Call(in WrenCallHandle, bool)"/>
+        /// and <see cref="CreateCall(in WrenHandle, in WrenCallHandle, bool)"/> methods to call a Wren method from C#.<para />
         /// This method generates the subscript getter call signature for you, given a parameter count. For example:
         /// <code>
         /// paramCount = 1 -> [_]
@@ -794,8 +793,8 @@ namespace WrenSharp
         }
 
         /// <summary>
-        /// Creates a <see cref="WrenCallHandle"/> representing a subscript setter call that can be used with the <see cref="Call(WrenCallHandle, bool)"/>
-        /// and <see cref="CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren method from C#.<para />
+        /// Creates a <see cref="WrenCallHandle"/> representing a subscript setter call that can be used with the <see cref="Call(in WrenCallHandle, bool)"/>
+        /// and <see cref="CreateCall(in WrenHandle, in WrenCallHandle, bool)"/> methods to call a Wren method from C#.<para />
         /// This method generates the subscript setter call signature for you, given a parameter count. For example:
         /// <code>
         /// paramCount = 1 -> [_]=(_)
@@ -838,7 +837,7 @@ namespace WrenSharp
         /// Interprets a Wren function by wrapping <paramref name="functionBody"/> in the Wren function syntax (<c>Fn.new {...}</c>)
         /// and returns a handle to the newly created function object. This is useful for creating functions dynamically from managed code
         /// that can then be called at a later time.<para/>
-        /// Use <see cref="CreateFunctionCall(WrenHandle, int, bool)"/> to call the function after it has been created.<para/>
+        /// Use <see cref="CreateFunctionCall(in WrenHandle, int, bool)"/> to call the function after it has been created.<para/>
         /// See <see href="https://wren.io/functions.html"/> for more information on functions in Wren.
         /// </summary>
         /// <example>

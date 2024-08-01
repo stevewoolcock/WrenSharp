@@ -865,7 +865,7 @@
             <param name="arg">The argument index.</param>
             <param name="stringBytes">The value to set.</param>
         </member>
-        <member name="M:WrenSharp.WrenCall.SetArg(System.Int32,WrenSharp.WrenHandle)">
+        <member name="M:WrenSharp.WrenCall.SetArg(System.Int32,WrenSharp.WrenHandle@)">
             <summary>
             Sets the value in argument slot <paramref name="arg"/> to <paramref name="handle"/>.
             </summary>
@@ -1049,8 +1049,8 @@
             or <see cref="M:WrenSharp.WrenVM.ReleaseHandle(WrenSharp.WrenCallHandle@)"/>. <see cref="T:WrenSharp.WrenVM"/> instances
             will automatically release all handles allocated when disposed.
             </summary>
-            <seealso cref="!:WrenVM.Call(WrenCallHandle, bool)"/>
-            <seealso cref="!:WrenVM.CreateCall(WrenHandle, WrenCallHandle, bool)"/>
+            <seealso cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle@,System.Boolean)"/>
+            <seealso cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle@,WrenSharp.WrenCallHandle@,System.Boolean)"/>
         </member>
         <member name="P:WrenSharp.WrenCallHandle.IsValid">
             <summary>
@@ -1359,7 +1359,7 @@
             </summary>
             <param name="value">The value to set.</param>
         </member>
-        <member name="M:WrenSharp.WrenSlot.Set(WrenSharp.WrenHandle)">
+        <member name="M:WrenSharp.WrenSlot.Set(WrenSharp.WrenHandle@)">
             <summary>
             Sets the value in this slot to <paramref name="value"/>.
             </summary>
@@ -1963,7 +1963,7 @@
             <param name="handle">The handle for <paramref name="value"/>.</param>
             <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
         </member>
-        <member name="M:WrenSharp.WrenVM.SetSlotNewSharedData(System.Int32,System.Int32,WrenSharp.WrenSharedDataHandle)">
+        <member name="M:WrenSharp.WrenVM.SetSlotNewSharedData(System.Int32,System.Int32,WrenSharp.WrenSharedDataHandle@)">
             <summary>
             Creates a new instance of the foreign class stored in <paramref name="classSlot"/>, places <paramref name="handle"/>
             in the instance's storage and places the instance in <paramref name="slot"/>.<para />
@@ -2144,7 +2144,7 @@
             <param name="listSlot">The slot index the list resides in.</param>
             <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
         </member>
-        <member name="M:WrenSharp.WrenVM.ListLoadAndClear(WrenSharp.WrenHandle,System.Int32)">
+        <member name="M:WrenSharp.WrenVM.ListLoadAndClear(WrenSharp.WrenHandle@,System.Int32)">
             <summary>
             Loads <paramref name="listHandle"/> into <paramref name="listSlot"/> and clears it to remove all values from the list.
             </summary>
@@ -2169,7 +2169,7 @@
             <param name="mapSlot">The slot the map has been placed in.</param>
             <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
         </member>
-        <member name="M:WrenSharp.WrenVM.MapLoadAndClear(WrenSharp.WrenHandle,System.Int32)">
+        <member name="M:WrenSharp.WrenVM.MapLoadAndClear(WrenSharp.WrenHandle@,System.Int32)">
             <summary>
             Loads <paramref name="mapHandle"/> into <paramref name="mapSlot"/> and clears it to remove all entries from the map.
             </summary>
@@ -2210,7 +2210,7 @@
             </summary>
             <returns>The value from the shared data table, as <typeparamref name="T"/>.</returns>
             <seealso cref="M:WrenSharp.WrenVM.SetUserSharedData(System.Object)"/>
-            <seealso cref="M:WrenSharp.WrenVM.SetUserSharedData(WrenSharp.WrenSharedDataHandle)"/>
+            <seealso cref="!:SetUserSharedData(WrenSharedDataHandle)"/>
         </member>
         <member name="M:WrenSharp.WrenVM.GetUserSharedData">
             <summary>
@@ -2219,7 +2219,7 @@
             </summary>
             <returns>A ref to the VM user data.</returns>
             <seealso cref="M:WrenSharp.WrenVM.SetUserSharedData(System.Object)"/>
-            <seealso cref="M:WrenSharp.WrenVM.SetUserSharedData(WrenSharp.WrenSharedDataHandle)"/>
+            <seealso cref="!:SetUserSharedData(WrenSharedDataHandle)"/>
         </member>
         <member name="M:WrenSharp.WrenVM.GetUserSharedDataHandle">
             <summary>
@@ -2227,7 +2227,7 @@
             </summary>
             <returns>A <see cref="T:WrenSharp.WrenSharedDataHandle"/>.</returns>
             <seealso cref="M:WrenSharp.WrenVM.SetUserSharedData(System.Object)"/>
-            <seealso cref="M:WrenSharp.WrenVM.SetUserSharedData(WrenSharp.WrenSharedDataHandle)"/>
+            <seealso cref="!:SetUserSharedData(WrenSharedDataHandle)"/>
         </member>
         <member name="M:WrenSharp.WrenVM.SetUserData(System.IntPtr)">
             <summary>
@@ -2272,7 +2272,7 @@
             <seealso cref="M:WrenSharp.WrenVM.GetUserSharedData``1"/>
             <seealso cref="M:WrenSharp.WrenVM.GetUserSharedDataHandle"/>
         </member>
-        <member name="M:WrenSharp.WrenVM.SetUserSharedData(WrenSharp.WrenSharedDataHandle)">
+        <member name="M:WrenSharp.WrenVM.SetUserSharedData(WrenSharp.WrenSharedDataHandle@)">
             <summary>
             Sets the VM's user data to <paramref name="handle"/>.
             </summary>
@@ -2504,7 +2504,7 @@
         </member>
         <member name="M:WrenSharp.WrenVM.Interpret(System.String,System.ReadOnlySpan{System.Byte},System.Boolean)">
             <summary>
-            Runs Wren source <paramref name="source"/> in a new fiber, in the context of module <paramref name="module"/>.
+            Runs Wren source <paramref name="utf8Source"/> in a new fiber, in the context of module <paramref name="module"/>.
             If the resolved module is not found, a new module will be created.
             </summary>
             <param name="module">The name of the resolved module to run the source within.</param>
@@ -2519,7 +2519,6 @@
             </summary>
             <param name="module">The name of the resolved module to run the source within.</param>
             <param name="source">The source to interpret.</param>
-            <param name="encoding">The encoding to use when converting the string to a native buffer.</param>
             <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if an unsuccessful result is returned.</param>
             <returns>The result of the interpret operation.</returns>
         </member>
@@ -2673,8 +2672,8 @@
         </member>
         <member name="M:WrenSharp.WrenVM.CreateCallHandle(System.String)">
             <summary>
-            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> that can be used with the <see cref="!:Call(WrenCallHandle, bool)"/> and <see cref="!:CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods
-            to call a Wren method from C#.<para />
+            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> that can be used with the <see cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle@,System.Boolean)"/> and
+            <see cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle@,WrenSharp.WrenCallHandle@,System.Boolean)"/> methods to call a Wren method from C#.<para />
             Call signatures must conform to standard Wren call signatures, for example:
             <code>
             methodName()      // Method, no arguments
@@ -2693,8 +2692,8 @@
         </member>
         <member name="M:WrenSharp.WrenVM.CreateMethodCallHandle(System.String,System.Int32)">
             <summary>
-            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing a method call that can be used with the <see cref="!:Call(WrenCallHandle, bool)"/>
-            and <see cref="!:CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren method from C#.<para />
+            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing a method call that can be used with the <see cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle@,System.Boolean)"/>
+            and <see cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle@,WrenSharp.WrenCallHandle@,System.Boolean)"/> methods to call a Wren method from C#.<para />
             This method generates the function call signature for you, given a method name and parameter count. For example:
             <code>
             paramCount = 1 -> name(_)
@@ -2709,8 +2708,8 @@
         </member>
         <member name="M:WrenSharp.WrenVM.CreateGetterCallHandle(System.String)">
             <summary>
-            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing a property getter call that can be used with the <see cref="!:Call(WrenCallHandle, bool)"/>
-            and <see cref="!:CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren getter from C#.<para />
+            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing a property getter call that can be used with the <see cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle@,System.Boolean)"/>
+            and <see cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle@,WrenSharp.WrenCallHandle@,System.Boolean)"/> methods to call a Wren getter from C#.<para />
             See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
             </summary>
             <param name="propertyName">The name of the property.</param>
@@ -2718,8 +2717,8 @@
         </member>
         <member name="M:WrenSharp.WrenVM.CreateSetterCallHandle(System.String)">
             <summary>
-            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing a property setter call that can be used with the <see cref="!:Call(WrenCallHandle, bool)"/>
-            and <see cref="!:CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren setter from C#.<para />
+            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing a property setter call that can be used with the <see cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle@,System.Boolean)"/>
+            and <see cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle@,WrenSharp.WrenCallHandle@,System.Boolean)"/> methods to call a Wren setter from C#.<para />
             See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
             </summary>
             <param name="propertyName">The name of the property.</param>
@@ -2727,8 +2726,8 @@
         </member>
         <member name="M:WrenSharp.WrenVM.CreateOperatorPrefixCallHandle(System.String)">
             <summary>
-            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing a prefix operator call that can be used with the <see cref="!:Call(WrenCallHandle, bool)"/>
-            and <see cref="!:CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren prefix operator from C#.<para />
+            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing a prefix operator call that can be used with the <see cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle@,System.Boolean)"/>
+            and <see cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle@,WrenSharp.WrenCallHandle@,System.Boolean)"/> methods to call a Wren prefix operator from C#.<para />
             See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
             </summary>
             <param name="operatorName">The operator name (eg. "-", "+").</param>
@@ -2736,8 +2735,8 @@
         </member>
         <member name="M:WrenSharp.WrenVM.CreateOperatorInfixCallHandle(System.String)">
             <summary>
-            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing an infix operator call that can be used with the <see cref="!:Call(WrenCallHandle, bool)"/>
-            and <see cref="!:CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren infix operator from C#.<para />
+            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing an infix operator call that can be used with the <see cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle@,System.Boolean)"/>
+            and <see cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle@,WrenSharp.WrenCallHandle@,System.Boolean)"/> methods to call a Wren infix operator from C#.<para />
             See <see href="https://wren.io/method-calls.html"/>  for more information on Wren call signatures.
             </summary>
             <param name="operatorName">The operator name (eg. "-", "+").</param>
@@ -2745,8 +2744,8 @@
         </member>
         <member name="M:WrenSharp.WrenVM.CreateSubscriptGetCallHandle(System.Int32)">
             <summary>
-            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing a subscript getter call that can be used with the <see cref="!:Call(WrenCallHandle, bool)"/>
-            and <see cref="!:CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren method from C#.<para />
+            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing a subscript getter call that can be used with the <see cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle@,System.Boolean)"/>
+            and <see cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle@,WrenSharp.WrenCallHandle@,System.Boolean)"/> methods to call a Wren method from C#.<para />
             This method generates the subscript getter call signature for you, given a parameter count. For example:
             <code>
             paramCount = 1 -> [_]
@@ -2760,8 +2759,8 @@
         </member>
         <member name="M:WrenSharp.WrenVM.CreateSubscriptSetCallHandle(System.Int32)">
             <summary>
-            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing a subscript setter call that can be used with the <see cref="!:Call(WrenCallHandle, bool)"/>
-            and <see cref="!:CreateCall(WrenHandle, WrenCallHandle, bool)"/> methods to call a Wren method from C#.<para />
+            Creates a <see cref="T:WrenSharp.WrenCallHandle"/> representing a subscript setter call that can be used with the <see cref="M:WrenSharp.WrenVM.Call(WrenSharp.WrenCallHandle@,System.Boolean)"/>
+            and <see cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle@,WrenSharp.WrenCallHandle@,System.Boolean)"/> methods to call a Wren method from C#.<para />
             This method generates the subscript setter call signature for you, given a parameter count. For example:
             <code>
             paramCount = 1 -> [_]=(_)
@@ -2778,7 +2777,7 @@
             Interprets a Wren function by wrapping <paramref name="functionBody"/> in the Wren function syntax (<c>Fn.new {...}</c>)
             and returns a handle to the newly created function object. This is useful for creating functions dynamically from managed code
             that can then be called at a later time.<para/>
-            Use <see cref="!:CreateFunctionCall(WrenHandle, int, bool)"/> to call the function after it has been created.<para/>
+            Use <see cref="M:WrenSharp.WrenVM.CreateFunctionCall(WrenSharp.WrenHandle@,System.Int32,System.Boolean)"/> to call the function after it has been created.<para/>
             See <see href="https://wren.io/functions.html"/> for more information on functions in Wren.
             </summary>
             <example>
@@ -3276,13 +3275,13 @@
             </summary>
             <param name="value">The value to return.</param>
         </member>
-        <member name="M:WrenSharp.WrenCallContext.Return(WrenSharp.WrenHandle)">
+        <member name="M:WrenSharp.WrenCallContext.Return(WrenSharp.WrenHandle@)">
             <summary>
             Sets a <see cref="T:WrenSharp.WrenHandle"/> value as the return value for the method call.
             </summary>
             <param name="value">The value to return.</param>
         </member>
-        <member name="M:WrenSharp.WrenCallContext.ReturnForeign(WrenSharp.WrenHandle,System.UInt64)">
+        <member name="M:WrenSharp.WrenCallContext.ReturnForeign(WrenSharp.WrenHandle@,System.UInt64)">
             <summary>
             Sets a new instance of a foreign class as the return value for the method call.
             </summary>
@@ -3297,7 +3296,7 @@
             <param name="className">The name of the class to instantiate.</param>
             <param name="size">The number of bytes to allocate for the instance.</param>
         </member>
-        <member name="M:WrenSharp.WrenCallContext.ReturnForeign``1(WrenSharp.WrenHandle,``0@)">
+        <member name="M:WrenSharp.WrenCallContext.ReturnForeign``1(WrenSharp.WrenHandle@,``0@)">
             <summary>
             Sets a new instance of a foreign class as the return value for the method call.
             </summary>
@@ -3375,7 +3374,7 @@
             <param name="value">The value to add to the table.</param>
             <returns>A <see cref="T:WrenSharp.WrenSharedDataHandle"/> pointing to <paramref name="value"/>.</returns>
         </member>
-        <member name="M:WrenSharp.WrenSharedDataTable.Remove(WrenSharp.WrenSharedDataHandle)">
+        <member name="M:WrenSharp.WrenSharedDataTable.Remove(WrenSharp.WrenSharedDataHandle@)">
             <summary>
             Removes an entry from the table by its handle.
             </summary>
@@ -3394,7 +3393,7 @@
             Removes all entries from the table and resets its state.
             </summary>
         </member>
-        <member name="M:WrenSharp.WrenSharedDataTable.Contains(WrenSharp.WrenSharedDataHandle)">
+        <member name="M:WrenSharp.WrenSharedDataTable.Contains(WrenSharp.WrenSharedDataHandle@)">
             <summary>
             Returns true if <paramref name="handle"/> points to an entry in the table.
             </summary>
@@ -3408,7 +3407,7 @@
             <param name="value">The value to find.</param>
             <returns>True if <paramref name="value"/> exists in the table, otherwise false.</returns>
         </member>
-        <member name="M:WrenSharp.WrenSharedDataTable.Get(WrenSharp.WrenSharedDataHandle)">
+        <member name="M:WrenSharp.WrenSharedDataTable.Get(WrenSharp.WrenSharedDataHandle@)">
             <summary>
             Gets the value <paramref name="handle"/> points to.
             </summary>
@@ -3416,7 +3415,7 @@
             <returns></returns>
             <exception cref="T:System.InvalidOperationException">Thrown if <paramref name="handle"/> is invalid or does not point to an existing table entry.</exception>
         </member>
-        <member name="M:WrenSharp.WrenSharedDataTable.Get``1(WrenSharp.WrenSharedDataHandle)">
+        <member name="M:WrenSharp.WrenSharedDataTable.Get``1(WrenSharp.WrenSharedDataHandle@)">
             <summary>
             Gets the value <paramref name="handle"/> points to, cast as <typeparamref name="T"/>.
             </summary>
@@ -3436,7 +3435,7 @@
             <returns>A <see cref="T:WrenSharp.WrenSharedDataHandle"/> pointing to <paramref name="value"/>, or
             <see cref="P:WrenSharp.WrenSharedDataHandle.Invalid"/> if it does not exist in the table.</returns>
         </member>
-        <member name="M:WrenSharp.WrenSharedDataTable.GetValueType(WrenSharp.WrenSharedDataHandle)">
+        <member name="M:WrenSharp.WrenSharedDataTable.GetValueType(WrenSharp.WrenSharedDataHandle@)">
             <summary>
             Gets the type of the value <paramref name="handle"/> points to. If <paramref name="handle"/> is invalid
             or does not point to a value in the table, this method returns <c>null</c>.
@@ -3445,7 +3444,7 @@
             <returns>The <see cref="T:System.Type"/> of the value <paramref name="handle"/> points to, or null if <paramref name="handle"/>
             is not valid or does not point to an existing table entry.</returns>
         </member>
-        <member name="M:WrenSharp.WrenSharedDataTable.Set(WrenSharp.WrenSharedDataHandle,System.Object)">
+        <member name="M:WrenSharp.WrenSharedDataTable.Set(WrenSharp.WrenSharedDataHandle@,System.Object)">
             <summary>
             Sets the value <paramref name="handle"/> points to to <paramref name="value"/>. If <paramref name="handle"/> is invalid
             or does not point to an existing value in the table, <see cref="T:System.InvalidOperationException"/> is thrown.
@@ -3454,7 +3453,7 @@
             <param name="value">The value to set.</param>
             <exception cref="T:System.InvalidOperationException">Thrown if <paramref name="handle"/> is invalid or does not point to an existing table entry.</exception>
         </member>
-        <member name="M:WrenSharp.WrenSharedDataTable.TryGet(WrenSharp.WrenSharedDataHandle,System.Object@)">
+        <member name="M:WrenSharp.WrenSharedDataTable.TryGet(WrenSharp.WrenSharedDataHandle@,System.Object@)">
             <summary>
             Attempts to get the value <paramref name="handle"/> points to. Returns false if <paramref name="handle"/>
             is invalid or does point to existing table entry.
@@ -3463,7 +3462,7 @@
             <param name="value">The value <paramref name="handle"/> points to.</param>
             <returns>True if <paramref name="handle"/> points to a valid entry, otherwise false.</returns>
         </member>
-        <member name="M:WrenSharp.WrenSharedDataTable.TryGet``1(WrenSharp.WrenSharedDataHandle,``0@)">
+        <member name="M:WrenSharp.WrenSharedDataTable.TryGet``1(WrenSharp.WrenSharedDataHandle@,``0@)">
             <summary>
             Attempts to get the value <paramref name="handle"/> points to, cast as <typeparamref name="T"/>. Returns false if <paramref name="handle"/>
             is invalid, does point to existing table entry or the value is not assignable from <typeparamref name="T"/>.
@@ -3483,7 +3482,7 @@
             <param name="handle">A <see cref="T:WrenSharp.WrenSharedDataHandle"/> pointing to the entry.</param>
             <returns>True if <paramref name="value"/> was found in the table, otherwise false.</returns>
         </member>
-        <member name="M:WrenSharp.WrenSharedDataTable.TrySet(WrenSharp.WrenSharedDataHandle,System.Object)">
+        <member name="M:WrenSharp.WrenSharedDataTable.TrySet(WrenSharp.WrenSharedDataHandle@,System.Object)">
             <summary>
             Attempts to set the value <paramref name="handle"/> points to. <paramref name="handle"/> must be valid and point to an existing entry in the table.
             </summary>

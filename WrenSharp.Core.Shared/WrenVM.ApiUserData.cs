@@ -156,6 +156,6 @@ namespace WrenSharp
         /// <seealso cref="GetUserSharedData"/>
         /// <seealso cref="GetUserSharedData{T}"/>
         /// <seealso cref="GetUserSharedDataHandle"/>
-        public WrenVM SetUserSharedData(WrenSharedDataHandle handle) => SetUserData(in handle);
+        public WrenVM SetUserSharedData(in WrenSharedDataHandle handle) => SetUserData(in handle);
     }
 }

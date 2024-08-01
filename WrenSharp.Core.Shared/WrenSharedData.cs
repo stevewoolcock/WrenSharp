@@ -15,7 +15,7 @@ namespace WrenSharp
             public WrenSharedDataHandle NextFree;
         }
 
-        private Entry[] m_Entries = new Entry[0];
+        private Entry[] m_Entries = Array.Empty<Entry>();
         private WrenSharedDataHandle m_Free = (WrenSharedDataHandle)1;
         private WrenSharedDataHandle m_Tail = WrenSharedDataHandle.Invalid;
         private int m_Count;
@@ -85,7 +85,7 @@ namespace WrenSharp
         /// </summary>
         /// <param name="handle">The handle of the object to remove.</param>
         /// <returns>True if the object was removed, otherwise false.</returns>
-        public bool Remove(WrenSharedDataHandle handle)
+        public bool Remove(in WrenSharedDataHandle handle)
         {
             if (!Contains(handle))
                 return false;
@@ -137,7 +137,7 @@ namespace WrenSharp
         /// </summary>
         /// <param name="handle">The handle to lookup.</param>
         /// <returns>True if <paramref name="handle"/> points to an entry in the table, otherwise false.</returns>
-        public bool Contains(WrenSharedDataHandle handle)
+        public bool Contains(in WrenSharedDataHandle handle)
         {
             if (!IsValidHandle(handle))
                 return false;
@@ -172,7 +172,7 @@ namespace WrenSharp
         /// <param name="handle"></param>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException">Thrown if <paramref name="handle"/> is invalid or does not point to an existing table entry.</exception>
-        public object Get(WrenSharedDataHandle handle) => Get<object>(handle);
+        public object Get(in WrenSharedDataHandle handle) => Get<object>(handle);
 
         /// <summary>
         /// Gets the value <paramref name="handle"/> points to, cast as <typeparamref name="T"/>.
@@ -182,7 +182,7 @@ namespace WrenSharp
         /// <returns></returns>
         /// <exception cref="InvalidOperationException">Thrown if <paramref name="handle"/> is invalid or does not point to an existing table entry.</exception>
         /// <exception cref="InvalidCastException">Thrown if the value in the table is not assignable from <typeparamref name="T"/>.</exception>
-        public T Get<T>(WrenSharedDataHandle handle)
+        public T Get<T>(in WrenSharedDataHandle handle)
         {
             EnsureValidHandle(handle);
 
@@ -226,7 +226,7 @@ namespace WrenSharp
         /// <param name="handle">The handle of the value.</param>
         /// <returns>The <see cref="Type"/> of the value <paramref name="handle"/> points to, or null if <paramref name="handle"/>
         /// is not valid or does not point to an existing table entry.</returns>
-        public Type GetValueType(WrenSharedDataHandle handle)
+        public Type GetValueType(in WrenSharedDataHandle handle)
         {
             return TryGet(handle, out object value) ? value.GetType() : null;
         }
@@ -238,7 +238,7 @@ namespace WrenSharp
         /// <param name="handle">The entry handle.</param>
         /// <param name="value">The value to set.</param>
         /// <exception cref="InvalidOperationException">Thrown if <paramref name="handle"/> is invalid or does not point to an existing table entry.</exception>
-        public void Set(WrenSharedDataHandle handle, object value)
+        public void Set(in WrenSharedDataHandle handle, object value)
         {
             EnsureValidHandle(handle);
 
@@ -257,7 +257,7 @@ namespace WrenSharp
         /// <param name="handle">The entry handle.</param>
         /// <param name="value">The value <paramref name="handle"/> points to.</param>
         /// <returns>True if <paramref name="handle"/> points to a valid entry, otherwise false.</returns>
-        public bool TryGet(WrenSharedDataHandle handle, out object value) => TryGet<object>(handle, out value);
+        public bool TryGet(in WrenSharedDataHandle handle, out object value) => TryGet<object>(handle, out value);
 
         /// <summary>
         /// Attempts to get the value <paramref name="handle"/> points to, cast as <typeparamref name="T"/>. Returns false if <paramref name="handle"/>
@@ -267,7 +267,7 @@ namespace WrenSharp
         /// <param name="handle">The entry handle.</param>
         /// <param name="value">The value <paramref name="handle"/> points to.</param>
         /// <returns>True if <paramref name="handle"/> points to a valid entry of type <typeparamref name="T"/>, otherwise false.</returns>
-        public bool TryGet<T>(WrenSharedDataHandle handle, out T value)
+        public bool TryGet<T>(in WrenSharedDataHandle handle, out T value)
         {
             if (!handle.IsValid || handle <= 0 || handle >= m_Tail)
             {
@@ -312,7 +312,7 @@ namespace WrenSharp
         /// <param name="handle">The entry handle.</param>
         /// <param name="value">The value to set.</param>
         /// <returns>True if <paramref name="handle"/> points to a valid entry, otherwise false.</returns>
-        public bool TrySet(WrenSharedDataHandle handle, object value)
+        public bool TrySet(in WrenSharedDataHandle handle, object value)
         {
             if (!handle.IsValid || handle <= 0 || handle >= m_Tail)
                 return false;
@@ -333,7 +333,7 @@ namespace WrenSharp
             // Entry is tombstoned and points to the current free handle
             m_Entries[index] = new Entry()
             {
-                Value = null,
+                Value = null!,
                 NextFree = m_Free
             };
 

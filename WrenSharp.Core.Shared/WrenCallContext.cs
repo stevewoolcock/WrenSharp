@@ -117,7 +117,7 @@ namespace WrenSharp
                 return m_Vm.SharedData.TryGet(handle, out value);
             }
 
-            value = default;
+            value = default!;
             return false;
         }
 
@@ -129,7 +129,7 @@ namespace WrenSharp
                 return handle.IsValid;
             }
 
-            handle = default;
+            handle = default!;
             return false;
         }
 
@@ -375,7 +375,7 @@ namespace WrenSharp
                 return true;
             }
 
-            value = default;
+            value = default!;
             return false;
         }
 
@@ -387,7 +387,7 @@ namespace WrenSharp
                 return true;
             }
 
-            value = default;
+            value = default!;
             return false;
         }
 
@@ -447,7 +447,7 @@ namespace WrenSharp
                 return m_Vm.SharedData.TryGet(handle, out value);
             }
 
-            value = default;
+            value = default!;
             return false;
         }
 
@@ -459,7 +459,7 @@ namespace WrenSharp
                 return m_Vm.SharedData.TryGet(handle, out value);
             }
 
-            value = default;
+            value = default!;
             return false;
         }
 
@@ -471,7 +471,7 @@ namespace WrenSharp
                 return handle.IsValid;
             }
 
-            handle = default;
+            handle = default!;
             return false;
         }
 
@@ -512,7 +512,7 @@ namespace WrenSharp
         /// </summary>
         /// <param name="value">The value to return.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Return(WrenHandle value)
+        public void Return(in WrenHandle value)
         {
             m_Vm.EnsureValidHandle(in value);
             Wren.SetSlotHandle(m_Vm.m_Ptr, 0, value.m_Ptr);
@@ -524,7 +524,7 @@ namespace WrenSharp
         /// <param name="classHandle">A handle to the class being instantiated.</param>
         /// <param name="size">The number of bytes to allocate for the instance.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IntPtr ReturnForeign(WrenHandle classHandle, ulong size)
+        public IntPtr ReturnForeign(in WrenHandle classHandle, ulong size)
         {
             m_Vm.EnsureValidHandle(in classHandle);
             m_Vm.SetSlot(0, classHandle);
@@ -550,7 +550,7 @@ namespace WrenSharp
         /// <typeparam name="T">The foreign class' data type.</typeparam>
         /// <param name="classHandle">A handle to the class being instantiated.</param>
         /// <param name="value">The value of the new instance.</param>
-        public unsafe ref T ReturnForeign<T>(WrenHandle classHandle, in T value = default) where T : unmanaged
+        public unsafe ref T ReturnForeign<T>(in WrenHandle classHandle, in T value = default) where T : unmanaged
         {
             m_Vm.EnsureValidHandle(in classHandle);
             m_Vm.SetSlot(0, classHandle);

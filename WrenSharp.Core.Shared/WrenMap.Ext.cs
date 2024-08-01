@@ -1,6 +1,4 @@
 ﻿#if WRENSHARP_EXT
-using System;
-using System.Runtime.CompilerServices;
 using WrenSharp.Native;
 using WrenSharp.Unsafe;
 

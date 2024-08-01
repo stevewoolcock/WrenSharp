@@ -12,8 +12,8 @@ namespace WrenSharp
     /// or <see cref="WrenVM.ReleaseHandle(in WrenCallHandle)"/>. <see cref="WrenVM"/> instances
     /// will automatically release all handles allocated when disposed.
     /// </summary>
-    /// <seealso cref="WrenVM.Call(WrenCallHandle, bool)"/>
-    /// <seealso cref="WrenVM.CreateCall(WrenHandle, WrenCallHandle, bool)"/>
+    /// <seealso cref="WrenVM.Call(in WrenCallHandle, bool)"/>
+    /// <seealso cref="WrenVM.CreateCall(in WrenHandle, in WrenCallHandle, bool)"/>
     public readonly struct WrenCallHandle : IDisposable, IEquatable<WrenCallHandle>
     {
         internal readonly WrenHandleInternal m_Handle;

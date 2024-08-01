@@ -154,7 +154,7 @@ namespace WrenSharp
         /// <param name="arg">The argument index.</param>
         /// <param name="handle">The handle to set.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetArg(int arg, WrenHandle handle)
+        public void SetArg(int arg, in WrenHandle handle)
         {
             m_Vm.EnsureValidHandle(in handle);
             Wren.SetSlotHandle(m_Vm.m_Ptr, ArgSlot(arg), handle.m_Ptr);

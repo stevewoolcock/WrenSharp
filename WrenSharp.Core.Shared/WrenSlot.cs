@@ -324,7 +324,7 @@ namespace WrenSharp
         /// </summary>
         /// <param name="value">The value to set.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Set(WrenHandle value) => Wren.SetSlotHandle(m_Vm.m_Ptr, m_Index, value.m_Ptr);
+        public void Set(in WrenHandle value) => Wren.SetSlotHandle(m_Vm.m_Ptr, m_Index, value.m_Ptr);
 
         /// <summary>
         /// Sets the value in this slot to null.
@@ -377,7 +377,7 @@ namespace WrenSharp
         public WrenSharedDataHandle SetNewSharedData<T>(int classSlot, object value) => m_Vm.SetSlotNewSharedData(m_Index, classSlot, value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetNewSharedData<T>(int classSlot, WrenSharedDataHandle handle) => m_Vm.SetSlotNewSharedData(m_Index, classSlot, handle);
+        public void SetNewSharedData<T>(int classSlot, in WrenSharedDataHandle handle) => m_Vm.SetSlotNewSharedData(m_Index, classSlot, handle);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetNewSharedData<T>(int classSlot, object value, out WrenSharedDataHandle handle) => m_Vm.SetSlotNewSharedData(m_Index, classSlot, value, out handle);

@@ -169,7 +169,7 @@ namespace WrenSharp
             Wren.InsertInList(m_Vm.m_Ptr, m_ListSlot, -1, slot);
         }
 
-        public void AddNewSharedData(int classSlot, WrenSharedDataHandle handle, int? elementSlot = default)
+        public void AddNewSharedData(int classSlot, in WrenSharedDataHandle handle, int? elementSlot = default)
         {
             int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
             m_Vm.SetSlotNewSharedData(slot, classSlot, handle);

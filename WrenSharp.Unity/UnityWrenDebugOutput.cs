@@ -26,26 +26,29 @@ namespace WrenSharp.Unity
 
         void IWrenWriteOutput.OutputWrite(WrenVM vm, string text)
         {
-            static ReadOnlySpan<char> Parse(string text, out LogType logType)
+            if (string.IsNullOrWhiteSpace(text))
+                return;
+
+            static string Parse(string text, out LogType logType)
             {
                 if (text.StartsWith(ErrorPrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     logType = LogType.Error;
-                    return text.AsSpan(ErrorPrefix.Length);
+                    return text.Substring(ErrorPrefix.Length);
                 }
 
                 if (text.StartsWith(WarnPrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     logType = LogType.Warning;
-                    return text.AsSpan(WarnPrefix.Length);
+                    return text.Substring(WarnPrefix.Length);
                 }
 
                 logType = LogType.Log;
                 return text;
             }
 
-            var message = Parse(text, out LogType logType);
-            Write(logType, message.ToString());
+            string message = Parse(text, out LogType logType);
+            Write(logType, message);
         }
 
         void IWrenErrorOutput.OutputError(WrenVM vm, WrenErrorType errorType, string moduleName, int lineNumber, string message)

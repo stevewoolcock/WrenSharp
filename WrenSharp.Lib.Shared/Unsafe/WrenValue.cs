@@ -55,7 +55,8 @@ namespace WrenSharp.Unsafe
 
         public bool AsBool
         {
-            get => IsBool && m_Value == TRUE_VAL;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => IsBool && m_Value == TRUE_VAL;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => Set(value);
@@ -63,7 +64,8 @@ namespace WrenSharp.Unsafe
 
         public double AsNumber
         {
-            get => IsNumber ? m_Number : default;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => IsNumber ? m_Number : default;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => Set(value);
@@ -71,25 +73,50 @@ namespace WrenSharp.Unsafe
 
         public WrenObject AsObject
         {
-            get => IsObject ? new WrenObject(ObjectPtr) : default;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => IsObject ? new WrenObject(ObjectPtr) : default;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => Set(value);
         }
-        
-        public WrenString AsString => IsObjectType(WrenObjectType.String) ? new WrenString(CastObj<WrenInternalObjString>()) : default;
 
-        public WrenClass AsClass => IsObjectType(WrenObjectType.Class) ? new WrenClass(CastObj<WrenInternalObjClass>()) : default;
+        public readonly WrenString AsString
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => IsObjectType(WrenObjectType.String) ? new WrenString(CastObj<WrenInternalObjString>()) : default;
+        }
 
-        public WrenInstance AsInstance => IsObjectType(WrenObjectType.Instance) ? new WrenInstance(CastObj<WrenInternalObjInstance>()) : default;
+        public readonly WrenClass AsClass
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => IsObjectType(WrenObjectType.Class) ? new WrenClass(CastObj<WrenInternalObjClass>()) : default;
+        }
 
-        public WrenForeign AsForeign => IsObjectType(WrenObjectType.Foreign) ? new WrenForeign(CastObj<WrenInternalObjForeign>()) : default;
+        public readonly WrenInstance AsInstance
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => IsObjectType(WrenObjectType.Instance) ? new WrenInstance(CastObj<WrenInternalObjInstance>()) : default;
+        }
 
-        public WrenNativeList AsList => IsObjectType(WrenObjectType.List) ? new WrenNativeList(CastObj<WrenInternalObjList>()) : default;
+        public readonly WrenForeign AsForeign
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => IsObjectType(WrenObjectType.Foreign) ? new WrenForeign(CastObj<WrenInternalObjForeign>()) : default;
+        }
 
-        public WrenNativeMap AsMap => IsObjectType(WrenObjectType.Map) ? new WrenNativeMap(CastObj<WrenInternalObjMap>()) : default;
+        public readonly WrenNativeList AsList
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => IsObjectType(WrenObjectType.List) ? new WrenNativeList(CastObj<WrenInternalObjList>()) : default;
+        }
 
-        public string StringValue
+        public readonly WrenNativeMap AsMap
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => IsObjectType(WrenObjectType.Map) ? new WrenNativeMap(CastObj<WrenInternalObjMap>()) : default;
+        }
+
+        public readonly string StringValue
         {
             get
             {
@@ -105,9 +132,13 @@ namespace WrenSharp.Unsafe
             }
         }
 
-        public WrenObjectType ObjectType => IsObject ? ObjectPtr->Type : WrenObjectType.Unknown;
+        public readonly WrenObjectType ObjectType
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => IsObject ? ObjectPtr->Type : WrenObjectType.Unknown;
+        }
 
-        public WrenType Type
+        public readonly WrenType Type
         {
             get
             {
@@ -129,23 +160,46 @@ namespace WrenSharp.Unsafe
         }
 
 
-        public bool IsBool => m_Value == TRUE_VAL || m_Value == FALSE_VAL;
-
-        public bool IsNull => m_Value == NULL_VAL;
-
-        public bool IsNumber => ((m_Value) & QNAN) != QNAN;
-
-        public bool IsObject => ((m_Value) & (QNAN | SIGN_BIT)) == (QNAN | SIGN_BIT);
-
-        public bool IsUndefined => m_Value == UNDEFINED_VAL;
-
-
-        internal int Tag => (int)(m_Value & MASK_TAG);
-
-        internal WrenInternalObj* ObjectPtr
+        public readonly bool IsBool
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => (WrenInternalObj*) (m_Value & ~(SIGN_BIT | QNAN));
+            get => m_Value == TRUE_VAL || m_Value == FALSE_VAL;
+        }
+
+        public readonly bool IsNull
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_Value == NULL_VAL;
+        }
+
+        public readonly bool IsNumber
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => ((m_Value) & QNAN) != QNAN;
+        }
+
+        public readonly bool IsObject
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => ((m_Value) & (QNAN | SIGN_BIT)) == (QNAN | SIGN_BIT);
+        }
+
+        public readonly bool IsUndefined
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_Value == UNDEFINED_VAL;
+        }
+
+        internal readonly int Tag
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => (int)(m_Value & MASK_TAG);
+        }
+
+        internal readonly WrenInternalObj* ObjectPtr
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => (WrenInternalObj*)(m_Value & ~(SIGN_BIT | QNAN));
         }
 
         #endregion
@@ -162,7 +216,7 @@ namespace WrenSharp.Unsafe
             m_Value = boolean ? TRUE_VAL : FALSE_VAL;
         }
 
-        public WrenValue(WrenObject wrenObject) : this(wrenObject.m_Ptr)
+        public WrenValue(in WrenObject wrenObject) : this(wrenObject.m_Ptr)
         {
         }
 
@@ -183,16 +237,17 @@ namespace WrenSharp.Unsafe
 
         /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(WrenValue other) => other.m_Value == m_Value;
+        public readonly bool Equals(WrenValue other) => other.m_Value == m_Value;
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => obj is WrenValue value && Equals(value);
+        public readonly override bool Equals(object obj) => obj is WrenValue value && Equals(value);
 
         /// <inheritdoc/>
-        public override int GetHashCode() => m_Value.GetHashCode();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly override int GetHashCode() => m_Value.GetHashCode();
 
         /// <inheritdoc/>
-        public override string ToString()
+        public readonly override string ToString()
         {
             if (IsNull) return "null";
             if (IsBool) return AsBool.ToString();
@@ -217,37 +272,43 @@ namespace WrenSharp.Unsafe
 
         #endregion
 
-        public T* AsForeignPtr<T>() where T : unmanaged => AsForeign.AsPtr<T>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T* AsForeignPtr<T>() where T : unmanaged => AsForeign.AsPtr<T>();
 
-        public T AsForeignType<T>() where T : unmanaged => AsForeign.As<T>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T AsForeignType<T>() where T : unmanaged => AsForeign.As<T>();
 
         /// <summary>
         /// Returns a boolean indicating if the value represents a Wren object of <paramref name="type"/>.
         /// </summary>
         /// <param name="type">The object type.</param>
         /// <returns>True if the value is an object of <paramref name="type"/>, otherwise false.</returns>
-        public bool IsObjectType(WrenObjectType type) => IsObject && ObjectPtr->Type == type;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool IsObjectType(WrenObjectType type) => IsObject && ObjectPtr->Type == type;
 
         /// <summary>
         /// Sets the value to boolean.
         /// </summary>
         /// <param name="value">The boolean value to set.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(bool value) => this = new WrenValue(value);
 
         /// <summary>
         /// Sets the value to a number.
         /// </summary>
         /// <param name="value">The number value to set.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(double value) => this = new WrenValue(value);
 
         /// <summary>
         /// Sets the value to a wren object.
         /// </summary>
         /// <param name="value">The object value to set.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(WrenObject value) => this = new WrenValue(value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private T* CastObj<T>() where T : unmanaged => (T*)ObjectPtr;
+        private readonly T* CastObj<T>() where T : unmanaged => (T*)ObjectPtr;
 
         #region Operators
 
@@ -257,8 +318,13 @@ namespace WrenSharp.Unsafe
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(WrenValue left, WrenValue right) => !(left == right);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator bool(WrenValue wrenValue) => wrenValue.AsBool;
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator double(WrenValue wrenValue) => wrenValue.AsNumber;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator WrenObject(WrenValue wrenValue) => wrenValue.AsObject;
 
         #endregion
