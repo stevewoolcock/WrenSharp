@@ -249,6 +249,22 @@
             If null, uses the Wren default (50%).
             </summary>
         </member>
+        <member name="P:WrenSharp.WrenVMConfiguration.HandlePoolCapacityInitial">
+            <summary>
+            The initial capacity of the internal <see cref="T:WrenSharp.WrenHandle"/> pool for the VM.
+            The specified number of handles will be pre-allocated during intialization.<para/>
+            If zero, no handles will be allocated during initialization.
+            </summary>
+        </member>
+        <member name="P:WrenSharp.WrenVMConfiguration.HandlePoolCapacityMax">
+            <summary>
+            The maximum capacity of the internal <see cref="T:WrenSharp.WrenHandle"/> pool for the VM.
+            The VM will never store more than this number of handles in the pool. If the number of handles
+            allocated exceeds this value, the excess managed handle wrappers will not be added to the pool
+            and left for the garbage collector to dispose.<para/>
+            If zero, no maximum limit is enforced.
+            </summary>
+        </member>
         <member name="M:WrenSharp.WrenVMConfiguration.Clone">
             <summary>
             Creates a shallow copy of this <see cref="T:WrenSharp.WrenVMConfiguration"/>.
@@ -1176,6 +1192,46 @@
         <member name="M:WrenSharp.WrenFn.op_Inequality(WrenSharp.WrenFn,WrenSharp.WrenFn)">
             <inheritdoc/>
         </member>
+        <member name="T:WrenSharp.WrenSharpConfiguration">
+            <summary>
+            Configuration data for a <see cref="T:WrenSharp.WrenVM"/> managed instance.
+            </summary>
+        </member>
+        <member name="F:WrenSharp.WrenSharpConfiguration.Initializer">
+            <summary>
+            The <see cref="T:WrenSharp.WrenVMInitializer"/> delegate to use to initialize the native Wren VM. Leave this value null
+            to use the default initializer (<see cref="M:WrenSharp.Native.Wren.NewVM(WrenSharp.Native.WrenConfiguration@)"/>. Supplying a custom
+            initializer allows for greater control over the routine used to create the VM (for example, using a native plugin
+            to initialize the VM with a custom native reallocator function).
+            </summary>
+        </member>
+        <member name="F:WrenSharp.WrenSharpConfiguration.Destructor">
+            <summary>
+            The <see cref="T:WrenSharp.WrenVMDestructor"/> delegate to execute when the VM is disposed.
+            </summary>
+        </member>
+        <member name="F:WrenSharp.WrenSharpConfiguration.Allocator">
+            <summary>
+            The allocator to use for unmanaged memory. Some WrenSharp features use unmanaged memory for performance reasons.
+            The native Wren VM does not use this. If null, the default allocator (<see cref="P:WrenSharp.Memory.HGlobalAllocator.Default"/>) is used.
+            </summary>
+        </member>
+        <member name="F:WrenSharp.WrenSharpConfiguration.HandlePoolCapacityInitial">
+            <summary>
+            The initial capacity of the internal <see cref="T:WrenSharp.WrenHandle"/> pool for the VM.
+            The specified number of handles will be pre-allocated during intialization.<para/>
+            If zero, no handles will be allocated during initialization.
+            </summary>
+        </member>
+        <member name="F:WrenSharp.WrenSharpConfiguration.HandlePoolCapacityMax">
+            <summary>
+            The maximum capacity of the internal <see cref="T:WrenSharp.WrenHandle"/> pool for the VM.
+            The VM will never store more than this number of handles in the pool. If the number of handles
+            allocated exceeds this value, the excess managed handle wrappers will not be added to the pool
+            and left for the garbage collector to dispose.<para/>
+            If zero, no maximum limit is enforced.
+            </summary>
+        </member>
         <member name="T:WrenSharp.WrenSlot">
             <summary>
             A wrapper for a Wren API slot.
@@ -1773,7 +1829,7 @@
             <param name="stringBytes">The value to write.</param>
             <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
         </member>
-        <member name="M:WrenSharp.WrenVM.SetSlot(System.Int32,WrenSharp.WrenHandle)">
+        <member name="M:WrenSharp.WrenVM.SetSlot(System.Int32,WrenSharp.WrenHandle@)">
             <summary>
             Stores the value of a <see cref="T:WrenSharp.WrenHandle"/> in <paramref name="slot"/>.
             </summary>
@@ -1782,7 +1838,7 @@
             <returns>A reference to this <see cref="T:WrenSharp.WrenVM"/>.</returns>
             <exception cref="T:WrenSharp.WrenInvalidHandleException">Thrown if <paramref name="value"/> is not valid.</exception>
         </member>
-        <member name="M:WrenSharp.WrenVM.SetSlotUnsafe(System.Int32,WrenSharp.WrenHandle)">
+        <member name="M:WrenSharp.WrenVM.SetSlotUnsafe(System.Int32,WrenSharp.WrenHandle@)">
             <summary>
             Stores the value of a <see cref="T:WrenSharp.WrenHandle"/> in <paramref name="slot"/>. This method does not check
             the validity of <paramref name="value"/>. If <paramref name="value"/> is an invalid <see cref="T:WrenSharp.WrenHandle"/>,
@@ -2452,26 +2508,15 @@
             Base constructor for derived classes to perform their own initialization.
             </summary>
         </member>
-        <member name="M:WrenSharp.WrenVM.#ctor(WrenSharp.Native.WrenConfiguration@,WrenSharp.Memory.IAllocator)">
+        <member name="M:WrenSharp.WrenVM.#ctor(WrenSharp.WrenSharpConfiguration@,WrenSharp.Native.WrenConfiguration@)">
             <summary>
             Creates a new Wren VM to run Wren scripts. This constructor provides the ability to explicitly
             set the native configuration passed into the Wren instance, allowing for full control over the VM.
             </summary>
-            <param name="config">The <see cref="T:WrenSharp.Native.WrenConfiguration"/>.</param>
-            <param name="allocator">The <see cref="T:WrenSharp.Memory.IAllocator"/> to use when allocated unmanaged memory from C#. This is not used by the native Wren VM instance.</param>
+            <param name="wsConfig">The <see cref="T:WrenSharp.WrenSharpConfiguration"/> for the <see cref="T:WrenSharp.WrenVM"/> instance.</param>
+            <param name="wrenConfig">The <see cref="T:WrenSharp.Native.WrenConfiguration"/>.</param>
         </member>
-        <member name="M:WrenSharp.WrenVM.#ctor(WrenSharp.WrenVMInitializer,WrenSharp.WrenVMDestructor,WrenSharp.Native.WrenConfiguration@,WrenSharp.Memory.IAllocator)">
-            <summary>
-            Creates a new Wren VM to run Wren scripts. This constructor provides the ability to explicitly
-            set the delete used to initialize the native Wren VM, as well as the native configuration passed into the Wren instance,
-            allowing for full control over the VM initializer.
-            </summary>
-            <param name="vmInitializer">The <see cref="T:WrenSharp.WrenVMInitializer"/> delegate to initialize the native Wren VM. Leave null to use the default initializer (<see cref="M:WrenSharp.Native.Wren.NewVM(WrenSharp.Native.WrenConfiguration@)"/>).</param>
-            <param name="vmDestructor">The <see cref="T:WrenSharp.WrenVMDestructor"/> delegate called when the VM is disposed.</param>
-            <param name="config">The <see cref="T:WrenSharp.Native.WrenConfiguration"/>.</param>
-            <param name="allocator">The <see cref="T:WrenSharp.Memory.IAllocator"/> to use when allocated unmanaged memory from C#. This is not used by the native Wren VM instance.</param>
-        </member>
-        <member name="M:WrenSharp.WrenVM.Initialize(WrenSharp.WrenVMInitializer,WrenSharp.WrenVMDestructor,WrenSharp.Native.WrenConfiguration@,WrenSharp.Memory.IAllocator)">
+        <member name="M:WrenSharp.WrenVM.Initialize(WrenSharp.WrenSharpConfiguration@,WrenSharp.Native.WrenConfiguration@)">
             <summary>
             Initializes the VM using the given configuration.
             </summary>
@@ -2614,6 +2659,19 @@
             <seealso cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle@,WrenSharp.WrenCallHandle@,System.Boolean)"/>
             <seealso cref="M:WrenSharp.WrenVM.CreateCallHandle(System.String)"/>
         </member>
+        <member name="M:WrenSharp.WrenVM.Call(WrenSharp.WrenHandle@,WrenSharp.WrenCallHandle@,System.Boolean)">
+            <summary>
+            Calls a Wren method on a receiver object.
+            </summary>
+            <param name="receiverHandle">A handle to the receiver object.</param>
+            <param name="callHandle">A handle for the method to call. Must be parameterless.</param>
+            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if the call is unsuccessful.</param>
+            <returns>The result of the call operation.</returns>
+            <exception cref="T:System.ArgumentException">Thrown if <paramref name="callHandle"/> is not a parameterless function.</exception>
+            <exception cref="T:WrenSharp.WrenInterpretException">Thrown if the call is unsuccessful and <paramref name="throwOnFailure"/> is true.</exception>
+            <seealso cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle@,WrenSharp.WrenCallHandle@,System.Boolean)"/>
+            <seealso cref="M:WrenSharp.WrenVM.CreateCallHandle(System.String)"/>
+        </member>
         <member name="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle@,WrenSharp.WrenCallHandle@)">
             <summary>
             Creates a <see cref="T:WrenSharp.WrenCall"/> value that can be used to prepare and execute a call.
@@ -2638,6 +2696,21 @@
             <param name="functionHandle">A handle wrapping a Wren Fn object.</param>
             <param name="argCount">The number of arguments the function expects.</param>
             <returns>A <see cref="T:WrenSharp.WrenCall"/> value.</returns>
+        </member>
+        <member name="M:WrenSharp.WrenVM.Call(WrenSharp.WrenHandle@,WrenSharp.WrenCallHandle@,System.Boolean,System.Boolean)">
+            <summary>
+            Calls a Wren method on a receiver object.
+            </summary>
+            <param name="receiverHandle">A handle to the receiver object.</param>
+            <param name="callHandle">A handle for the method to call. Must be parameterless.</param>
+            <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
+            to call back into Wren from the managed side without clobbering the Wren API stack.</param>
+            <param name="throwOnFailure">If true, a <see cref="T:WrenSharp.WrenInterpretException"/> will be thrown if the call is unsuccessful.</param>
+            <returns>The result of the call operation.</returns>
+            <exception cref="T:System.ArgumentException">Thrown if <paramref name="callHandle"/> is not a parameterless function.</exception>
+            <exception cref="T:WrenSharp.WrenInterpretException">Thrown if the call is unsuccessful and <paramref name="throwOnFailure"/> is true.</exception>
+            <seealso cref="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle@,WrenSharp.WrenCallHandle@,System.Boolean)"/>
+            <seealso cref="M:WrenSharp.WrenVM.CreateCallHandle(System.String)"/>
         </member>
         <member name="M:WrenSharp.WrenVM.CreateCall(WrenSharp.WrenHandle@,WrenSharp.WrenCallHandle@,System.Boolean)">
             <summary>

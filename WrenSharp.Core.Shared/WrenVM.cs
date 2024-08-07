@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
-using WrenSharp.Native;
-using WrenSharp.Memory;
 using WrenSharp.Internal;
+using WrenSharp.Memory;
+using WrenSharp.Native;
 
 namespace WrenSharp
 {
@@ -40,7 +40,6 @@ namespace WrenSharp
     /// <param name="newSize">The minimum size of the new memory block to reallocate.</param>
     /// <returns>A pointer to the newly allocated memory block.</returns>
     public delegate IntPtr WrenReallocate(WrenVM vm, IntPtr memory, ulong newSize);
-
 
     /// <summary>
     /// A managed instance of a Wren virtual machine. This class wraps the native VM and provides a clean, convenient API
@@ -156,12 +155,14 @@ namespace WrenSharp
         protected internal IntPtr m_Ptr;
 
         private readonly object m_HandleLocker = new object();
-        private readonly Queue<WrenHandleInternal> m_PooledHandles = new Queue<WrenHandleInternal>();
-        private readonly HashSet<WrenHandleInternal> m_ActiveHandles = new HashSet<WrenHandleInternal>();
         private readonly WrenSharedDataTable m_SharedData = new WrenSharedDataTable();
         private readonly List<WrenError> m_Errors = new List<WrenError>(0);
         private WrenVMDestructor m_Destructor;
         private IAllocator m_Allocator;
+
+        private HashSet<WrenHandleInternal> m_ActiveHandles;
+        private Queue<WrenHandleInternal> m_PooledHandles;
+        private int m_PooledHandleMaxCount;
 
         // The native config struct needs to be kept on the heap as it keeps function pointers to delegates
         // that Wren calls, so they must remain alive for as long as the VM is active.
@@ -254,25 +255,11 @@ namespace WrenSharp
         /// Creates a new Wren VM to run Wren scripts. This constructor provides the ability to explicitly
         /// set the native configuration passed into the Wren instance, allowing for full control over the VM.
         /// </summary>
-        /// <param name="config">The <see cref="WrenConfiguration"/>.</param>
-        /// <param name="allocator">The <see cref="IAllocator"/> to use when allocated unmanaged memory from C#. This is not used by the native Wren VM instance.</param>
-        public WrenVM(ref WrenConfiguration config, IAllocator allocator = default!) : this()
+        /// <param name="wsConfig">The <see cref="WrenSharpConfiguration"/> for the <see cref="WrenVM"/> instance.</param>
+        /// <param name="wrenConfig">The <see cref="WrenConfiguration"/>.</param>
+        public WrenVM(in WrenSharpConfiguration wsConfig, ref WrenConfiguration wrenConfig) : this()
         {
-            Initialize(vmInitializer: null!, vmDestructor: null!, ref config, allocator);
-        }
-
-        /// <summary>
-        /// Creates a new Wren VM to run Wren scripts. This constructor provides the ability to explicitly
-        /// set the delete used to initialize the native Wren VM, as well as the native configuration passed into the Wren instance,
-        /// allowing for full control over the VM initializer.
-        /// </summary>
-        /// <param name="vmInitializer">The <see cref="WrenVMInitializer"/> delegate to initialize the native Wren VM. Leave null to use the default initializer (<see cref="Wren.NewVM(ref WrenConfiguration)"/>).</param>
-        /// <param name="vmDestructor">The <see cref="WrenVMDestructor"/> delegate called when the VM is disposed.</param>
-        /// <param name="config">The <see cref="WrenConfiguration"/>.</param>
-        /// <param name="allocator">The <see cref="IAllocator"/> to use when allocated unmanaged memory from C#. This is not used by the native Wren VM instance.</param>
-        public WrenVM(WrenVMInitializer vmInitializer, WrenVMDestructor vmDestructor, ref WrenConfiguration config, IAllocator allocator = default!) : this()
-        {
-            Initialize(vmInitializer, vmDestructor, ref config, allocator);
+            Initialize(in wsConfig, ref wrenConfig);
         }
 
         /// <summary>
@@ -284,15 +271,30 @@ namespace WrenSharp
         /// <param name="allocator">An optional memory allocator to use for unamanged buffers. If null, the
         /// default allocator (<see cref="HGlobalAllocator"/>) is used.</param>
         /// <exception cref="InvalidOperationException">Thrown if the VM has already been initialized.</exception>
-        protected void Initialize(WrenVMInitializer vmInitializer, WrenVMDestructor vmDestructor, ref WrenConfiguration config, IAllocator allocator)
+        protected void Initialize(in WrenSharpConfiguration wsConfig, ref WrenConfiguration config)
         {
             if (m_Initialized)
                 throw new InvalidOperationException("A WrenVM instance can only be initialized once.");
 
             m_Config = config;
-            m_Destructor = vmDestructor ?? _defaultDestructor;
-            m_Allocator = allocator ?? HGlobalAllocator.Default;
-            m_Ptr = vmInitializer?.Invoke(ref m_Config) ?? _defaultInitializer(ref config);
+            m_Destructor = wsConfig.Destructor ?? _defaultDestructor;
+            m_Allocator = wsConfig.Allocator ?? HGlobalAllocator.Default;
+
+            // Prepare the handle pool
+            int initHandleCount = wsConfig.HandlePoolCapacityMax > 0
+                ? Math.Min(wsConfig.HandlePoolCapacityInitial, wsConfig.HandlePoolCapacityMax)
+                : wsConfig.HandlePoolCapacityInitial;
+            m_PooledHandleMaxCount = wsConfig.HandlePoolCapacityMax;
+            m_PooledHandles = new Queue<WrenHandleInternal>(initHandleCount);
+            m_ActiveHandles = new HashSet<WrenHandleInternal>(initHandleCount / 2);
+
+            for (int i = 0; i < initHandleCount; i++)
+            {
+                m_PooledHandles.Enqueue(new WrenHandleInternal(this));
+            }
+
+            // Initialize the VM
+            m_Ptr = wsConfig.Initializer?.Invoke(ref m_Config) ?? _defaultInitializer(ref config);
             if (m_Ptr == IntPtr.Zero)
             {
                 throw new WrenInitializationException(this, "Failed to intiailize WrenVM");
@@ -302,6 +304,7 @@ namespace WrenSharp
             {
                 _vmsByPtr[m_Ptr] = this;
             }
+
 
             m_Initialized = true;
         }
@@ -515,6 +518,28 @@ namespace WrenSharp
         }
 
         /// <summary>
+        /// Calls a Wren method on a receiver object.
+        /// </summary>
+        /// <param name="receiverHandle">A handle to the receiver object.</param>
+        /// <param name="callHandle">A handle for the method to call. Must be parameterless.</param>
+        /// <param name="throwOnFailure">If true, a <see cref="WrenInterpretException"/> will be thrown if the call is unsuccessful.</param>
+        /// <returns>The result of the call operation.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="callHandle"/> is not a parameterless function.</exception>
+        /// <exception cref="WrenInterpretException">Thrown if the call is unsuccessful and <paramref name="throwOnFailure"/> is true.</exception>
+        /// <seealso cref="CreateCall(in WrenHandle, in WrenCallHandle, bool)"/>
+        /// <seealso cref="CreateCallHandle(string)"/>
+        public WrenInterpretResult Call(in WrenHandle receiverHandle, in WrenCallHandle callHandle, bool throwOnFailure = true)
+        {
+            EnsureValidHandle(in receiverHandle);
+            EnsureValidHandle(in callHandle);
+            if (callHandle.m_ParamCount != 0)
+                throw new ArgumentException("Call handle must be parameterless", nameof(callHandle));
+
+            using WrenCall call = new WrenCall(this, in receiverHandle, in callHandle);
+            return call.Call(throwOnFailure);
+        }
+
+        /// <summary>
         /// Creates a <see cref="WrenCall"/> value that can be used to prepare and execute a call.
         /// </summary>
         /// <param name="receiverHandle">A handle to the receiver object.</param>
@@ -553,6 +578,31 @@ namespace WrenSharp
         }
 
 #if WRENSHARP_EXT
+
+        /// <summary>
+        /// Calls a Wren method on a receiver object.
+        /// </summary>
+        /// <param name="receiverHandle">A handle to the receiver object.</param>
+        /// <param name="callHandle">A handle for the method to call. Must be parameterless.</param>
+        /// <param name="createNewFiber">If true, a new Wren Fiber is created to execute the call. This allows for foreign methods called from within Wren
+        /// to call back into Wren from the managed side without clobbering the Wren API stack.</param>
+        /// <param name="throwOnFailure">If true, a <see cref="WrenInterpretException"/> will be thrown if the call is unsuccessful.</param>
+        /// <returns>The result of the call operation.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="callHandle"/> is not a parameterless function.</exception>
+        /// <exception cref="WrenInterpretException">Thrown if the call is unsuccessful and <paramref name="throwOnFailure"/> is true.</exception>
+        /// <seealso cref="CreateCall(in WrenHandle, in WrenCallHandle, bool)"/>
+        /// <seealso cref="CreateCallHandle(string)"/>
+        public WrenInterpretResult Call(in WrenHandle receiverHandle, in WrenCallHandle callHandle, bool createNewFiber, bool throwOnFailure = true)
+        {
+            EnsureValidHandle(in receiverHandle);
+            EnsureValidHandle(in callHandle);
+            if (callHandle.m_ParamCount != 0)
+                throw new ArgumentException("Call handle must be parameterless", nameof(callHandle));
+
+            using WrenCall call = new WrenCall(this, in receiverHandle, in callHandle, createNewFiber);
+            return call.Call(throwOnFailure);
+        }
+
         /// <summary>
         /// Creates a <see cref="WrenCall"/> value that can be used to prepare and execute a call.
         /// </summary>
@@ -1075,7 +1125,10 @@ namespace WrenSharp
                     Wren.ReleaseHandle(m_Ptr, handle.Ptr);
                     handle.Ptr = IntPtr.Zero;
 
-                    m_PooledHandles.Enqueue(handle);
+                    if (m_PooledHandleMaxCount <= 0 || m_PooledHandles.Count < m_PooledHandleMaxCount)
+                    {
+                        m_PooledHandles.Enqueue(handle);
+                    }
                 }
 
                 m_ActiveHandles.Clear();
@@ -1174,9 +1227,10 @@ namespace WrenSharp
             WrenHandleInternal handle;
             lock (m_HandleLocker)
             {
-                handle = m_PooledHandles.Count > 0
-                    ? m_PooledHandles.Dequeue()
-                    : new WrenHandleInternal(this);
+                if (!m_PooledHandles.TryDequeue(out handle))
+                {
+                    handle = new WrenHandleInternal(this);
+                }
 
                 handle.Ptr = handlePtr;
                 handle.Version++;
@@ -1198,7 +1252,11 @@ namespace WrenSharp
 
             lock (m_HandleLocker)
             {
-                m_PooledHandles.Enqueue(handle);
+                if (m_PooledHandleMaxCount <= 0 || m_PooledHandles.Count < m_PooledHandleMaxCount)
+                {
+                    m_PooledHandles.Enqueue(handle);
+                }
+
                 m_ActiveHandles.Remove(handle);
             }
         }

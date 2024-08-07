@@ -527,7 +527,7 @@ namespace WrenSharp
         public IntPtr ReturnForeign(in WrenHandle classHandle, ulong size)
         {
             m_Vm.EnsureValidHandle(in classHandle);
-            m_Vm.SetSlot(0, classHandle);
+            m_Vm.SetSlot(0, in classHandle);
             return Wren.SetSlotNewForeign(m_Vm.m_Ptr, 0, 0, size);
         }
 
@@ -553,7 +553,7 @@ namespace WrenSharp
         public unsafe ref T ReturnForeign<T>(in WrenHandle classHandle, in T value = default) where T : unmanaged
         {
             m_Vm.EnsureValidHandle(in classHandle);
-            m_Vm.SetSlot(0, classHandle);
+            m_Vm.SetSlot(0, in classHandle);
             var ptr = (T*)Wren.SetSlotNewForeign(m_Vm.m_Ptr, 0, 0, (ulong)sizeof(T));
             *ptr = value;
             return ref *ptr;

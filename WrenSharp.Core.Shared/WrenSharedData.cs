@@ -15,6 +15,8 @@ namespace WrenSharp
             public WrenSharedDataHandle NextFree;
         }
 
+        private const int MinCapacity = 8;
+
         private Entry[] m_Entries = Array.Empty<Entry>();
         private WrenSharedDataHandle m_Free = (WrenSharedDataHandle)1;
         private WrenSharedDataHandle m_Tail = WrenSharedDataHandle.Invalid;
@@ -48,8 +50,14 @@ namespace WrenSharp
             if (handle >= m_Entries.Length)
             {
                 int newCapacity = m_Entries.Length * 2;
-                if (newCapacity < 8) newCapacity = 8;
-                else if (newCapacity > int.MaxValue) newCapacity = int.MaxValue;
+                if (newCapacity < MinCapacity)
+                {
+                    newCapacity = MinCapacity;
+                }
+                else if (newCapacity > int.MaxValue)
+                {
+                    newCapacity = int.MaxValue;
+                }
 
                 Array.Resize(ref m_Entries, newCapacity);
             }

@@ -469,7 +469,7 @@ namespace WrenSharp
         /// <returns>A reference to this <see cref="WrenVM"/>.</returns>
         /// <exception cref="WrenInvalidHandleException">Thrown if <paramref name="value"/> is not valid.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public WrenVM SetSlot(int slot, WrenHandle value)
+        public WrenVM SetSlot(int slot, in WrenHandle value)
         {
             EnsureValidHandle(in value);
             Wren.SetSlotHandle(m_Ptr, slot, value.m_Ptr);
@@ -485,7 +485,7 @@ namespace WrenSharp
         /// <param name="value">The value to write.</param>
         /// <returns>A reference to this <see cref="WrenVM"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public WrenVM SetSlotUnsafe(int slot, WrenHandle value)
+        public WrenVM SetSlotUnsafe(int slot, in WrenHandle value)
         {
             Wren.SetSlotHandle(m_Ptr, slot, value.m_Ptr);
             return this;
@@ -845,7 +845,7 @@ namespace WrenSharp
                 return m_SharedData.TryGet(*ptr, out value);
             }
 
-            value = default;
+            value = default!;
             return false;
         }
 

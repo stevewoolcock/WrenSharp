@@ -192,26 +192,26 @@ namespace WrenSharp
 #endif
 
 
-		public bool Contains(WrenHandle value, int? elementSlot = default)
+		public bool Contains(in WrenHandle value, int? elementSlot = default)
 		{
             return IndexOf(value, elementSlot) >= 0;
 		}
 
-		public void Add(WrenHandle value, int? elementSlot = default)
+		public void Add(in WrenHandle value, int? elementSlot = default)
 		{
             int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
             m_Vm.SetSlot(slot, value);
             Wren.InsertInList(m_Vm.m_Ptr, m_ListSlot, -1, slot);
 		}
         
-		public void Insert(int index, WrenHandle value, int? elementSlot = default)
+		public void Insert(int index, in WrenHandle value, int? elementSlot = default)
 		{
             int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
             m_Vm.SetSlot(slot, value);
             Wren.InsertInList(m_Vm.m_Ptr, m_ListSlot, index, slot);
 		}
         
-		public void Set(int index, WrenHandle value, int? elementSlot = default)
+		public void Set(int index, in WrenHandle value, int? elementSlot = default)
 		{
             int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
             m_Vm.SetSlot(slot, value);
@@ -219,14 +219,14 @@ namespace WrenSharp
 		}
 
 #if WRENSHARP_EXT
-		public int IndexOf(WrenHandle value, int? elementSlot = default)
+		public int IndexOf(in WrenHandle value, int? elementSlot = default)
 		{
             int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
             m_Vm.SetSlot(slot, value);
             return Wren.GetListIndexOf(m_Vm.m_Ptr, m_ListSlot, slot);
 		}
 #else
-        public int IndexOf(WrenHandle value, int? elementSlot = default)
+        public int IndexOf(in WrenHandle value, int? elementSlot = default)
         {
             int slot = elementSlot.GetValueOrDefault(m_DefaultElementSlot);
             m_Vm.SetSlot(m_DefaultElementSlot, value);

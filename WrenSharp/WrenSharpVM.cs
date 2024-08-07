@@ -39,8 +39,16 @@ namespace WrenSharp
             // Copy managed configuration to native config
             CopyManagedConfigToNativeConfig(config, ref wrenCfg);
 
-            // Initialize the VM with the 
-            Initialize(config.Initializer, config.Destructor, ref wrenCfg, config.Allocator);
+            // Initialize the VM
+            var wrenSharpCfg = new WrenSharpConfiguration()
+            {
+                Initializer = config.Initializer,
+                Destructor = config.Destructor,
+                Allocator = config.Allocator,
+                HandlePoolCapacityInitial = config.HandlePoolCapacityInitial,
+                HandlePoolCapacityMax = config.HandlePoolCapacityMax,
+            };
+            Initialize(in wrenSharpCfg, ref wrenCfg);
         }
 
         private void CopyManagedConfigToNativeConfig(WrenVMConfiguration config, ref WrenConfiguration nativeConfig)

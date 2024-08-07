@@ -8,14 +8,14 @@ namespace WrenSharp
 	public readonly partial struct WrenList
 	{
 <#
-string[] typeNames = new string[] { "string", "double", "bool", "WrenHandle" };
+string[] typeNames = new string[] { "string", "double", "bool", "in WrenHandle" };
 string[] typeTitleCase = new string[] { "String", "Double", "Bool", "Handle" };
 
 for (int i = 0; i < typeNames.Length; i++)
 {
     string valueType = typeNames[i];
     
-    if (valueType != "WrenHandle")
+    if (valueType != "in WrenHandle")
     {
 #>
 		public <#=valueType#> Get<#=typeTitleCase[i]#>(int index, int? elementSlot = default)
@@ -73,7 +73,7 @@ for (int i = 0; i < typeNames.Length; i++)
             {
                 Wren.GetListElement(m_Vm.m_Ptr, m_ListSlot, i, slot);
 <#
-                if (valueType == "WrenHandle")
+                if (valueType == "in WrenHandle")
                 {
 #>
                 if (m_Vm.GetSlot<#=typeTitleCase[i]#>(slot) == value.m_Ptr)

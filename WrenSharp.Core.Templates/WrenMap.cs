@@ -25,7 +25,7 @@ namespace WrenSharp
             return Wren.GetMapContainsKey(m_Vm.m_Ptr, m_MapSlot, m_DefaultKeySlot) != 0;
 		}
 
-		public bool ContainsKey(WrenHandle key)
+		public bool ContainsKey(in WrenHandle key)
 		{
             m_Vm.SetSlot(m_DefaultKeySlot, key);
             return Wren.GetMapContainsKey(m_Vm.m_Ptr, m_MapSlot, m_DefaultKeySlot) != 0;
@@ -98,7 +98,7 @@ namespace WrenSharp
             return *Wren.GetSlotPtr(m_Vm.m_Ptr, vslot);
         }
 #endif
-		public WrenSlot GetValue(WrenHandle key, int? keySlot = default, int? valueSlot = default)
+		public WrenSlot GetValue(in WrenHandle key, int? keySlot = default, int? valueSlot = default)
 		{
             int kslot = keySlot.GetValueOrDefault(m_DefaultKeySlot);
             int vslot = valueSlot.GetValueOrDefault(m_DefaultValueSlot);
@@ -109,7 +109,7 @@ namespace WrenSharp
 		}
         
 #if WRENSHARP_EXT
-        public unsafe Unsafe.WrenValue GetValueUnsafe(WrenHandle key, int? keySlot = default, int? valueSlot = default)
+        public unsafe Unsafe.WrenValue GetValueUnsafe(in WrenHandle key, int? keySlot = default, int? valueSlot = default)
         {
             int kslot = keySlot.GetValueOrDefault(m_DefaultKeySlot);
             int vslot = valueSlot.GetValueOrDefault(m_DefaultValueSlot);
@@ -236,7 +236,7 @@ namespace WrenSharp
             return *(WrenSharedDataHandle*)Wren.GetSlotForeign(m_Vm.m_Ptr, m_DefaultValueSlot);
 	    }
 
-	    public unsafe IntPtr GetValueForeign(WrenHandle key, int? keySlot = default, int? valueSlot = default)
+	    public unsafe IntPtr GetValueForeign(in WrenHandle key, int? keySlot = default, int? valueSlot = default)
 	    {
             int kslot = keySlot.GetValueOrDefault(m_DefaultKeySlot);
             int vslot = valueSlot.GetValueOrDefault(m_DefaultValueSlot);
@@ -246,21 +246,21 @@ namespace WrenSharp
             return Wren.GetSlotForeign(m_Vm.m_Ptr, vslot);
 	    }
         
-	    public unsafe ref T GetValueForeign<T>(WrenHandle key) where T : unmanaged
+	    public unsafe ref T GetValueForeign<T>(in WrenHandle key) where T : unmanaged
 	    {
             m_Vm.SetSlot(m_DefaultKeySlot, key);
             m_Vm.MapGetValue(m_MapSlot, m_DefaultKeySlot, m_DefaultValueSlot);
             return ref *(T*)Wren.GetSlotForeign(m_Vm.m_Ptr, m_DefaultValueSlot);
 	    }
         
-	    public unsafe T* GetValueForeignPtr<T>(WrenHandle key) where T : unmanaged
+	    public unsafe T* GetValueForeignPtr<T>(in WrenHandle key) where T : unmanaged
 	    {
             m_Vm.SetSlot(m_DefaultKeySlot, key);
             m_Vm.MapGetValue(m_MapSlot, m_DefaultKeySlot, m_DefaultValueSlot);
             return (T*)Wren.GetSlotForeign(m_Vm.m_Ptr, m_DefaultValueSlot);
 	    }
 
-	    public unsafe T GetValueSharedData<T>(WrenHandle key)
+	    public unsafe T GetValueSharedData<T>(in WrenHandle key)
 	    {
             m_Vm.SetSlot(m_DefaultKeySlot, key);
             m_Vm.MapGetValue(m_MapSlot, m_DefaultKeySlot, m_DefaultValueSlot);
@@ -268,7 +268,7 @@ namespace WrenSharp
             return m_Vm.SharedData.Get<T>(handle);
 	    }
         
-	    public unsafe WrenSharedDataHandle GetValueSharedDataHandle(WrenHandle key)
+	    public unsafe WrenSharedDataHandle GetValueSharedDataHandle(in WrenHandle key)
 	    {
             m_Vm.SetSlot(m_DefaultKeySlot, key);
             m_Vm.MapGetValue(m_MapSlot, m_DefaultKeySlot, m_DefaultValueSlot);
@@ -300,7 +300,7 @@ namespace WrenSharp
             m_Vm.MapSetValue(m_MapSlot, m_DefaultKeySlot, m_DefaultValueSlot);
 		}
 
-		public void SetValue(string key, WrenHandle value)
+		public void SetValue(string key, in WrenHandle value)
 		{
             m_Vm.SetSlot(m_DefaultKeySlot, key);
             m_Vm.SetSlot(m_DefaultValueSlot, value);
@@ -328,7 +328,7 @@ namespace WrenSharp
             m_Vm.MapSetValue(m_MapSlot, m_DefaultKeySlot, m_DefaultValueSlot);
 		}
 
-		public void SetValue(double key, WrenHandle value)
+		public void SetValue(double key, in WrenHandle value)
 		{
             m_Vm.SetSlot(m_DefaultKeySlot, key);
             m_Vm.SetSlot(m_DefaultValueSlot, value);
@@ -356,35 +356,35 @@ namespace WrenSharp
             m_Vm.MapSetValue(m_MapSlot, m_DefaultKeySlot, m_DefaultValueSlot);
 		}
 
-		public void SetValue(bool key, WrenHandle value)
+		public void SetValue(bool key, in WrenHandle value)
 		{
             m_Vm.SetSlot(m_DefaultKeySlot, key);
             m_Vm.SetSlot(m_DefaultValueSlot, value);
             m_Vm.MapSetValue(m_MapSlot, m_DefaultKeySlot, m_DefaultValueSlot);
 		}
 
-		public void SetValue(WrenHandle key, string value)
+		public void SetValue(in WrenHandle key, string value)
 		{
             m_Vm.SetSlot(m_DefaultKeySlot, key);
             m_Vm.SetSlot(m_DefaultValueSlot, value);
             m_Vm.MapSetValue(m_MapSlot, m_DefaultKeySlot, m_DefaultValueSlot);
 		}
 
-		public void SetValue(WrenHandle key, double value)
+		public void SetValue(in WrenHandle key, double value)
 		{
             m_Vm.SetSlot(m_DefaultKeySlot, key);
             m_Vm.SetSlot(m_DefaultValueSlot, value);
             m_Vm.MapSetValue(m_MapSlot, m_DefaultKeySlot, m_DefaultValueSlot);
 		}
 
-		public void SetValue(WrenHandle key, bool value)
+		public void SetValue(in WrenHandle key, bool value)
 		{
             m_Vm.SetSlot(m_DefaultKeySlot, key);
             m_Vm.SetSlot(m_DefaultValueSlot, value);
             m_Vm.MapSetValue(m_MapSlot, m_DefaultKeySlot, m_DefaultValueSlot);
 		}
 
-		public void SetValue(WrenHandle key, WrenHandle value)
+		public void SetValue(in WrenHandle key, in WrenHandle value)
 		{
             m_Vm.SetSlot(m_DefaultKeySlot, key);
             m_Vm.SetSlot(m_DefaultValueSlot, value);
@@ -547,35 +547,35 @@ namespace WrenSharp
             return returnVal;
         }
 
-		public void SetValueSharedData(WrenHandle key, object value, out WrenSharedDataHandle handle)
+		public void SetValueSharedData(in WrenHandle key, object value, out WrenSharedDataHandle handle)
 		{
             m_Vm.SetSlot(m_DefaultKeySlot, key);
             m_Vm.SetSlotSharedData(m_DefaultValueSlot, value, out handle);
             Wren.SetMapValue(m_Vm.m_Ptr, m_MapSlot, m_DefaultKeySlot, m_DefaultValueSlot);
 		}
         
-		public void SetValueNewSharedData(WrenHandle key, int classSlot, WrenSharedDataHandle handle)
+		public void SetValueNewSharedData(in WrenHandle key, int classSlot, WrenSharedDataHandle handle)
 		{
             m_Vm.SetSlot(m_DefaultKeySlot, key);
             m_Vm.SetSlotNewSharedData(m_DefaultValueSlot, classSlot, handle);
             Wren.SetMapValue(m_Vm.m_Ptr, m_MapSlot, m_DefaultKeySlot, m_DefaultValueSlot);
 		}
         
-		public void SetValueNewSharedData(WrenHandle key, int classSlot, object value)
+		public void SetValueNewSharedData(in WrenHandle key, int classSlot, object value)
 		{
             m_Vm.SetSlot(m_DefaultKeySlot, key);
             m_Vm.SetSlotNewSharedData(m_DefaultValueSlot, classSlot, value);
             Wren.SetMapValue(m_Vm.m_Ptr, m_MapSlot, m_DefaultKeySlot, m_DefaultValueSlot);
 		}
         
-		public void SetValueNewForeign(WrenHandle key, int classSlot, ulong size)
+		public void SetValueNewForeign(in WrenHandle key, int classSlot, ulong size)
 		{
             m_Vm.SetSlot(m_DefaultKeySlot, key);
             Wren.SetSlotNewForeign(m_Vm.m_Ptr, m_DefaultValueSlot, classSlot, size);
             Wren.SetMapValue(m_Vm.m_Ptr, m_MapSlot, m_DefaultKeySlot, m_DefaultValueSlot);
 		}
         
-		public ref T SetValueNewForeign<T>(WrenHandle key, int classSlot, in T value = default) where T : unmanaged
+		public ref T SetValueNewForeign<T>(in WrenHandle key, int classSlot, in T value = default) where T : unmanaged
 		{
             m_Vm.SetSlot(m_DefaultKeySlot, key);
             ref T returnVal = ref m_Vm.SetSlotNewForeign(m_DefaultValueSlot, classSlot, value);
@@ -583,7 +583,7 @@ namespace WrenSharp
             return ref returnVal;
 		}
         
-		public unsafe T* SetValueNewForeignPtr<T>(WrenHandle key, int classSlot, in T value = default) where T : unmanaged
+		public unsafe T* SetValueNewForeignPtr<T>(in WrenHandle key, int classSlot, in T value = default) where T : unmanaged
 		{
             m_Vm.SetSlot(m_DefaultKeySlot, key);
             T* returnVal = m_Vm.SetSlotNewForeignPtr(m_DefaultValueSlot, classSlot, value);
@@ -591,7 +591,7 @@ namespace WrenSharp
             return returnVal;
 		}
 
-        public unsafe T* SetSlotNewForeignPtr<T>(WrenHandle key, int classSlot, in ReadOnlySpan<T> span) where T : unmanaged
+        public unsafe T* SetSlotNewForeignPtr<T>(in WrenHandle key, int classSlot, in ReadOnlySpan<T> span) where T : unmanaged
         {
             m_Vm.SetSlot(m_DefaultKeySlot, key);
             T* returnVal = m_Vm.SetSlotNewForeignPtr(m_DefaultValueSlot, classSlot, in span);
@@ -627,7 +627,7 @@ namespace WrenSharp
             return new WrenSlot(m_Vm, valueSlot);
 		}
 
-		public WrenSlot Remove(WrenHandle key, int? removedValueSlot = default)
+		public WrenSlot Remove(in WrenHandle key, int? removedValueSlot = default)
 		{
             int valueSlot = removedValueSlot.GetValueOrDefault(m_DefaultValueSlot);
             m_Vm.SetSlot(m_DefaultKeySlot, key);

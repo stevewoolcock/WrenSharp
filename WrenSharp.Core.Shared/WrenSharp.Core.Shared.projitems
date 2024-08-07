@@ -40,6 +40,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)WrenList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenMap.Ext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenMap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenSharpConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenSlot.Ext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenSlots.Ext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenSlots.cs" />

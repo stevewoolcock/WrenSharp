@@ -10,7 +10,7 @@ namespace WrenSharp
         #region ContainsKey
 
 <#
-string[] typeNames = new string[] { "string", "double", "bool", "WrenHandle" };
+string[] typeNames = new string[] { "string", "double", "bool", "in WrenHandle" };
 string[] typeTitleCase = new string[] { "String", "Double", "Bool", "Handle" };
 
 for (int i = 0; i < typeNames.Length; i++)
