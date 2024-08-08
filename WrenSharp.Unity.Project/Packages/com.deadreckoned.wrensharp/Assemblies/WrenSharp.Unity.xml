@@ -3204,6 +3204,13 @@
             <param name="arg">The argument index.</param>
             <returns>The value of the argument.</returns>
         </member>
+        <member name="M:WrenSharp.WrenCallContext.GetArgNull(System.Int32)">
+            <summary>
+            Return true if argument at index <paramref name="arg"/> is a null value.
+            </summary>
+            <param name="arg">The argument index.</param>
+            <returns>True if the argument is a null value, otherwise false.</returns>
+        </member>
         <member name="M:WrenSharp.WrenCallContext.GetArgBool(System.Int32)">
             <summary>
             Gets the value of a <see cref="T:System.Boolean"/> argument at index <paramref name="arg"/>.
@@ -3353,6 +3360,11 @@
             Sets a <see cref="T:WrenSharp.WrenHandle"/> value as the return value for the method call.
             </summary>
             <param name="value">The value to return.</param>
+        </member>
+        <member name="M:WrenSharp.WrenCallContext.ReturnNull">
+            <summary>
+            Sets a null value as the return value for the method call.
+            </summary>
         </member>
         <member name="M:WrenSharp.WrenCallContext.ReturnForeign(WrenSharp.WrenHandle@,System.UInt64)">
             <summary>

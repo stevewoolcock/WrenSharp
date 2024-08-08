@@ -164,6 +164,14 @@ namespace WrenSharp
         public WrenHandle CreateArgHandle(int arg) => m_Vm.CreateHandle(ArgSlot(arg));
 
         /// <summary>
+        /// Return true if argument at index <paramref name="arg"/> is a null value.
+        /// </summary>
+        /// <param name="arg">The argument index.</param>
+        /// <returns>True if the argument is a null value, otherwise false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool GetArgNull(int arg) => ArgIsType(arg, WrenType.Null);
+
+        /// <summary>
         /// Gets the value of a <see cref="bool"/> argument at index <paramref name="arg"/>.
         /// </summary>
         /// <param name="arg">The argument index.</param>
@@ -517,6 +525,12 @@ namespace WrenSharp
             m_Vm.EnsureValidHandle(in value);
             Wren.SetSlotHandle(m_Vm.m_Ptr, 0, value.m_Ptr);
         }
+
+        /// <summary>
+        /// Sets a null value as the return value for the method call.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void ReturnNull() => Wren.SetSlotNull(m_Vm.m_Ptr, 0);
 
         /// <summary>
         /// Sets a new instance of a foreign class as the return value for the method call.
