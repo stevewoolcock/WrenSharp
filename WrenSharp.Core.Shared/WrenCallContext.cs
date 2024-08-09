@@ -32,16 +32,20 @@ namespace WrenSharp
     /// </summary>
     public readonly struct WrenCallContext
     {
-        private readonly WrenVM m_Vm;
-        private readonly WrenMethodType m_Type;
-        private readonly byte m_ArgCount;
+        internal readonly WrenVM m_Vm;
+        internal readonly WrenMethodType m_Type;
+        internal readonly byte m_ArgCount;
 
         #region Properties
 
         /// <summary>
         /// Gets the <see cref="WrenVM"/> the call was made from.
         /// </summary>
-        public WrenVM VM => m_Vm;
+        public WrenVM VM
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_Vm;
+        }
 
         /// <summary>
         /// The number of arugments supplied to the call.<para/>
@@ -69,7 +73,11 @@ namespace WrenSharp
         /// Gets the <see cref="WrenType"/> of the receiver object of the method call.
         /// </summary>
         /// <returns>The type of the receiver object.</returns>
-        public WrenType ReceiverType => Wren.GetSlotType(m_Vm.m_Ptr, 0);
+        public WrenType ReceiverType
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Wren.GetSlotType(m_Vm.m_Ptr, 0);
+        }
 
         #endregion
 
@@ -99,9 +107,18 @@ namespace WrenSharp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe ref T GetReceiverForeign<T>() where T : unmanaged => ref *(T*)Wren.GetSlotForeign(m_Vm.m_Ptr, 0);
 
+        /// <summary>
+        /// Gets the <see cref="WrenSharedDataHandle"/> foreign receiver of the method call.
+        /// </summary>
+        /// <returns>The <see cref="WrenSharedDataHandle"> for receiver.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe WrenSharedDataHandle GetReceiverSharedDataHandle() => *(WrenSharedDataHandle*)Wren.GetSlotForeign(m_Vm.m_Ptr, 0);
 
+        /// <summary>
+        /// Gets the shared data value for the foreign receiver of the method call.
+        /// </summary>
+        /// <typeparam name="T">The data type allocated for the foreign class.</typeparam>
+        /// <returns>The data allocated for receiver (a foreign class instance).</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe T GetReceiverSharedData<T>()
         {
@@ -152,7 +169,7 @@ namespace WrenSharp
         /// <param name="type">The type to check the value at <paramref name="arg"/> against.</param>
         /// <returns>True if the argument is of the specified type.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool ArgIsType(int arg, WrenType type) => Wren.GetSlotType(m_Vm.m_Ptr, ArgSlot(arg)) == type;
+        public bool ArgIsType(int arg, WrenType type) => ArgIndexInRange(arg) && Wren.GetSlotType(m_Vm.m_Ptr, ArgSlot(arg)) == type;
 
         /// <summary>
         /// Creates a handle wrapping the value of the argument at index <paramref name="arg"/>.<para />
@@ -161,7 +178,7 @@ namespace WrenSharp
         /// <param name="arg">The argument index.</param>
         /// <returns>The value of the argument.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public WrenHandle CreateArgHandle(int arg) => m_Vm.CreateHandle(ArgSlot(arg));
+        public WrenHandle CreateArgHandle(int arg) => ArgIndexInRange(arg) ? m_Vm.CreateHandle(ArgSlot(arg)) : default;
 
         /// <summary>
         /// Return true if argument at index <paramref name="arg"/> is a null value.
@@ -177,7 +194,7 @@ namespace WrenSharp
         /// <param name="arg">The argument index.</param>
         /// <returns>The value of the argument.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool GetArgBool(int arg) => Wren.GetSlotBool(m_Vm.m_Ptr, ArgSlot(arg)) != 0;
+        public bool GetArgBool(int arg) => ArgIndexInRange(arg) ? Wren.GetSlotBool(m_Vm.m_Ptr, ArgSlot(arg)) != 0 : default;
 
 
         /// <summary>
@@ -186,7 +203,7 @@ namespace WrenSharp
         /// <param name="arg">The argument index.</param>
         /// <returns>The value of the argument.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float GetArgFloat(int arg) => (float)Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
+        public float GetArgFloat(int arg) => ArgIndexInRange(arg) ? (float)Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg)) : default;
 
         /// <summary>
         /// Gets the value of a <see cref="double"/> argument at index <paramref name="arg"/>.
@@ -194,7 +211,7 @@ namespace WrenSharp
         /// <param name="arg">The argument index.</param>
         /// <returns>The value of the argument.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public double GetArgDouble(int arg) => Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
+        public double GetArgDouble(int arg) => ArgIndexInRange(arg) ? Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg)) : default;
 
         /// <summary>
         /// Gets the value of a <see cref="byte"/> argument at index <paramref name="arg"/>.
@@ -203,11 +220,7 @@ namespace WrenSharp
         /// <returns>The value of the argument.</returns>
         /// <exception cref="ArgumentException">Thrown if the value is not an a valid intergral.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public byte GetArgInt8(int arg)
-        {
-            double value = Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
-            return WrenUtils.AsInt8(value);
-        }
+        public byte GetArgInt8(int arg) => ArgIndexInRange(arg) ? WrenUtils.AsInt8(Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg))) : default;
 
         /// <summary>
         /// Gets the value of a <see cref="sbyte"/> argument at index <paramref name="arg"/>.
@@ -216,11 +229,7 @@ namespace WrenSharp
         /// <returns>The value of the argument.</returns>
         /// <exception cref="ArgumentException">Thrown if the value is not an a valid intergral.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public sbyte GetArgUInt8(int arg)
-        {
-            double value = Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
-            return WrenUtils.AsUInt8(value);
-        }
+        public sbyte GetArgUInt8(int arg) => ArgIndexInRange(arg) ? WrenUtils.AsUInt8(Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg))) : default;
 
         /// <summary>
         /// Gets the value of a <see cref="short"/> argument at index <paramref name="arg"/>.
@@ -229,11 +238,7 @@ namespace WrenSharp
         /// <returns>The value of the argument.</returns>
         /// <exception cref="ArgumentException">Thrown if the value is not an a valid intergral.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public short GetArgInt16(int arg)
-        {
-            double value = Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
-            return WrenUtils.AsInt16(value);
-        }
+        public short GetArgInt16(int arg) => ArgIndexInRange(arg) ? WrenUtils.AsInt16(Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg))) : default;
 
         /// <summary>
         /// Gets the value of a <see cref="ushort"/> argument at index <paramref name="arg"/>.
@@ -242,11 +247,7 @@ namespace WrenSharp
         /// <returns>The value of the argument.</returns>
         /// <exception cref="ArgumentException">Thrown if the value is not an a valid intergral.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ushort GetArgUInt16(int arg)
-        {
-            double value = Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
-            return WrenUtils.AsUInt16(value);
-        }
+        public ushort GetArgUInt16(int arg) => ArgIndexInRange(arg) ? WrenUtils.AsUInt16(Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg))) : default;
 
         /// <summary>
         /// Gets the value of a <see cref="int"/> argument at index <paramref name="arg"/>.
@@ -255,11 +256,7 @@ namespace WrenSharp
         /// <returns>The value of the argument.</returns>
         /// <exception cref="ArgumentException">Thrown if the value is not an a valid intergral.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetArgInt32(int arg)
-        {
-            double value = Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
-            return WrenUtils.AsInt32(value);
-        }
+        public int GetArgInt32(int arg) => ArgIndexInRange(arg) ? WrenUtils.AsInt32(Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg))) : default;
 
         /// <summary>
         /// Gets the value of a <see cref="uint"/> argument at index <paramref name="arg"/>.
@@ -268,11 +265,7 @@ namespace WrenSharp
         /// <returns>The value of the argument.</returns>
         /// <exception cref="ArgumentException">Thrown if the value is not an a valid intergral.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint GetArgUInt32(int arg)
-        {
-            double value = Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
-            return WrenUtils.AsUInt32(value);
-        }
+        public uint GetArgUInt32(int arg) => ArgIndexInRange(arg) ? WrenUtils.AsUInt32(Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg))) : default;
 
         /// <summary>
         /// Gets the value of a <see cref="long"/> argument at index <paramref name="arg"/>.
@@ -281,11 +274,7 @@ namespace WrenSharp
         /// <returns>The value of the argument.</returns>
         /// <exception cref="ArgumentException">Thrown if the value is not an a valid intergral.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public long GetArgInt64(int arg)
-        {
-            double value = Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
-            return WrenUtils.AsInt64(value);
-        }
+        public long GetArgInt64(int arg) => ArgIndexInRange(arg) ? WrenUtils.AsInt64(Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg))) : default;
 
         /// <summary>
         /// Gets the value of a <see cref="ulong"/> argument at index <paramref name="arg"/>.
@@ -294,11 +283,7 @@ namespace WrenSharp
         /// <returns>The value of the argument.</returns>
         /// <exception cref="ArgumentException">Thrown if the value is not an a valid intergral.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ulong GetArgUInt64(int arg)
-        {
-            double value = Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg));
-            return WrenUtils.AsUInt64(value);
-        }
+        public ulong GetArgUInt64(int arg) => ArgIndexInRange(arg) ? WrenUtils.AsUInt64(Wren.GetSlotDouble(m_Vm.m_Ptr, ArgSlot(arg))) : default;
 
 
         /// <summary>
@@ -307,7 +292,7 @@ namespace WrenSharp
         /// <param name="arg">The argument index.</param>
         /// <returns>The value of the argument.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IntPtr GetArgForeign(int arg) => Wren.GetSlotForeign(m_Vm.m_Ptr, ArgSlot(arg));
+        public IntPtr GetArgForeign(int arg) => ArgIndexInRange(arg) ? Wren.GetSlotForeign(m_Vm.m_Ptr, ArgSlot(arg)) : default;
 
         /// <summary>
         /// Gets the data of a foreign object argument at index <paramref name="arg"/>.
@@ -315,17 +300,24 @@ namespace WrenSharp
         /// <param name="arg">The argument index.</param>
         /// <returns>The value of the argument.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe ref T GetArgForeign<T>(int arg) where T : unmanaged => ref *(T*)Wren.GetSlotForeign(m_Vm.m_Ptr, ArgSlot(arg));
+        public unsafe ref T GetArgForeign<T>(int arg) where T : unmanaged
+        {
+            EnsureArgIndexInRange(arg);
+            return ref *(T*)Wren.GetSlotForeign(m_Vm.m_Ptr, ArgSlot(arg));
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe T GetArgSharedData<T>(int arg)
         {
+            if (!ArgIndexInRange(arg))
+                return default!;
+
             var handle = *(WrenSharedDataHandle*)Wren.GetSlotForeign(m_Vm.m_Ptr, ArgSlot(arg));
             return m_Vm.SharedData.Get<T>(handle);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe WrenSharedDataHandle GetArgSharedDataHandle(int arg) => *(WrenSharedDataHandle*)Wren.GetSlotForeign(m_Vm.m_Ptr, ArgSlot(arg));
+        public unsafe WrenSharedDataHandle GetArgSharedDataHandle(int arg) => ArgIndexInRange(arg) ? *(WrenSharedDataHandle*)Wren.GetSlotForeign(m_Vm.m_Ptr, ArgSlot(arg)) : default;
 
         /// <summary>
         /// Gets the value of a <see cref="string"/> argument at index <paramref name="arg"/>.
@@ -333,7 +325,7 @@ namespace WrenSharp
         /// <param name="arg">The argument index.</param>
         /// <returns>The value of the argument.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string GetArgString(int arg) => WrenInternal.GetSlotString(m_Vm.m_Ptr, ArgSlot(arg));
+        public string GetArgString(int arg) => ArgIndexInRange(arg) ? WrenInternal.GetSlotString(m_Vm.m_Ptr, ArgSlot(arg)) : default!;
 
         /// <summary>
         /// Gets the raw bytes value of a <see cref="string"/> argument at index <paramref name="arg"/>.
@@ -341,7 +333,7 @@ namespace WrenSharp
         /// <param name="arg">The argument index.</param>
         /// <returns>The value of the argument.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlySpan<byte> GetArgStringBytes(int arg) => WrenInternal.GetSlotStringBytes(m_Vm.m_Ptr, ArgSlot(arg));
+        public ReadOnlySpan<byte> GetArgStringBytes(int arg) => ArgIndexInRange(arg) ? WrenInternal.GetSlotStringBytes(m_Vm.m_Ptr, ArgSlot(arg)) : default;
 
         /// <summary>
         /// Gets the <see cref="WrenType"/> of the argument at index <paramref name="arg"/>.
@@ -349,7 +341,7 @@ namespace WrenSharp
         /// <param name="arg">The argument index.</param>
         /// <returns>The type of the argument.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public WrenType GetArgType(int arg) => Wren.GetSlotType(m_Vm.m_Ptr, ArgSlot(arg));
+        public WrenType GetArgType(int arg) => ArgIndexInRange(arg) ? Wren.GetSlotType(m_Vm.m_Ptr, ArgSlot(arg)) : WrenType.Null;
 
         public bool TryGetArg(int arg, out bool value)
         {
@@ -673,5 +665,15 @@ namespace WrenSharp
         }
 
         #endregion
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ArgIndexInRange(int arg) => arg >= 0 && arg < m_ArgCount;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void EnsureArgIndexInRange(int arg)
+        {
+            if (arg < 0 || arg >= m_ArgCount)
+                throw new ArgumentOutOfRangeException(nameof(arg));
+        }
     }
 }

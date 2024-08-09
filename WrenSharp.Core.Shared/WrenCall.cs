@@ -11,8 +11,8 @@ namespace WrenSharp
     /// </summary>
     public readonly struct WrenCall : IDisposable
     {
-        private readonly WrenVM m_Vm;
-        private readonly WrenCallHandle m_CallHandle;
+        internal readonly WrenVM m_Vm;
+        internal readonly WrenCallHandle m_CallHandle;
 
 #if WRENSHARP_EXT
         private readonly WrenFiberResume m_FiberResume;
@@ -23,8 +23,12 @@ namespace WrenSharp
         /// <summary>
         /// The VM the call was created with.
         /// </summary>
-        public WrenVM VM => m_Vm;
-        
+        public WrenVM VM
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_Vm;
+        }
+
         /// <summary>
         /// The number of parameters required by the call.
         /// </summary>
@@ -33,7 +37,11 @@ namespace WrenSharp
         /// <summary>
         /// Returns true if the call is valid and can be invoked.
         /// </summary>
-        public bool IsValid => m_CallHandle.IsValid;
+        public bool IsValid
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_CallHandle.IsValid;
+        }
 
         #endregion
 

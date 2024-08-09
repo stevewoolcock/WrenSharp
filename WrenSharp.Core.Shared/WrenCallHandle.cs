@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using WrenSharp.Native;
 
 namespace WrenSharp
@@ -27,12 +28,25 @@ namespace WrenSharp
         /// Indicates if the handle is valid. A handle is valid if it has been created and not released.
         /// Once a handle is released, all <see cref="WrenCallHandle"/> values pointing to it will become invalid.
         /// </summary>
-        public bool IsValid => m_Handle != null && m_Handle.IsValid() && m_Version == m_Handle.Version && m_Ptr == m_Handle.Ptr;
+        public bool IsValid
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_Handle != null && m_Handle.IsValid() && m_Version == m_Handle.Version && m_Ptr == m_Handle.Ptr;
+        }
 
         /// <summary>
         /// The number of parameters the method call requires.
         /// </summary>
         public int ParamCount => m_ParamCount;
+
+        /// <summary>
+        /// The handle's native pointer.
+        /// </summary>
+        public IntPtr NativePointer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => IsValid ? m_Ptr : IntPtr.Zero;
+        }
 
         #endregion
 
@@ -79,6 +93,12 @@ namespace WrenSharp
 
         /// <inheritdoc/>
         public static bool operator !=(WrenCallHandle left, WrenCallHandle right) => !(left == right);
+
+        /// <summary>
+        /// Converts a <see cref="WrenCallHandle"/> into a <see cref="WrenHandle"/>.
+        /// </summary>
+        /// <param name="callHandle">The call handle</param>
+        public static implicit operator WrenHandle(WrenCallHandle callHandle) => new WrenHandle(callHandle.m_Handle);
 
         #endregion
     }

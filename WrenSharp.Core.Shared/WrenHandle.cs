@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using WrenSharp.Native;
 
 namespace WrenSharp
@@ -25,7 +26,20 @@ namespace WrenSharp
         /// Indicates if the handle is valid. A handle is valid if it has been created and not released.
         /// Once a handle is released, all <see cref="WrenHandle"/> values pointing to it will become invalid.
         /// </summary>
-        public bool IsValid => m_Handle?.IsValid() == true && m_Version == m_Handle.Version && m_Ptr == m_Handle.Ptr;
+        public bool IsValid
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_Handle?.IsValid() == true && m_Version == m_Handle.Version && m_Ptr == m_Handle.Ptr;
+        }
+
+        /// <summary>
+        /// The handle's native pointer.
+        /// </summary>
+        public IntPtr NativePointer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => IsValid ? m_Ptr : IntPtr.Zero;
+        }
 
         #endregion
 
@@ -53,7 +67,13 @@ namespace WrenSharp
         public override int GetHashCode() => HashCode.Combine(m_Ptr, m_Version, m_Handle);
 
         /// <inheritdoc/>
-        public override string ToString() => IsValid ? m_Ptr.ToString() : string.Empty;
+        public override string ToString()
+        {
+            if (!IsValid)
+                return string.Empty;
+
+            return IntPtr.Size == 4 ? $"0x{m_Ptr:X8}" : $"0x{m_Ptr:X16}";
+        }
 
         #endregion
 

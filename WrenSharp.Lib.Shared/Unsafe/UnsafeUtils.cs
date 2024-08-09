@@ -1,7 +1,10 @@
-﻿namespace WrenSharp.Unsafe
+﻿using System.Runtime.CompilerServices;
+
+namespace WrenSharp.Unsafe
 {
     internal class UnsafeUtils
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe static int Memcmp(void* str1, void* str2, int count)
         {
             byte* s1 = (byte*)str1;
@@ -15,6 +18,7 @@
             return 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe static bool Memeq(void* str1, void* str2, int count)
         {
             if (str1 == str2)

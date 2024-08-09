@@ -152,7 +152,7 @@ namespace WrenSharp
         /// <summary>
         /// The native VM pointer.
         /// </summary>
-        protected internal IntPtr m_Ptr;
+        internal IntPtr m_Ptr;
 
         private readonly object m_HandleLocker = new object();
         private readonly WrenSharedDataTable m_SharedData = new WrenSharedDataTable();

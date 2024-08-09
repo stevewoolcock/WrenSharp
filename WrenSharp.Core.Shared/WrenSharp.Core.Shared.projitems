@@ -44,6 +44,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)WrenSlot.Ext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenSlots.Ext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenSlots.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WrenUnsafeExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenVM.Ext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenSlot.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WrenVMConfiguration.cs" />

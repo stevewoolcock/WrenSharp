@@ -1079,6 +1079,11 @@
             The number of parameters the method call requires.
             </summary>
         </member>
+        <member name="P:WrenSharp.WrenCallHandle.NativePointer">
+            <summary>
+            The handle's native pointer.
+            </summary>
+        </member>
         <member name="M:WrenSharp.WrenCallHandle.Dispose">
             <summary>
             Releases the handle. Once released, the handle can no longer be used.
@@ -1101,6 +1106,12 @@
         </member>
         <member name="M:WrenSharp.WrenCallHandle.op_Inequality(WrenSharp.WrenCallHandle,WrenSharp.WrenCallHandle)">
             <inheritdoc/>
+        </member>
+        <member name="M:WrenSharp.WrenCallHandle.op_Implicit(WrenSharp.WrenCallHandle)~WrenSharp.WrenHandle">
+            <summary>
+            Converts a <see cref="T:WrenSharp.WrenCallHandle"/> into a <see cref="T:WrenSharp.WrenHandle"/>.
+            </summary>
+            <param name="callHandle">The call handle</param>
         </member>
         <member name="T:WrenSharp.WrenFileSource">
             <summary>
@@ -1524,6 +1535,60 @@
             </summary>
             <param name="capacity">The capacity of API slots to ensure.</param>
             <returns>A reference to this <see cref="T:WrenSharp.WrenSlots"/>.</returns>
+        </member>
+        <member name="T:WrenSharp.Unsafe.WrenUnsafeExtensions">
+            <summary>
+            Unsafe extension methods.
+            </summary>
+        </member>
+        <member name="M:WrenSharp.Unsafe.WrenUnsafeExtensions.SetArg(WrenSharp.WrenCall@,System.Int32,WrenSharp.Unsafe.WrenValue@)">
+            <summary>
+            Sets the value of argument <paramref name="arg"/> to a <see cref="T:WrenSharp.Unsafe.WrenValue"/>.
+            </summary>
+            <param name="call">The <see cref="T:WrenSharp.WrenCall"/>.</param>
+            <param name="arg">The argument index.</param>
+            <param name="value">The value to set.</param>
+        </member>
+        <member name="M:WrenSharp.Unsafe.WrenUnsafeExtensions.Call(WrenSharp.WrenCall@,WrenSharp.Unsafe.WrenValue@,System.Boolean)">
+            <summary>
+            Calls the Wren method and assigns the return value type to <paramref name="returnValue"/>.
+            </summary>
+            <param name="call">The <see cref="T:WrenSharp.WrenCall"/>.</param>
+            <param name="returnValue">The return value of the call.</param>
+            <param name="throwOnFailure">Determines if a <see cref="T:WrenSharp.WrenInterpretException"/> is thrown if the call fails.</param>
+            <returns>A <see cref="T:WrenSharp.WrenInterpretResult"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.Unsafe.WrenUnsafeExtensions.Call(WrenSharp.WrenCall@,WrenSharp.Unsafe.WrenValue*@,System.Boolean)">
+            <summary>
+            Calls the Wren method and assigns the return value type to <paramref name="returnValue"/>.
+            </summary>
+            <param name="call">The <see cref="T:WrenSharp.WrenCall"/>.</param>
+            <param name="returnValue">The return value of the call.</param>
+            <param name="throwOnFailure">Determines if a <see cref="T:WrenSharp.WrenInterpretException"/> is thrown if the call fails.</param>
+            <returns>A <see cref="T:WrenSharp.WrenInterpretResult"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.Unsafe.WrenUnsafeExtensions.GetArg(WrenSharp.WrenCallContext@,System.Int32)">
+            <summary>
+            Gets the <see cref="T:WrenSharp.Unsafe.WrenValue"/> at argument slot <paramref name="arg"/>.
+            </summary>
+            <param name="callContext">The <see cref="T:WrenSharp.WrenCallContext"/>.</param>
+            <param name="arg">The argument slot.</param>
+            <returns>A <see cref="T:WrenSharp.Unsafe.WrenValue"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.Unsafe.WrenUnsafeExtensions.GetArgPtr(WrenSharp.WrenCallContext@,System.Int32)">
+            <summary>
+            Gets a pointer to the <see cref="T:WrenSharp.Unsafe.WrenValue"/> at argument slot <paramref name="arg"/>.
+            </summary>
+            <param name="callContext">The <see cref="T:WrenSharp.WrenCallContext"/>.</param>
+            <param name="arg">The argument slot.</param>
+            <returns>A pointer to a <see cref="T:WrenSharp.Unsafe.WrenValue"/>.</returns>
+        </member>
+        <member name="M:WrenSharp.Unsafe.WrenUnsafeExtensions.Return(WrenSharp.WrenCallContext@,WrenSharp.Unsafe.WrenValue@)">
+            <summary>
+            Sets <paramref name="value"/> as the return value for the method call.
+            </summary>
+            <param name="callContext">The <see cref="T:WrenSharp.WrenCallContext"/>.</param>
+            <param name="value">The value to return.</param>
         </member>
         <member name="T:WrenSharp.WrenVM">
             <summary>
@@ -3083,6 +3148,11 @@
             Once a handle is released, all <see cref="T:WrenSharp.WrenHandle"/> values pointing to it will become invalid.
             </summary>
         </member>
+        <member name="P:WrenSharp.WrenHandle.NativePointer">
+            <summary>
+            The handle's native pointer.
+            </summary>
+        </member>
         <member name="M:WrenSharp.WrenHandle.Dispose">
             <summary>
             Releases the handle. Once released, the handle can no longer be used.
@@ -3177,6 +3247,14 @@
             <summary>
             Gets the data for the foreign receiver of the method call. This only applies to calls where the receiver is a
             foreign class or and instance of a foreign class.
+            </summary>
+            <typeparam name="T">The data type allocated for the foreign class.</typeparam>
+            <returns>The data allocated for receiver (a foreign class instance).</returns>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:WrenSharp.WrenCallContext.GetReceiverSharedDataHandle" -->
+        <member name="M:WrenSharp.WrenCallContext.GetReceiverSharedData``1">
+            <summary>
+            Gets the shared data value for the foreign receiver of the method call.
             </summary>
             <typeparam name="T">The data type allocated for the foreign class.</typeparam>
             <returns>The data allocated for receiver (a foreign class instance).</returns>
