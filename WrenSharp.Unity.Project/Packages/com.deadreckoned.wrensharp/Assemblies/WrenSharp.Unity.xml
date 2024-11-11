@@ -96,9 +96,6 @@
             </summary>
             <param name="config">The configuration to use.</param>
         </member>
-        <member name="M:WrenSharp.Unity.UnityWrenVM.DisposeManagedState">
-            <inheritdoc/>
-        </member>
         <member name="M:WrenSharp.Unity.UnityWrenVM.Foreign(System.String,System.String)">
             <inheritdoc/>
         </member>

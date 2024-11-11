@@ -22,7 +22,17 @@ namespace WrenSharp.Unity
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void OnSubsystemRegistration()
         {
-            //
+            // Nothing to do here, currently
+        }
+
+        private static void Destructor(WrenVM vm, bool disposeManagedState, WrenVMDestructor userDestructor)
+        {
+            userDestructor(vm, disposeManagedState);
+
+            // Clean up foreign class definitions *after* VM destruction, as Wren will call any finalizers when
+            // shutting down. If their managed implementations are disposed before then, we'll receive null reference
+            // execeptions when they're invoked.
+            ((UnityWrenVM)vm).m_ForeignLookup.ForEachClass(x => x.Dispose());
         }
 
         #endregion
@@ -71,7 +81,7 @@ namespace WrenSharp.Unity
             var wrenSharpCfg = new WrenSharpConfiguration()
             {
                 Initializer = config.Initializer,
-                Destructor = config.Destructor,
+                Destructor = (vm, disposeManagedState) => Destructor(vm, disposeManagedState, config.Destructor),
                 Allocator = config.Allocator,
                 HandlePoolCapacityInitial = config.HandlePoolCapacityInitial,
                 HandlePoolCapacityMax = config.HandlePoolCapacityMax,
@@ -97,16 +107,6 @@ namespace WrenSharp.Unity
             nativeConfig.BindForeignMethod = _BindForeignMethodFn;
             nativeConfig.BindForeignClass = _BindForeignClassFn;
             m_LoadModuleCallback = _OnModuleLoadComplete;
-        }
-
-        /// <inheritdoc/>
-        protected override void DisposeManagedState()
-        {
-            base.DisposeManagedState();
-
-            // Ensure all foreign methods free up their symbols so holes in the static delegate tables
-            // can be reused and don't leak memory
-            m_ForeignLookup.ForEachClass(x => x.Dispose());
         }
 
         #region Public API

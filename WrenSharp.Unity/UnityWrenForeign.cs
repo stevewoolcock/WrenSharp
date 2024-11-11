@@ -34,42 +34,70 @@ namespace WrenSharp.Unity
         // Freed delegates return their symbol to the free stack for reuse
         private class DelegateTable<T> where T : Delegate
         {
-            private readonly Stack<ushort> m_FreeSymbols = new Stack<ushort>();
-            private ushort m_TailSymbol = 1;
+            struct Entry
+            {
+                public ushort NextFree;
+                public T Delegate;
+            }
 
-            public T[] Delegates = new T[0];
+            private Entry[] m_Entries = Array.Empty<Entry>();
+            private ushort m_FreeSymbol = 0;
+            private ushort m_TailSymbol = 1;
 
             public ushort Add(T del)
             {
-                ushort symbol = m_FreeSymbols.Count > 0 ? m_FreeSymbols.Pop() : m_TailSymbol++;
-
-                if (Delegates.Length < symbol)
+                ushort symbol;
+                if (m_FreeSymbol > 0)
                 {
-                    int newCapacity = Delegates.Length == 0 ? 4 : Delegates.Length * 2;
+                    symbol = m_FreeSymbol;
+                    m_FreeSymbol = m_Entries[symbol - 1].NextFree;
+                }
+                else
+                {
+                    symbol = m_TailSymbol++;
+                }
+
+                if (m_Entries.Length < symbol)
+                {
+                    int newCapacity = m_Entries.Length == 0 ? 4 : m_Entries.Length * 2;
                     int minCapacity = symbol + 1;
                     if (newCapacity < minCapacity)
                     {
                         newCapacity = minCapacity;
                     }
 
-                    Array.Resize(ref Delegates, newCapacity);
+                    Array.Resize(ref m_Entries, newCapacity);
                 }
 
-                Delegates[symbol - 1] = del;
+                m_Entries[symbol - 1] = new Entry()
+                {
+                    NextFree = 0,
+                    Delegate = del,
+                };
+
                 return symbol;
+            }
+
+            public T Get(ushort symbol)
+            {
+                return m_Entries[symbol - 1].Delegate;
             }
 
             public void Remove(ushort symbol)
             {
-                Delegates[symbol - 1] = null;
-                m_FreeSymbols.Push(symbol);
+                m_Entries[symbol - 1] = new Entry()
+                {
+                    NextFree = m_FreeSymbol,
+                    Delegate = default,
+                };
+                m_FreeSymbol = symbol;
             }
 
             public void Clear()
             {
-                Array.Clear(Delegates, 0, m_TailSymbol - 1);
+                Array.Clear(m_Entries, 0, m_TailSymbol - 1);
                 m_TailSymbol = 1;
-                m_FreeSymbols.Clear();
+                m_FreeSymbol = 0;
             }
         }
 
@@ -86,7 +114,7 @@ namespace WrenSharp.Unity
         {
             if (symbol > 0)
             {
-                _methodTable.Delegates[symbol - 1]();
+                _methodTable.Get(symbol)();
             }
         }
 
@@ -95,7 +123,7 @@ namespace WrenSharp.Unity
         {
             if (symbol > 0)
             {
-                _finalizerTable.Delegates[symbol - 1](data);
+                _finalizerTable.Get(symbol)(data);
             }
         }
 
