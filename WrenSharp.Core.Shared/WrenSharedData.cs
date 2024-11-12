@@ -277,7 +277,7 @@ namespace WrenSharp
         /// <returns>True if <paramref name="handle"/> points to a valid entry of type <typeparamref name="T"/>, otherwise false.</returns>
         public bool TryGet<T>(in WrenSharedDataHandle handle, out T value)
         {
-            if (!handle.IsValid || handle <= 0 || handle >= m_Tail)
+            if (!IsValidHandle(in handle))
             {
                 value = default;
                 return false;
@@ -322,7 +322,7 @@ namespace WrenSharp
         /// <returns>True if <paramref name="handle"/> points to a valid entry, otherwise false.</returns>
         public bool TrySet(in WrenSharedDataHandle handle, object value)
         {
-            if (!handle.IsValid || handle <= 0 || handle >= m_Tail)
+            if (!IsValidHandle(in handle))
                 return false;
 
             ref var entry = ref m_Entries[HandleToIndex(handle)];
@@ -358,7 +358,7 @@ namespace WrenSharp
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int HandleToIndex(WrenSharedDataHandle handle)
+        private static int HandleToIndex(in WrenSharedDataHandle handle)
         {
             return handle - 1;
         }
@@ -377,15 +377,15 @@ namespace WrenSharp
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsValidHandle(WrenSharedDataHandle handle)
+        private bool IsValidHandle(in WrenSharedDataHandle handle)
         {
             return handle.IsValid && handle > 0 && handle <= m_Tail;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void EnsureValidHandle(WrenSharedDataHandle handle)
+        private void EnsureValidHandle(in WrenSharedDataHandle handle)
         {
-            if (!IsValidHandle(handle))
+            if (!IsValidHandle(in handle))
                 throw new InvalidOperationException("Invalid handle.");
         }
     }
